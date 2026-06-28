@@ -1,17 +1,6 @@
-# 🚀 Mazu Framework - Starter Template
+# 🎓 Sistem PMB (Penerimaan Mahasiswa Baru)
 
-Starter template untuk aplikasi PHP modern berbasis **Mazu Framework**. Framework ini terinspirasi dari Laravel (MVC, CLI) dan Next.js (nested layout system).
-
-## ✨ Fitur Utama
-
-- **MVC Architecture** - Struktur Laravel-inspired dengan Model, View, Controller
-- **Nested Layout System** - Next.js-style layout dengan auto-discovery
-- **CLI Tools** - `php mazu` commands untuk generate code
-- **Dependency Injection** - Auto-wiring container
-- **Middleware System** - Auth, CSRF, Throttle middleware
-- **SPA Engine** - Hybrid SPA navigation untuk UX yang cepat
-- **Database Migration** - Schema-based migration system
-- **Queue System** - Background job processing
+Aplikasi web untuk mengelola proses **Penerimaan Mahasiswa Baru** di perguruan tinggi, dibangun dengan **Mazu Framework**.
 
 ## 📦 Instalasi
 
@@ -28,7 +17,7 @@ composer install
 # Copy environment file
 cp .env.example .env
 
-# Generate key (jika diperlukan)
+# Generate application key
 php mazu key:generate
 ```
 
@@ -39,12 +28,12 @@ Edit file `.env`:
 ```env
 APP_ENV=development
 APP_DEBUG=true
-APP_NAME=Mazu
+APP_NAME=Sistem PMB
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=mazu_db
+DB_DATABASE=pmb_db
 DB_USERNAME=root
 DB_PASSWORD=
 ```
@@ -61,58 +50,79 @@ php mazu migrate
 php mazu serve
 ```
 
-Akses aplikasi di `http://localhost:8000` (atau port yang dikonfigurasi).
+Akses aplikasi di `http://localhost:8000`
 
 ## 🛠️ CLI Commands
 
-Gunakan `php mazu` untuk development:
-
 ```bash
 # Generate code
-php mazu make:controller User      # Buat controller baru
-php mazu make:model User           # Buat model baru
-php mazu make:middleware Auth      # Buat middleware baru
-php mazu make:job SendEmail        # Buat queue job
+php mazu make:controller NamaController    # Buat controller baru
+php mazu make:model NamaModel              # Buat model baru
+php mazu make:middleware Auth              # Buat middleware auth
 
 # Database
-php mazu migrate                   # Jalankan migration
+php mazu migrate                           # Jalankan migration
 
 # Development
-php mazu serve                     # Start dev server
-php mazu build                     # Build assets (Tailwind, etc)
-php mazu route:cache               # Cache routes untuk production
+php mazu serve                             # Start dev server
+php mazu build                             # Build assets
+php mazu route:cache                       # Cache routes
 
 # Info
-php mazu about                     # Tampilkan info framework
+php mazu about                             # Info framework
 ```
 
 ## 📁 Struktur Folder
 
 ```
 project-root/
-├── app/                    # Core Engine (JANGAN MODIFIKASI)
+├── app/                    # Mazu Framework Core (JANGAN MODIFIKASI)
 │   ├── Console/            # CLI Commands
 │   ├── Core/               # Framework Core
 │   ├── Helpers/            # Helper Functions
 │   └── Services/           # Core Services
-├── addon/                  # Application Code (BOLEH DIMODIFIKASI)
+├── addon/                  # Application Code
 │   ├── Controllers/        # Controllers
-│   ├── Middleware/         # Middleware
+│   ├── Middleware/         # Middleware (Auth, Role, CSRF)
 │   ├── Models/             # Models
 │   ├── Providers/          # Service Providers
 │   ├── Router/
 │   │   └── index.php       # Route Definitions
 │   └── Views/              # View Templates
 │       ├── layout.php      # Root layout
-│       └── index.php       # Home page
+│       └── (group)/        # Grouped layouts
 ├── config/                 # Configuration Files
 ├── public/                 # Public Assets
-└── storage/                # Cache, Logs, Secrets
+└── storage/                # Cache, Logs, Uploaded Files
 ```
+
+## 👥 User Roles
+
+Aplikasi ini memiliki 2 jenis user:
+
+| Role  | Deskripsi                           |
+| ----- | ----------------------------------- |
+| Admin | Mengelola data, verifikasi, laporan |
+| User  | Pendaftar/peserta PMB               |
+
+**Admin Access Control:**
+Admin memiliki field array untuk mengatur akses per modul/fitur secara granular.
 
 ## 🎯 Quick Start
 
-### 1. Buat Route Baru
+### 1. Buat Model
+
+```bash
+php mazu make:model NamaModel
+```
+
+### 2. Buat Controller
+
+```bash
+php mazu make:controller NamaController
+```
+
+### 3. Definisikan Route
 
 Edit `addon/Router/index.php`:
 
@@ -122,52 +132,12 @@ Edit `addon/Router/index.php`:
 use App\Core\Http\Request;
 use App\Core\Http\Response;
 
-// Simple route
-$router->get('/hello', function (Request $request, Response $response) {
-    return $response->renderPage([
-        'message' => 'Hello World!'
-    ]);
-});
+// Public routes
+$router->get('/', fn(Request $r, Response $res) => $res->renderPage([]));
 
-// Controller route
-$router->get('/users', [UserController::class, 'index']);
-
-// Route dengan middleware
-$router->post('/users', [UserController::class, 'store'], ['auth', 'csrf']);
+// Protected routes (dengan middleware)
+$router->get('/admin', [AdminController::class, 'index'], ['auth', 'role:admin']);
 ```
-
-### 2. Buat Controller
-
-```bash
-php mazu make:controller User
-```
-
-Ini akan membuat `addon/Controllers/UserController.php` dengan template CRUD.
-
-### 3. Buat Model
-
-```bash
-php mazu make:model User
-```
-
-Ini akan membuat `addon/Models/UserModel.php` dengan schema definition.
-
-### 4. Buat View
-
-Buat file di `addon/Views/`:
-
-```
-addon/Views/
-├── layout.php          # Root layout (header, footer, nav)
-├── (app)/
-│   ├── layout.php      # Group layout
-│   └── users/
-│       └── index.php   # View untuk /users
-```
-
-CSS/JS akan auto-discovered jika filename sama:
-
-- `index.php` → `index.css`, `index.js`
 
 ## 🔧 Helper Functions
 
@@ -176,7 +146,7 @@ CSS/JS akan auto-discovered jika filename sama:
 env('APP_NAME', 'Default')
 
 // URL
-getBaseUrl('/users')
+getBaseUrl('/path')
 asset('css/style.css')
 currentUrl()
 
@@ -192,22 +162,6 @@ logger()->info('Message', ['context' => $data])
 // Utils
 ulid()      // Generate ULID
 uuidv4()    // Generate UUID
-```
-
-## 📚 Dokumentasi Lengkap
-
-- **Skill File:** `.roo/skills/mazu-fullstack-developer/SKILL.md`
-- **CLI Commands:** `app/Console/Commands/`
-- **Core Classes:** `app/Core/`
-
-## 🧪 Testing
-
-```bash
-# Run tests (jika tersedia)
-php vendor/bin/phpunit
-
-# Check code style
-php vendor/bin/phpcs
 ```
 
 ## 🚀 Deployment
@@ -234,12 +188,22 @@ APP_DEBUG=false
 - PHP 8.1+
 - MySQL 5.7+ / MariaDB 10.3+
 - Composer
-- Extension: pdo_mysql, json, mbstring
+- Extension: pdo_mysql, json, mbstring, fileinfo
+
+## 📚 Dokumentasi
+
+Untuk dokumentasi lengkap tentang Mazu Framework, lihat skill files di `.roo/skills/`:
+
+- [`mazu-core`](.roo/skills/mazu-core/SKILL.md) - Struktur folder, CLI, rules
+- [`mazu-controller`](.roo/skills/mazu-controller/SKILL.md) - Controller patterns & routing
+- [`mazu-model`](.roo/skills/mazu-model/SKILL.md) - Model schema & migration
+- [`mazu-views`](.roo/skills/mazu-views/SKILL.md) - View system & layouts
+- [`mazu-middleware`](.roo/skills/mazu-middleware/SKILL.md) - Auth, Role, CSRF
 
 ## 📄 License
 
-Mazu Framework - Personal/Commercial Use
+Sistem PMB - Personal/Commercial Use
 
 ---
 
-**Mazu Framework** - _Build Faster. Scale Better._
+**Sistem PMB** - _Build Faster. Scale Better._
