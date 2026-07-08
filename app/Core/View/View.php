@@ -156,7 +156,7 @@ class View implements RenderableInterface
 
     $html .= PHP_EOL . '  <!-- Viewport & Favicon -->' . PHP_EOL;
     $html .= '<meta name="viewport" content="width=device-width, initial-scale=1.0">' . PHP_EOL;
-    $html .= '<link rel="icon" type="image/x-icon" href="' . getBaseUrl('/logo_app/favicon.ico') . '">' . PHP_EOL;
+    $html .= '<link rel="icon" type="image/svg+xml" href="' . getBaseUrl('/logo_app/mazu-icon.svg') . '">' . PHP_EOL;
 
     return $html;
   }
