@@ -255,3 +255,14 @@
     startResendCooldown();
   })();
 </script>
+
+<?php if (isset($error)): ?>
+  <script>
+    Swal.fire({
+      icon: 'error',
+      title: 'Verifikasi Gagal',
+      text: <?= json_encode($error) ?>,
+      confirmButtonColor: '#4f46e5'
+    });
+  </script>
+<?php endif; ?>

@@ -171,7 +171,12 @@ class ViewService
       $currentDir = dirname($currentDir);
     }
 
-    // Jika ini request SPA dan kita menemukan match di tengah jalan
+    if (stripos($html, '<form') !== false) {
+      $html = preg_replace_callback('/(<form[^>]*method=["\']?post["\']?[^>]*>)/i', function($matches) {
+        return $matches[1] . "\n" . csrf_field();
+      }, $html);
+    }
+
     if ($isSpaRequest && $foundMatch) {
       // Resolusi hash untuk styles agar cache busting bekerja di SPA
       $styles = array_map(function ($style) {

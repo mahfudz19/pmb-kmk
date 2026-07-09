@@ -122,7 +122,16 @@ class AuthController
         if (isset($user['role'])) {
             $this->session->set('auth.user_role', $user['role']);
         }
+
+        if (isset($user['permissions'])) {
+            $permissions = json_decode($user['permissions'], true);
+            $this->session->set('auth.user_permissions', is_array($permissions) ? $permissions : []);
+        } else {
+            $this->session->set('auth.user_permissions', ($user['role'] ?? 'user') === 'admin' ? ['*'] : ['view_dashboard']);
+        }
+
         $this->session->set('is_logged_in', true);
+        log_activity('LOGIN_SUCCESS', "Pengguna {$user['email']} berhasil masuk ke sistem.");
     }
 
     /**
@@ -130,6 +139,8 @@ class AuthController
      */
     private function logoutSession(): void
     {
+        $email = $this->session->get('auth.user_email') ?? 'User';
+        log_activity('LOGOUT', "Pengguna {$email} keluar dari sistem.");
         $this->session->destroy();
     }
 
@@ -162,6 +173,7 @@ class AuthController
         $user = $this->users->findByEmail($email);
 
         if (!$user) {
+            log_activity('LOGIN_FAILED', "Percobaan masuk gagal: Email {$email} tidak ditemukan.");
             return $response->redirect('/login?error=Email+tidak+ditemukan');
         }
 
@@ -169,6 +181,7 @@ class AuthController
 
         // Verify password
         if (!$this->verifyPassword($password, $user['password'])) {
+            log_activity('LOGIN_FAILED', "Percobaan masuk gagal: Password salah untuk pengguna {$email}.");
             return $response->redirect('/login?error=Password+salah');
         }
 
@@ -567,5 +580,113 @@ class AuthController
             ['message' => 'Password berhasil direset. Silakan login dengan password baru',],
             ['path' => '/password/reset', 'meta' => ['title' => 'Password Direset | ' . env('APP_NAME')]]
         );
+    }
+
+    public function listUsers(Request $request, Response $response): View | RedirectResponse
+    {
+        $users = $this->users->all();
+        return $response->renderPage(['users' => $users], [
+            'path' => '/admin/users',
+            'meta' => ['title' => 'Manajemen Pengguna | ' . env('APP_NAME')]
+        ]);
+    }
+
+    public function updateUser(Request $request, Response $response): RedirectResponse
+    {
+        $userId = $request->input('user_id');
+        $role = $request->input('role');
+        $permissions = $request->input('permissions') ?? [];
+
+        if (!$userId || !in_array($role, ['admin', 'user'])) {
+            return $response->redirect('/admin/users?error=Data+input+tidak+valid');
+        }
+
+        $user = $this->users->find($userId);
+        if (!$user) {
+            return $response->redirect('/admin/users?error=Pengguna+tidak+ditemukan');
+        }
+
+        $this->users->updateById($userId, [
+            'role' => $role,
+            'permissions' => json_encode($permissions)
+        ]);
+
+        if ($this->session->get('auth.user_id') == $userId) {
+            $this->session->set('auth.user_role', $role);
+            $this->session->set('auth.user_permissions', $permissions);
+        }
+
+        return $response->redirect('/admin/users?success=Hak+akses+pengguna+berhasil+diperbarui');
+    }
+
+    public function showProfile(Request $request, Response $response): View | RedirectResponse
+    {
+        $user = $this->user();
+        if (!$user) {
+            return $response->redirect('/login');
+        }
+
+        return $response->renderPage(['user' => $user], [
+            'path' => '/profile',
+            'meta' => ['title' => 'Profil Saya | ' . env('APP_NAME')]
+        ]);
+    }
+
+    public function updateProfile(Request $request, Response $response): RedirectResponse
+    {
+        $user = $this->user();
+        if (!$user) {
+            return $response->redirect('/login');
+        }
+
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $currentPassword = $request->input('current_password');
+        $newPassword = $request->input('new_password');
+        $newPasswordConfirmation = $request->input('new_password_confirmation');
+
+        if (!$name || !$email) {
+            return $response->redirect('/profile?error=Nama+dan+email+tidak+boleh+kosong');
+        }
+
+        if (strtolower($email) !== strtolower($user['email'])) {
+            $existing = $this->users->findByEmail($email);
+            if ($existing) {
+                return $response->redirect('/profile?error=Email+sudah+terdaftar+oleh+pengguna+lain');
+            }
+        }
+
+        $updateData = [
+            'name' => $name,
+            'email' => $email,
+        ];
+
+        if (!empty($currentPassword) || !empty($newPassword) || !empty($newPasswordConfirmation)) {
+            if (empty($currentPassword) || empty($newPassword) || empty($newPasswordConfirmation)) {
+                return $response->redirect('/profile?error=Untuk+mengganti+password,+seluruh+kolom+password+harus+diisi');
+            }
+
+            if (!$this->verifyPassword($currentPassword, $user['password'])) {
+                return $response->redirect('/profile?error=Password+saat+ini+salah');
+            }
+
+            if ($newPassword !== $newPasswordConfirmation) {
+                return $response->redirect('/profile?error=Konfirmasi+password+baru+tidak+cocok');
+            }
+
+            $validation = $this->validatePassword($newPassword);
+            if (!$validation['valid']) {
+                return $response->redirect('/profile?error=' . urlencode(implode(', ', $validation['errors'])));
+            }
+
+            $updateData['password'] = $this->hashPassword($newPassword);
+        }
+
+        $this->users->updateById($user['id'], $updateData);
+
+        $this->session->set('auth.user_name', $name);
+        $this->session->set('auth.user_email', $email);
+
+        return $response->redirect('/profile?success=Profil+Anda+berhasil+diperbarui');
     }
 }

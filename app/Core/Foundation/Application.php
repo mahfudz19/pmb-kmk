@@ -25,11 +25,16 @@ class Application
   private Response $response;
   private Container $container;
   private bool $isBooted = false;
+  private static ?Application $instance = null;
+
+  public static function getInstance(): ?self
+  {
+    return self::$instance;
+  }
 
   public function __construct()
   {
-    // Karena Container, Kernel, dan Application berada di namespace yang sama (Foundation),
-    // mereka bisa langsung dipanggil tanpa 'use'.
+    self::$instance = $this;
     $this->container = new Container();
     $this->request = new Request();
     $this->response = new Response($this->container);

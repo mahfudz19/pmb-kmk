@@ -1,9 +1,13 @@
 module.exports = {
   content: [
     "./addon/Views/layout.php",
-    "./addon/Views/dashboard/index.php",
+    "./addon/Views/dashboard/*.php",
     "./addon/Views/password/forgot.php",
     "./addon/Views/password/reset.php",
+    "./addon/Views/admin/*.php",
+    "./addon/Views/error/*.php",
+    "./addon/Views/profile.php",
+    "./addon/Views/pendaftaran/*.php",
     "./addon/Views/(auth)/login.php",
     "./addon/Views/(auth)/register.php",
     "./addon/Views/(auth)/verify-otp.php",

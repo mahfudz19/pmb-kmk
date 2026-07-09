@@ -136,3 +136,14 @@
     <a href="/login" class="font-semibold text-indigo-600 hover:text-indigo-500">Login</a>
   </p>
 </div>
+
+<?php if (isset($error)): ?>
+  <script>
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal Pendaftaran',
+      text: <?= json_encode($error) ?>,
+      confirmButtonColor: '#4f46e5'
+    });
+  </script>
+<?php endif; ?>

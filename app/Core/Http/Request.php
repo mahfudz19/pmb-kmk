@@ -101,7 +101,8 @@ class Request
   // NEW: Method untuk mengkompilasi semua input
   protected function compileInput(): void
   {
-    $this->input = array_merge($_GET, $_POST, $this->jsonInput);
+    $merged = array_merge($_GET, $_POST, $this->jsonInput);
+    $this->input = sanitize_input($merged);
   }
 
   /**

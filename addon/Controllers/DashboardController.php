@@ -1,0 +1,248 @@
+<?php
+
+namespace Addon\Controllers;
+
+use App\Core\Http\Request;
+use App\Core\Http\Response;
+use App\Core\View\View;
+use App\Core\Http\RedirectResponse;
+use App\Services\SessionService;
+
+use Addon\Models\RegistrationModel;
+use Addon\Models\RegistrationDocumentModel;
+use Addon\Models\DocumentTypeModel;
+use Addon\Models\RegistrationPaymentModel;
+use Addon\Models\AnnouncementModel;
+use Addon\Models\ReRegistrationModel;
+use Addon\Models\SelectionResultModel;
+
+class DashboardController
+{
+    public function __construct(
+        private SessionService $session,
+        private RegistrationModel $registrations,
+        private RegistrationDocumentModel $documents,
+        private DocumentTypeModel $documentTypes,
+        private RegistrationPaymentModel $payments,
+        private SelectionResultModel $selectionResults,
+        private AnnouncementModel $announcements,
+        private ReRegistrationModel $reRegistrations
+    ) {}
+
+    public function index(Request $request, Response $response): View | RedirectResponse
+    {
+        if (!$this->session->get('is_logged_in')) {
+            return $response->redirect('/login');
+        }
+
+        $role = $this->session->get('auth.user_role');
+
+        if ($role === 'admin' || has_any_permission(['manage_users', 'verify_payment', 'verify_document', 'manage_selection', 'manage_settings'])) {
+            $db = $this->registrations->getDb();
+            
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM registrations");
+            $stmt->execute();
+            $totalApplicants = $stmt->fetch()['total'] ?? 0;
+
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM registration_payments WHERE status = 'Approved'");
+            $stmt->execute();
+            $totalPayments = $stmt->fetch()['total'] ?? 0;
+
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM registrations WHERE status = 'Verified'");
+            $stmt->execute();
+            $totalVerifications = $stmt->fetch()['total'] ?? 0;
+
+            $stmt = $db->prepare("SELECT COUNT(*) as total FROM selection_results WHERE status = 'Lulus'");
+            $stmt->execute();
+            $totalAccepted = $stmt->fetch()['total'] ?? 0;
+
+            $stats = [
+                'total_applicants' => $totalApplicants,
+                'total_payments' => $totalPayments,
+                'total_verifications' => $totalVerifications,
+                'total_accepted' => $totalAccepted,
+            ];
+
+            $stmt = $db->prepare("
+                SELECT DATE(created_at) as date, COUNT(*) as count 
+                FROM registrations 
+                WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+                GROUP BY DATE(created_at)
+                ORDER BY DATE(created_at) ASC
+            ");
+            $stmt->execute();
+            $rawTrend = $stmt->fetchAll();
+
+            $trendData = [];
+            $trendLabels = [];
+            $daysIndo = [
+                'Mon' => 'Senin', 'Tue' => 'Selasa', 'Wed' => 'Rabu', 
+                'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu', 'Sun' => 'Minggu'
+            ];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = date('Y-m-d', strtotime("-$i days"));
+                $dayName = date('D', strtotime($date));
+                $trendLabels[] = $daysIndo[$dayName] ?? $dayName;
+                
+                $count = 0;
+                foreach ($rawTrend as $t) {
+                    if ($t['date'] === $date) {
+                        $count = (int)$t['count'];
+                        break;
+                    }
+                }
+                $trendData[] = $count;
+            }
+
+            $stmt = $db->prepare("
+                SELECT sp.name as program_name, COUNT(rp.id) as count
+                FROM study_programs sp
+                LEFT JOIN registration_programs rp ON rp.program1_id = sp.id
+                GROUP BY sp.id, sp.name
+                ORDER BY count DESC
+                LIMIT 5
+            ");
+            $stmt->execute();
+            $rawPrograms = $stmt->fetchAll();
+            
+            $programLabels = [];
+            $programData = [];
+            foreach ($rawPrograms as $p) {
+                $programLabels[] = $p['program_name'];
+                $programData[] = (int)$p['count'];
+            }
+
+            $stmt = $db->prepare("
+                SELECT * FROM audit_logs 
+                ORDER BY created_at DESC 
+                LIMIT 5
+            ");
+            $stmt->execute();
+            $recentActivities = $stmt->fetchAll();
+
+            return $response->renderPage([
+                'stats' => $stats,
+                'trend_labels' => $trendLabels,
+                'trend_data' => $trendData,
+                'program_labels' => $programLabels,
+                'program_data' => $programData,
+                'recent_activities' => $recentActivities
+            ], [
+                'path' => '/dashboard/admin',
+                'meta' => ['title' => 'Admin Dashboard | ' . env('APP_NAME')]
+            ]);
+        }
+
+        $userId = $this->session->get('auth.user_id');
+        $registration = $this->registrations->findByUserId($userId);
+
+        $state = $this->session->get('registration_state') ?? 'belum_daftar';
+
+        $uploadedDocs = [];
+        $documentTypesList = [];
+        $payment = null;
+        $selectionResult = null;
+        $passedProgram = null;
+
+        if ($registration) {
+            $documentTypesList = $this->documentTypes->all();
+            $docs = $this->documents->findByRegistrationId($registration['id']);
+            foreach ($docs as $d) {
+                $uploadedDocs[$d['document_type_id']] = $d;
+            }
+
+            $payment = $this->payments->findByRegistrationId($registration['id']);
+            $selectionResult = $this->selectionResults->findByRegistrationId($registration['id']);
+            if ($selectionResult && $selectionResult['passed_program_id']) {
+                $stmt = $this->registrations->getDb()->prepare("SELECT * FROM study_programs WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => $selectionResult['passed_program_id']]);
+                $passedProgram = $stmt->fetch() ?: null;
+            }
+
+            if ($registration['status'] === 'Draft') {
+                $state = 'belum_daftar';
+            } else if ($registration['status'] === 'Submitted') {
+                if (!$payment) {
+                    $state = 'belum_bayar';
+                } else if ($payment['status'] === 'Pending') {
+                    $state = 'verifikasi_pembayaran';
+                } else if ($payment['status'] === 'Rejected') {
+                    $state = 'belum_bayar';
+                } else if ($payment['status'] === 'Approved') {
+                    $allRequiredUploaded = true;
+                    $allRequiredApproved = true;
+                    foreach ($documentTypesList as $dt) {
+                        if ($dt['is_required']) {
+                            $doc = $uploadedDocs[$dt['id']] ?? null;
+                            if (!$doc) {
+                                $allRequiredUploaded = false;
+                                $allRequiredApproved = false;
+                            } else {
+                                if ($doc['status'] !== 'Approved') {
+                                    $allRequiredApproved = false;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!$allRequiredUploaded) {
+                        $state = 'upload_berkas';
+                    } else if (!$allRequiredApproved) {
+                        $state = 'verifikasi_berkas';
+                    } else {
+                        $state = 'ujian_seleksi';
+                        if ($selectionResult && (int)$selectionResult['is_published'] === 1) {
+                            if ($selectionResult['status'] === 'Lulus') {
+                                $state = 'lolos';
+                            } else if ($selectionResult['status'] === 'Tidak Lulus') {
+                                $state = 'tidak_lolos';
+                            } else if ($selectionResult['status'] === 'Cadangan') {
+                                $state = 'lolos';
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            $state = 'belum_daftar';
+        }
+
+        $reReg = $registration ? $this->reRegistrations->findByRegistrationId($registration['id']) : null;
+        $activeAnnouncement = $this->announcements->getActive();
+
+        return $response->renderPage([
+            'state' => $state,
+            'registration' => $registration,
+            'document_types' => $documentTypesList,
+            'uploaded_docs' => $uploadedDocs,
+            'payment' => $payment,
+            'selection_result' => $selectionResult,
+            'passed_program' => $passedProgram,
+            'active_announcement' => $activeAnnouncement,
+            're_registration' => $reReg
+        ], [
+            'path' => '/dashboard/student',
+            'meta' => ['title' => 'Dashboard Pendaftaran | ' . env('APP_NAME')]
+        ]);
+    }
+
+    public function simulateState(Request $request, Response $response): RedirectResponse
+    {
+        $state = $request->input('state');
+        if (in_array($state, ['belum_daftar', 'belum_bayar', 'verifikasi_pembayaran', 'upload_berkas', 'verifikasi_berkas', 'ujian_seleksi', 'lolos', 'tidak_lolos'])) {
+            $this->session->set('registration_state', $state);
+        }
+        return $response->redirect('/dashboard');
+    }
+
+    public function markNotificationsRead(Request $request, Response $response): RedirectResponse
+    {
+        $userId = $this->session->get('auth.user_id');
+        if ($userId) {
+            $db = $this->registrations->getDb();
+            $stmt = $db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = :user_id OR user_id IS NULL");
+            $stmt->execute(['user_id' => $userId]);
+        }
+        return $response->redirect('/dashboard');
+    }
+}

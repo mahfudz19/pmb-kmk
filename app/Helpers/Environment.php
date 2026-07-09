@@ -611,14 +611,28 @@ if (!function_exists('asset')) {
     }
 
     $path = ltrim($path, '/');
+    $altPath = str_replace('/', '\\', $path);
+    $altPath2 = str_replace('\\', '/', $path);
 
-    // Cek apakah ada di manifest
     if (isset($manifest[$path])) {
       return getBaseUrl('build/' . $manifest[$path]);
     }
+    if (isset($manifest[$altPath])) {
+      return getBaseUrl('build/' . $manifest[$altPath]);
+    }
+    if (isset($manifest[$altPath2])) {
+      return getBaseUrl('build/' . $manifest[$altPath2]);
+    }
 
-    // Fallback development (langsung ke build path)
-    return getBaseUrl('build/' . $path);
+    $filePath = __DIR__ . '/../../public/build/' . $path;
+    if (!file_exists($filePath)) {
+      $filePath = __DIR__ . '/../../public/build/' . $altPath;
+    }
+    if (!file_exists($filePath)) {
+      $filePath = __DIR__ . '/../../public/build/' . $altPath2;
+    }
+    $version = file_exists($filePath) ? filemtime($filePath) : time();
+    return getBaseUrl('build/' . str_replace('\\', '/', $path)) . '?v=' . $version;
   }
 }
 
@@ -661,5 +675,200 @@ if (!function_exists('logger')) {
       }
     };
     return $l;
+  }
+}
+
+if (!function_exists('has_permission')) {
+  function has_permission(string $permission): bool
+  {
+    if (session_status() === PHP_SESSION_NONE) {
+      session_start();
+    }
+
+    $role = $_SESSION['auth.user_role'] ?? 'user';
+    if ($role === 'admin') {
+      return true;
+    }
+
+    $permissions = $_SESSION['auth.user_permissions'] ?? [];
+    return in_array('*', $permissions, true) || in_array($permission, $permissions, true);
+  }
+}
+
+if (!function_exists('has_any_permission')) {
+  function has_any_permission(array $permissions): bool
+  {
+    foreach ($permissions as $permission) {
+      if (has_permission($permission)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+if (!function_exists('send_system_notification')) {
+  function send_system_notification(?int $userId, string $title, string $message, string $type = 'info'): bool
+  {
+    $app = \App\Core\Foundation\Application::getInstance();
+    if (!$app) {
+      return false;
+    }
+    $dbManager = $app->getContainer()->resolve(\App\Core\Database\DatabaseManager::class);
+    $db = $dbManager->connection();
+
+    $stmt = $db->prepare("INSERT INTO notifications (user_id, title, message, type, is_read, created_at, updated_at) VALUES (:user_id, :title, :message, :type, 0, NOW(), NOW())");
+    $res1 = $stmt->execute([
+      'user_id' => $userId,
+      'title' => $title,
+      'message' => $message,
+      'type' => $type
+    ]);
+
+    $email = null;
+    if ($userId) {
+      $stmt = $db->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+      $stmt->execute(['user_id' => $userId]);
+      $row = $stmt->fetch();
+      if ($row) {
+        $email = $row['email'];
+      }
+    }
+
+    $stmt = $db->prepare("INSERT INTO notification_history (user_id, recipient_email, channel, title, content, status, created_at, updated_at) VALUES (:user_id, :recipient_email, 'system', :title, :content, 'sent', NOW(), NOW())");
+    $res2 = $stmt->execute([
+      'user_id' => $userId,
+      'recipient_email' => $email,
+      'title' => $title,
+      'content' => $message
+    ]);
+
+    return $res1 && $res2;
+  }
+}
+
+if (!function_exists('send_email_notification')) {
+  function send_email_notification(?int $userId, ?string $recipientEmail, string $title, string $content): bool
+  {
+    $app = \App\Core\Foundation\Application::getInstance();
+    if (!$app) {
+      return false;
+    }
+    $dbManager = $app->getContainer()->resolve(\App\Core\Database\DatabaseManager::class);
+    $db = $dbManager->connection();
+
+    if (!$recipientEmail && $userId) {
+      $stmt = $db->prepare("SELECT email FROM users WHERE id = :user_id LIMIT 1");
+      $stmt->execute(['user_id' => $userId]);
+      $row = $stmt->fetch();
+      if ($row) {
+        $recipientEmail = $row['email'];
+      }
+    }
+
+    $stmt = $db->prepare("INSERT INTO notification_history (user_id, recipient_email, channel, title, content, status, created_at, updated_at) VALUES (:user_id, :recipient_email, 'email', :title, :content, 'sent', NOW(), NOW())");
+    return $stmt->execute([
+      'user_id' => $userId,
+      'recipient_email' => $recipientEmail,
+      'title' => $title,
+      'content' => $content
+    ]);
+  }
+}
+
+if (!function_exists('get_setting')) {
+  function get_setting(string $key, string $default = ''): string
+  {
+    $app = \App\Core\Foundation\Application::getInstance();
+    if (!$app) {
+      return $default;
+    }
+    try {
+      $dbManager = $app->getContainer()->resolve(\App\Core\Database\DatabaseManager::class);
+      $db = $dbManager->connection();
+      $stmt = $db->prepare("SELECT value FROM settings WHERE `key` = :key LIMIT 1");
+      $stmt->execute(['key' => $key]);
+      $row = $stmt->fetch();
+      return $row ? (string)$row['value'] : $default;
+    } catch (\Throwable $e) {
+      return $default;
+    }
+  }
+}
+
+if (!function_exists('get_registration_number')) {
+  function get_registration_number($registration): string
+  {
+    $app = \App\Core\Foundation\Application::getInstance();
+    if (!$app) {
+      return '#' . (is_array($registration) ? $registration['id'] : $registration);
+    }
+    
+    $regId = is_array($registration) ? $registration['id'] : (int)$registration;
+    
+    $dbManager = $app->getContainer()->resolve(\App\Core\Database\DatabaseManager::class);
+    $db = $dbManager->connection();
+    
+    $stmt = $db->prepare("SELECT value FROM settings WHERE `key` = 'registration_number_format' LIMIT 1");
+    $stmt->execute();
+    $row = $stmt->fetch();
+    $format = $row['value'] ?? 'PMB-{YEAR}-{SEQ}';
+    
+    $year = date('Y');
+    if (is_array($registration) && !empty($registration['created_at'])) {
+      $year = date('Y', strtotime($registration['created_at']));
+    }
+    
+    $seq = str_pad((string)$regId, 4, '0', STR_PAD_LEFT);
+    return str_replace(['{YEAR}', '{SEQ}'], [$year, $seq], $format);
+  }
+}
+
+if (!function_exists('sanitize_input')) {
+  function sanitize_input(mixed $value): mixed
+  {
+    if (is_array($value)) {
+      return array_map('sanitize_input', $value);
+    }
+    if (is_string($value)) {
+      $cleaned = str_replace(chr(0), '', $value);
+      return strip_tags($cleaned);
+    }
+    return $value;
+  }
+}
+
+if (!function_exists('log_activity')) {
+  function log_activity(string $activity, string $description): bool
+  {
+    $app = \App\Core\Foundation\Application::getInstance();
+    if (!$app) {
+      return false;
+    }
+    try {
+      $dbManager = $app->getContainer()->resolve(\App\Core\Database\DatabaseManager::class);
+      $db = $dbManager->connection();
+      
+      if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+      }
+      
+      $userId = $_SESSION['auth.user_id'] ?? null;
+      $username = $_SESSION['auth.user_email'] ?? $_SESSION['auth.user_name'] ?? 'Guest';
+      $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+      $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+
+      $stmt = $db->prepare("INSERT INTO audit_logs (user_id, username, ip_address, user_agent, activity, description, created_at, updated_at) VALUES (:user_id, :username, :ip_address, :user_agent, :activity, :description, NOW(), NOW())");
+      return $stmt->execute([
+        'user_id' => $userId,
+        'username' => $username,
+        'ip_address' => $ipAddress,
+        'user_agent' => $userAgent,
+        'activity' => $activity,
+        'description' => $description
+      ]);
+    } catch (\Throwable $e) {
+      return false;
+    }
   }
 }

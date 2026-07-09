@@ -34,6 +34,23 @@ class SessionService
     }
 
     $this->isStarted = true;
+
+    $now = time();
+    $timeout = 15 * 60;
+    if (isset($_SESSION['auth.user_id'])) {
+      if (isset($_SESSION['last_activity']) && ($now - $_SESSION['last_activity']) > $timeout) {
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+          $params = session_get_cookie_params();
+          setcookie(session_name(), '', time() - 42000, $params['path'] ?? '/', $params['domain'] ?? '', !empty($params['secure']), !empty($params['httponly']));
+        }
+        session_destroy();
+        $this->isStarted = false;
+        header("Location: /login?error=Sesi+Anda+telah+berakhir.+Silakan+masuk+kembali.");
+        exit();
+      }
+      $_SESSION['last_activity'] = $now;
+    }
   }
 
   public function get(string $key, $default = null)

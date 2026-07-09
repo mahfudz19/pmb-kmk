@@ -278,10 +278,41 @@ async function loadContent(url, options = {}) {
     }
   }
 
-  // Jika belum ada cache, tampilkan loading spinner
-  if (!isServedFromCache && loadingContainer) {
-    loadingContainer.style.opacity = "0.5";
-    loadingContainer.style.pointerEvents = "none";
+  let originalHTML = null;
+  let isAuthRoute = false;
+  try {
+    if (url) {
+      const urlStr = typeof url === "string" ? url : url.toString();
+      const path = urlStr.startsWith("/") || urlStr.startsWith("?") || urlStr.startsWith("#")
+        ? new URL(urlStr, window.location.origin).pathname
+        : new URL(urlStr).pathname;
+      isAuthRoute = /^\/(login|register|password|verify-otp|otp-sent|logout|resend-otp|resend-verification)/.test(path);
+    }
+  } catch (e) {
+    console.error("SPA url parse error:", e);
+  }
+
+  if (isAuthRoute) {
+    if (!isServedFromCache && loadingContainer) {
+      loadingContainer.style.opacity = "0.5";
+      loadingContainer.style.pointerEvents = "none";
+    }
+  } else {
+    if (!isServedFromCache && loadingContainer) {
+      originalHTML = loadingContainer.innerHTML;
+      loadingContainer.innerHTML = `
+        <div class="space-y-6 animate-pulse p-6 md:p-8">
+          <div class="h-20 bg-slate-100 rounded-3xl w-full"></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="h-28 bg-slate-100 rounded-3xl"></div>
+            <div class="h-28 bg-slate-100 rounded-3xl"></div>
+            <div class="h-28 bg-slate-100 rounded-3xl"></div>
+          </div>
+          <div class="h-64 bg-slate-100 rounded-3xl w-full"></div>
+        </div>
+      `;
+      loadingContainer.style.pointerEvents = "none";
+    }
   }
 
   // Persiapan Request
@@ -392,22 +423,20 @@ async function loadContent(url, options = {}) {
       window.location.href = url;
     }
   } catch (error) {
-    // Abaikan error akibat pembatalan manual (Navigasi baru dimulai)
     if (error.name === "AbortError") {
       console.log("SPA Navigation aborted:", url);
       return;
     }
 
     console.error("SPA Navigation Error:", error);
-    // Jika error dan kita tidak punya cache, baru redirect/reload
     if (!isServedFromCache) {
+      if (loadingContainer && originalHTML !== null) {
+        loadingContainer.innerHTML = originalHTML;
+      }
       window.location.href = url;
     }
   } finally {
-    // Hanya bersihkan UI jika request ini adalah request yang aktif
-    // Jika request ini dibatalkan oleh request baru, biarkan request baru yang mengurus UI
     if (activeNavigationController === controller) {
-      // Bersihkan loading state
       if (loadingContainer) {
         loadingContainer.style.opacity = "1";
         loadingContainer.style.pointerEvents = "auto";

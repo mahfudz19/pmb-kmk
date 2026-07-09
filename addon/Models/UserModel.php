@@ -33,31 +33,46 @@ class UserModel extends Model
         'google_id' => ['type' => 'string', 'nullable' => true, 'unique' => true],
         'avatar_url' => ['type' => 'string', 'nullable' => true],
         'last_login_at' => ['type' => 'datetime', 'nullable' => true],
-        'role' => ['type' => 'enum', 'values' => ['admin', 'user'], 'nullable' => false, 'default' => 'user']
+        'role' => ['type' => 'enum', 'values' => ['admin', 'user'], 'nullable' => false, 'default' => 'user'],
+        'permissions' => ['type' => 'text', 'nullable' => true]
     ];
 
     protected array $seed = [
         [
-            'email' => 'admin@pmb.com',
-            'password' => '$2y$10$XlyT7neGvzxYcZ5v.4gsP.QFqRq7UG8nNrJF1Bk4fiP/vQUCqXlDm', // password123
-            'name' => 'Admin PMB KMK',
+            'email' => 'abdoerrahiem@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
+            'name' => 'Super Admin',
             'avatar' => null,
             'is_active' => 1,
             'last_login_at' => null,
             'role' => 'admin',
             'google_id' => null,
             'avatar_url' => null,
+            'permissions' => '["*"]'
         ],
         [
-            'email' => 'user@example.com',
-            'password' => '$2y$10$XlyT7neGvzxYcZ5v.4gsP.QFqRq7UG8nNrJF1Bk4fiP/vQUCqXlDm', // password123
-            'name' => 'Regular User',
+            'email' => 'abdoerrahiem.iphone@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
+            'name' => 'Admin Terbatas',
             'avatar' => null,
             'is_active' => 1,
             'last_login_at' => null,
             'role' => 'user',
             'google_id' => null,
             'avatar_url' => null,
+            'permissions' => '["verify_payment","verify_document","manage_selection"]'
+        ],
+        [
+            'email' => 'abdoerrahiem3@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
+            'name' => 'Abdoerrahiem',
+            'avatar' => null,
+            'is_active' => 1,
+            'last_login_at' => null,
+            'role' => 'user',
+            'google_id' => null,
+            'avatar_url' => null,
+            'permissions' => '["view_dashboard"]'
         ]
     ];
 
@@ -187,6 +202,24 @@ class UserModel extends Model
             return $user['role'] === $role;
         }
         return false;
+    }
+
+    public function hasPermission(array $user, string $permission): bool
+    {
+        if (isset($user['role']) && $user['role'] === 'admin') {
+            return true;
+        }
+
+        if (empty($user['permissions'])) {
+            return false;
+        }
+
+        $permissions = json_decode($user['permissions'], true);
+        if (!is_array($permissions)) {
+            return false;
+        }
+
+        return in_array('*', $permissions, true) || in_array($permission, $permissions, true);
     }
 
 }

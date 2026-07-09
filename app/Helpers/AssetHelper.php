@@ -21,13 +21,29 @@ if (!function_exists('asset')) {
     }
 
     $path = ltrim($path, '/');
+    $altPath = str_replace('/', '\\', $path);
+    $altPath2 = str_replace('\\', '/', $path);
 
-    // Cek apakah ada di manifest
-    if (isProduction() && isset($manifest[$path])) {
-      return getBaseUrl('build/' . $manifest[$path]);
+    if (isProduction()) {
+      if (isset($manifest[$path])) {
+        return getBaseUrl('build/' . $manifest[$path]);
+      }
+      if (isset($manifest[$altPath])) {
+        return getBaseUrl('build/' . $manifest[$altPath]);
+      }
+      if (isset($manifest[$altPath2])) {
+        return getBaseUrl('build/' . $manifest[$altPath2]);
+      }
     }
 
-    // Fallback development (langsung ke build path)
-    return getBaseUrl('build/' . $path);
+    $filePath = __DIR__ . '/../../public/build/' . $path;
+    if (!file_exists($filePath)) {
+      $filePath = __DIR__ . '/../../public/build/' . $altPath;
+    }
+    if (!file_exists($filePath)) {
+      $filePath = __DIR__ . '/../../public/build/' . $altPath2;
+    }
+    $version = file_exists($filePath) ? filemtime($filePath) : time();
+    return getBaseUrl('build/' . str_replace('\\', '/', $path)) . '?v=' . $version;
   }
 }

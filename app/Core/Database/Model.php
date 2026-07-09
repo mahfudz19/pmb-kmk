@@ -68,4 +68,87 @@ abstract class Model
   {
     return $this->seed;
   }
+
+  public function all(): array
+  {
+    $stmt = $this->db->prepare("SELECT * FROM {$this->table}");
+    $stmt->execute();
+    return $stmt->fetchAll();
+  }
+
+  public function find(string|int $id): ?array
+  {
+    $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1");
+    $stmt->execute(['id' => $id]);
+    $row = $stmt->fetch();
+    return $row === false ? null : $row;
+  }
+
+  public function insert(array $data): int
+  {
+    $validData = [];
+    foreach ($data as $key => $value) {
+      if (isset($this->schema[$key]) && $key !== 'id') {
+        $validData[$key] = $value;
+      }
+    }
+
+    if ($this->timestamps) {
+      $created = $this->createdAtColumn;
+      $updated = $this->updatedAtColumn;
+      if (isset($this->schema[$created]) && !isset($validData[$created])) {
+        $validData[$created] = date('Y-m-d H:i:s');
+      }
+      if (isset($this->schema[$updated]) && !isset($validData[$updated])) {
+        $validData[$updated] = date('Y-m-d H:i:s');
+      }
+    }
+
+    $columns = implode(', ', array_keys($validData));
+    $placeholders = ':' . implode(', :', array_keys($validData));
+    $sql = "INSERT INTO {$this->table} ($columns) VALUES ($placeholders)";
+
+    if ($this->db->query($sql, $validData)) {
+      return (int) $this->db->lastInsertId();
+    }
+
+    throw new \PDOException("Gagal menyisipkan data baru");
+  }
+
+  public function updateById(string|int $id, array $data): bool
+  {
+    $validData = [];
+    foreach ($data as $key => $value) {
+      if (isset($this->schema[$key]) && $key !== 'id') {
+        $validData[$key] = $value;
+      }
+    }
+
+    if (empty($validData)) {
+      return false;
+    }
+
+    if ($this->timestamps) {
+      $updated = $this->updatedAtColumn;
+      if (isset($this->schema[$updated]) && !isset($validData[$updated])) {
+        $validData[$updated] = date('Y-m-d H:i:s');
+      }
+    }
+
+    $setParts = [];
+    foreach ($validData as $column => $value) {
+      $setParts[] = "{$column} = :{$column}";
+    }
+
+    $sql = "UPDATE {$this->table} SET " . implode(', ', $setParts) . " WHERE id = :id";
+    $validData['id'] = $id;
+
+    return $this->db->query($sql, $validData);
+  }
+
+  public function deleteById(string|int $id): bool
+  {
+    $sql = "DELETE FROM {$this->table} WHERE id = :id";
+    return $this->db->query($sql, ['id' => $id]);
+  }
 }

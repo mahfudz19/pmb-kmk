@@ -97,3 +97,14 @@
     <a href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">Daftar Sekarang</a>
   </p>
 </div>
+
+<?php if (isset($error)): ?>
+  <script>
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal Login',
+      text: <?= json_encode($error) ?>,
+      confirmButtonColor: '#4f46e5'
+    });
+  </script>
+<?php endif; ?>
