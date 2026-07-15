@@ -344,7 +344,37 @@ class RegistrationController
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+valid+atau+sudah+dikunci');
         }
 
-        // Finalize pendaftaran
+        $regId = $registration['id'];
+
+        $ayId = $request->input('academic_year_id');
+        $waveId = $request->input('wave_id');
+        $pathId = $request->input('admission_path_id');
+        $classId = $request->input('class_id');
+        $prog1Id = $request->input('program1_id');
+        $prog2Id = $request->input('program2_id') ?: null;
+
+        if ($ayId && $waveId && $pathId && $classId && $prog1Id) {
+            $this->registrations->updateById($regId, [
+                'academic_year_id' => $ayId,
+                'wave_id' => $waveId,
+                'admission_path_id' => $pathId,
+                'class_id' => $classId
+            ]);
+
+            $progData = [
+                'registration_id' => $regId,
+                'program1_id' => $prog1Id,
+                'program2_id' => $prog2Id
+            ];
+
+            $existingProg = $this->programs->findByRegistrationId($regId);
+            if ($existingProg) {
+                $this->programs->updateById($existingProg['id'], $progData);
+            } else {
+                $this->programs->insert($progData);
+            }
+        }
+
         $this->registrations->updateById($registration['id'], [
             'status' => 'Submitted'
         ]);

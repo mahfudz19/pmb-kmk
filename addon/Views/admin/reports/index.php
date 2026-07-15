@@ -129,7 +129,7 @@
   <div id="tab-finance" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Ringkasan Penerimaan Keuangan</h3>
-      <a href="/admin/reports/export/finance" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="/admin/reports/export/finance" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Keuangan (CSV)
       </a>
     </div>
@@ -205,7 +205,7 @@
   <div id="tab-selection" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Statistik Hasil Ujian & Seleksi</h3>
-      <a href="/admin/reports/export/selection" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="/admin/reports/export/selection" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Seleksi (CSV)
       </a>
     </div>
@@ -290,7 +290,7 @@
   <div id="tab-rereg" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Rekapitulasi Daftar Ulang Mahasiswa Baru</h3>
-      <a href="/admin/reports/export/re-registrations" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-650 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="/admin/reports/export/re-registrations" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Daftar Ulang (CSV)
       </a>
     </div>

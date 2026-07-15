@@ -119,7 +119,7 @@
 </div>
 
 <!-- Hidden File Inputs Holder -->
-<form id="hidden-upload-form" class="hidden">
+<form id="hidden-upload-form" method="POST" class="hidden">
   <input type="file" id="hidden-file-input" name="document" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileSelected(event)">
   <input type="hidden" id="hidden-doc-type-id" name="document_type_id">
 </form>

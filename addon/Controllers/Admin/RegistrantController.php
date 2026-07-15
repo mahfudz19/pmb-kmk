@@ -801,7 +801,7 @@ class RegistrantController
         if (!$this->session->get('is_logged_in')) {
             return $response->redirect('/login');
         }
-        $userId = $this->session->get('user_id');
+        $userId = $this->session->get('auth.user_id');
         $registration = $this->registrations->findByUserId($userId);
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');
@@ -814,7 +814,7 @@ class RegistrantController
         if (!$this->session->get('is_logged_in')) {
             return $response->redirect('/login');
         }
-        $userId = $this->session->get('user_id');
+        $userId = $this->session->get('auth.user_id');
         $registration = $this->registrations->findByUserId($userId);
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');

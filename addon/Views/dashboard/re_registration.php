@@ -47,8 +47,8 @@
     <div class="lg:col-span-1 space-y-6">
       <!-- Program Info Card -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Informasi Program Studi</h3>
-        <div class="space-y-3">
+        <h3 class="text-sm font-bold text-slate-850 border-b border-slate-100 pb-4">Informasi Program Studi</h3>
+        <div class="space-y-3 pt-1">
           <div>
             <span class="text-[10px] text-slate-400 block font-medium">Program Studi Penerimaan</span>
             <span class="text-sm font-extrabold text-slate-800"><?= htmlspecialchars($program_name) ?></span>
@@ -62,8 +62,8 @@
 
       <!-- Bank Transfer Instructions -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Panduan Pembayaran</h3>
-        <p class="text-xs text-slate-500 leading-relaxed">Silakan transfer nominal UKT Semester 1 di atas ke rekening bank resmi kampus berikut:</p>
+        <h3 class="text-sm font-bold text-slate-850 border-b border-slate-100 pb-4">Panduan Pembayaran</h3>
+        <p class="text-xs text-slate-500 leading-relaxed pt-1">Silakan transfer nominal UKT Semester 1 di atas ke rekening bank resmi kampus berikut:</p>
         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">Bank</span>
@@ -88,11 +88,10 @@
     </div>
 
     <!-- Right Column: Re-registration Upload Form -->
-    <div class="lg:col-span-2">
-      <form action="/pendaftaran/daftar-ulang/submit" method="POST" enctype="multipart/form-data" class="space-y-6">
-        <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="/pendaftaran/daftar-ulang/submit" method="POST" enctype="multipart/form-data" class="lg:col-span-2" style="margin: 0; padding: 0;">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 class="text-base font-bold text-slate-900">Upload Dokumen & Bukti Bayar</h2>
+            <h2 class="text-sm font-bold text-slate-850">Upload Dokumen & Bukti Bayar</h2>
             <?php if ($re_registration): ?>
               <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-100 text-emerald-800' : ($re_registration['status'] === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') ?>">
                 Status: <?= $re_registration['status'] === 'Approved' ? 'Disetujui' : ($re_registration['status'] === 'Rejected' ? 'Ditolak' : 'Menunggu Verifikasi') ?>
@@ -118,49 +117,65 @@
             $isApproved = $re_registration && $re_registration['status'] === 'Approved'; 
           ?>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="space-y-4">
             <!-- SKL File -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-700">Scan Ijazah Asli / SKL (PDF/JPG/PNG, Max 2MB) <span class="text-red-500">*</span></label>
-              <input type="file" name="skl_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              <?php if ($re_registration && $re_registration['skl_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=skl" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-650 hover:underline">
-                  👁️ Lihat Berkas Terunggah
-                </a>
-              <?php endif; ?>
+            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Scan Ijazah Asli / SKL (PDF/JPG/PNG, Max 2MB) <span class="text-red-500">*</span></label>
+                <?php if ($re_registration && $re_registration['skl_path']): ?>
+                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=skl" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
+                    👁️ Lihat Berkas Terunggah
+                  </a>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center">
+                <input type="file" name="skl_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
+              </div>
             </div>
 
             <!-- Health Certificate File -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-700">Scan Surat Keterangan Sehat / Bebas Narkoba <span class="text-red-500">*</span></label>
-              <input type="file" name="health_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              <?php if ($re_registration && $re_registration['health_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=health" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-650 hover:underline">
-                  👁️ Lihat Berkas Terunggah
-                </a>
-              <?php endif; ?>
+            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Scan Surat Keterangan Sehat / Bebas Narkoba <span class="text-red-500">*</span></label>
+                <?php if ($re_registration && $re_registration['health_path']): ?>
+                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=health" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
+                    👁️ Lihat Berkas Terunggah
+                  </a>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center">
+                <input type="file" name="health_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
+              </div>
             </div>
 
             <!-- Statement File -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-700">Scan Surat Pernyataan Mahasiswa Baru <span class="text-red-500">*</span></label>
-              <input type="file" name="statement_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              <?php if ($re_registration && $re_registration['statement_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=statement" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-650 hover:underline">
-                  👁️ Lihat Berkas Terunggah
-                </a>
-              <?php endif; ?>
+            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Scan Surat Pernyataan Mahasiswa Baru <span class="text-red-500">*</span></label>
+                <?php if ($re_registration && $re_registration['statement_path']): ?>
+                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=statement" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
+                    👁️ Lihat Berkas Terunggah
+                  </a>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center">
+                <input type="file" name="statement_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
+              </div>
             </div>
 
             <!-- Payment Receipt File -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-700">Bukti Pembayaran UKT Semester 1 <span class="text-red-500">*</span></label>
-              <input type="file" name="payment_file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              <?php if ($re_registration && $re_registration['payment_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=payment" target="_blank" class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-650 hover:underline">
-                  👁️ Lihat Bukti Terunggah
-                </a>
-              <?php endif; ?>
+            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Bukti Pembayaran UKT Semester 1 <span class="text-red-500">*</span></label>
+                <?php if ($re_registration && $re_registration['payment_path']): ?>
+                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=payment" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
+                    👁️ Lihat Bukti Terunggah
+                  </a>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center">
+                <input type="file" name="payment_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
+              </div>
             </div>
           </div>
 
@@ -168,14 +183,15 @@
             <div>
               <label for="payment_amount" class="block text-xs font-bold text-slate-700">Nominal Transfer Pembayaran (Rp) <span class="text-red-500">*</span></label>
               <div class="mt-1.5 relative rounded-xl shadow-sm">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="position: absolute; top: 0; bottom: 0; left: 12px; display: flex; align-items: center; pointer-events: none; z-index: 10;">
                   <span class="text-xs text-slate-400 font-semibold">Rp</span>
                 </div>
                 <input
                   type="text"
                   name="payment_amount"
                   id="payment_amount"
-                  class="block w-full pl-9 pr-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
+                  style="padding-left: 44px !important;"
+                  class="block w-full pr-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
                   placeholder="Contoh: <?= number_format($tuition_fee, 0, '', '') ?>"
                   value="<?= $re_registration ? number_format($re_registration['payment_amount'], 0, '', '') : '' ?>"
                   <?= $isApproved ? 'disabled' : 'required' ?>
@@ -193,6 +209,5 @@
           <?php endif; ?>
         </div>
       </form>
-    </div>
   </div>
 </div>

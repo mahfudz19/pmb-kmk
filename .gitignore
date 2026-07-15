@@ -4,3 +4,4 @@ vendor
 storage/secrets/*
 prd.md
 tasks.md
+walkthrough.md

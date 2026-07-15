@@ -396,7 +396,7 @@
             <a href="/pendaftaran/kelulusan/download" download class="inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-full shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all">
               📄 Cetak Surat Kelulusan
             </a>
-            <a data-spa href="/pendaftaran/daftar-ulang" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white <?= $re_registration && $re_registration['status'] === 'Approved' ? 'bg-slate-600 hover:bg-slate-700' : 'bg-emerald-600 hover:bg-emerald-700' ?> transition-all hover:-translate-y-0.5">
+            <a data-spa href="/pendaftaran/daftar-ulang" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white <?= $re_registration && $re_registration['status'] === 'Approved' ? 'bg-slate-800 hover:bg-slate-900' : 'bg-emerald-600 hover:bg-emerald-700' ?> transition-all hover:-translate-y-0.5">
               💳 <?= $re_registration ? ($re_registration['status'] === 'Approved' ? 'Lihat Berkas Daftar Ulang' : ($re_registration['status'] === 'Rejected' ? 'Perbaiki Daftar Ulang' : 'Detail Daftar Ulang')) : 'Lanjut Daftar Ulang' ?>
             </a>
           </div>
