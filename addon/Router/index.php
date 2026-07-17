@@ -84,6 +84,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     // Admin Registrant Management
     $router->get('/admin/registrants', [RegistrantController::class, 'listRegistrants']);
     $router->get('/admin/registrants/detail', [RegistrantController::class, 'showDetail']);
+    $router->post('/admin/registrants/exam-stage/save', [RegistrantController::class, 'saveExamStageStatus']);
     $router->get('/admin/registrants/edit', [RegistrantController::class, 'editRegistrantForm']);
     $router->post('/admin/registrants/update', [RegistrantController::class, 'updateRegistrant']);
     $router->get('/admin/registrants/export/pdf', [RegistrantController::class, 'exportPdf']);
@@ -142,6 +143,8 @@ $router->group(['middleware' => ['auth', 'permission:manage_settings']], functio
     $router->post('/admin/master/create', [MasterController::class, 'create']);
     $router->post('/admin/master/update', [MasterController::class, 'update']);
     $router->post('/admin/master/delete', [MasterController::class, 'delete']);
+    $router->get('/admin/master/wave-detail', [MasterController::class, 'waveDetail']);
+    $router->post('/admin/master/wave-detail/save', [MasterController::class, 'saveWaveDetail']);
 
     // System Settings
     $router->get('/admin/settings', [\Addon\Controllers\Admin\SettingController::class, 'index']);

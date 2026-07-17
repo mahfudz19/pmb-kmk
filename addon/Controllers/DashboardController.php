@@ -143,8 +143,34 @@ class DashboardController
         $payment = null;
         $selectionResult = null;
         $passedProgram = null;
+        $waveStudyProgram = null;
+        $activePaymentAccount = null;
+        $examResults = [];
+        $regProgram = null;
 
         if ($registration) {
+            $db = $this->registrations->getDb();
+            $stmt = $db->prepare("SELECT * FROM registration_programs WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $registration['id']]);
+            $regProgram = $stmt->fetch() ?: null;
+
+            if ($regProgram && $registration['wave_id']) {
+                $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+                $stmt->execute([
+                    'wave_id' => $registration['wave_id'],
+                    'prodi_id' => $regProgram['program1_id']
+                ]);
+                $waveStudyProgram = $stmt->fetch() ?: null;
+            }
+
+            $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
+            $stmt->execute(['reg_id' => $registration['id']]);
+            $examResults = $stmt->fetchAll() ?: [];
+
+            $stmt = $db->prepare("SELECT * FROM payment_accounts WHERE is_active = 1 LIMIT 1");
+            $stmt->execute();
+            $activePaymentAccount = $stmt->fetch() ?: null;
+
             $documentTypesList = $this->documentTypes->all();
             $docs = $this->documents->findByRegistrationId($registration['id']);
             foreach ($docs as $d) {
@@ -171,16 +197,25 @@ class DashboardController
                 } else if ($payment['status'] === 'Approved') {
                     $allRequiredUploaded = true;
                     $allRequiredApproved = true;
-                    foreach ($documentTypesList as $dt) {
-                        if ($dt['is_required']) {
-                            $doc = $uploadedDocs[$dt['id']] ?? null;
-                            if (!$doc) {
-                                $allRequiredUploaded = false;
+
+                    $requiredDocIds = [];
+                    if ($waveStudyProgram) {
+                        $reqDocs = json_decode($waveStudyProgram['required_documents'] ?? '[]', true) ?: [];
+                        foreach ($reqDocs as $rd) {
+                            if (isset($rd['document_type_id'])) {
+                                $requiredDocIds[] = (int)$rd['document_type_id'];
+                            }
+                        }
+                    }
+
+                    foreach ($requiredDocIds as $docTypeId) {
+                        $doc = $uploadedDocs[$docTypeId] ?? null;
+                        if (!$doc) {
+                            $allRequiredUploaded = false;
+                            $allRequiredApproved = false;
+                        } else {
+                            if ($doc['status'] !== 'Approved') {
                                 $allRequiredApproved = false;
-                            } else {
-                                if ($doc['status'] !== 'Approved') {
-                                    $allRequiredApproved = false;
-                                }
                             }
                         }
                     }
@@ -219,7 +254,10 @@ class DashboardController
             'selection_result' => $selectionResult,
             'passed_program' => $passedProgram,
             'active_announcement' => $activeAnnouncement,
-            're_registration' => $reReg
+            're_registration' => $reReg,
+            'wave_study_program' => $waveStudyProgram,
+            'active_payment_account' => $activePaymentAccount,
+            'exam_results' => $examResults
         ], [
             'path' => '/dashboard/student',
             'meta' => ['title' => 'Dashboard Pendaftaran | ' . env('APP_NAME')]

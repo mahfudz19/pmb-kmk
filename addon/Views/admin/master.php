@@ -26,8 +26,9 @@
                 'study-program' => ['Program Studi (Jurusan)', 'Kelola daftar jurusan perkuliahan serta alokasi fakultasnya.'],
                 'admission-path' => ['Jalur Masuk Pendaftaran', 'Kelola opsi jalur penerimaan (Prestasi, Mandiri, dll.).'],
                 'class' => ['Pilihan Kelas Kuliah', 'Kelola opsi waktu kuliah (Reguler Pagi, Sore, Karyawan).'],
-                'selection-room' => ['Ruangan Ujian Seleksi', 'Kelola lokasi pelaksanaan tes tulis CBT atau wawancara fisik.'],
-                'document-type' => ['Jenis Dokumen Persyaratan', 'Kelola scan berkas wajib yang harus di-upload pendaftar.']
+                'document-type' => ['Jenis Dokumen Persyaratan', 'Kelola scan berkas wajib yang harus di-upload pendaftar.'],
+                'payment-account' => ['Rekening Penerimaan', 'Kelola nomor rekening bank institusi untuk pembayaran biaya pendaftaran & daftar ulang.'],
+                'nim-format' => ['Format Custom NIM', 'Definisikan format generate Nomor Induk Mahasiswa otomatis setelah pembayaran disetujui.']
               ];
               $activeTitle = $titles[$tab] ?? ['Data Master', 'Kelola setelan sistem.'];
             ?>
@@ -106,6 +107,7 @@
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
+                      <a href="/admin/master/wave-detail?id=<?= htmlspecialchars($w['id']) ?>" class="inline-block text-xs font-bold text-indigo-650 hover:text-indigo-850 mr-2">Atur Detail</a>
                       <button type="button" onclick="openEditModal('wave', <?= htmlspecialchars(json_encode($w)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
                       <button type="button" onclick="openDeleteModal('wave', <?= htmlspecialchars($w['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
                     </td>
@@ -237,50 +239,25 @@
               </tbody>
             </table>
 
-          <?php elseif ($tab === 'selection-room'): ?>
-            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
-              <thead class="bg-slate-50/50">
-                <tr>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Ruangan</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Lokasi / Gedung</th>
-                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <?php if (empty($selection_rooms)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🚪</div><h3 class="text-xs font-bold text-slate-700">Ruangan Seleksi Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada ruangan ujian seleksi yang terdaftar.</p></div></td></tr>
-                <?php else: foreach ($selection_rooms as $sr): ?>
-                  <tr class="hover:bg-slate-50/30 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($sr['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($sr['name']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"><?= htmlspecialchars($sr['location']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button type="button" onclick="openEditModal('selection-room', <?= htmlspecialchars(json_encode($sr)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
-                      <button type="button" onclick="openDeleteModal('selection-room', <?= htmlspecialchars($sr['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
-                    </td>
-                  </tr>
-                <?php endforeach; endif; ?>
-              </tbody>
-            </table>
-
           <?php elseif ($tab === 'document-type'): ?>
             <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
               <thead class="bg-slate-50/50">
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
                   <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Dokumen Syarat</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Deskripsi</th>
                   <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Sifat Berkas</th>
                   <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <?php if (empty($document_types)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">📁</div><h3 class="text-xs font-bold text-slate-700">Jenis Dokumen Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada jenis berkas wajib yang terdaftar.</p></div></td></tr>
+                  <tr><td colspan="5" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">📁</div><h3 class="text-xs font-bold text-slate-700">Jenis Dokumen Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada jenis berkas wajib yang terdaftar.</p></div></td></tr>
                 <?php else: foreach ($document_types as $dt): ?>
                   <tr class="hover:bg-slate-50/30 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($dt['id']) ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($dt['name']) ?></td>
+                    <td class="px-6 py-4 text-xs font-medium text-slate-550 max-w-xs truncate" title="<?= htmlspecialchars($dt['description'] ?? '') ?>"><?= htmlspecialchars($dt['description'] ?? '-') ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                       <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $dt['is_required'] ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-650' ?>">
                         <?= $dt['is_required'] ? 'WAJIB' : 'OPSIONAL' ?>
@@ -289,6 +266,74 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                       <button type="button" onclick="openEditModal('document-type', <?= htmlspecialchars(json_encode($dt)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
                       <button type="button" onclick="openDeleteModal('document-type', <?= htmlspecialchars($dt['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
+                    </td>
+                  </tr>
+                <?php endforeach; endif; ?>
+              </tbody>
+            </table>
+
+          <?php elseif ($tab === 'payment-account'): ?>
+            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50/50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Bank</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">No. Rekening</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Pemilik</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <?php if (empty($payment_accounts)): ?>
+                  <tr><td colspan="6" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">💳</div><h3 class="text-xs font-bold text-slate-700">Rekening Penerimaan Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada rekening penerimaan yang terdaftar.</p></div></td></tr>
+                <?php else: foreach ($payment_accounts as $pa): ?>
+                  <tr class="hover:bg-slate-50/30 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($pa['id']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($pa['bank_name']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650"><?= htmlspecialchars($pa['account_number']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650"><?= htmlspecialchars($pa['account_holder']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $pa['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-650' ?>">
+                        <?= $pa['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
+                      <button type="button" onclick="openEditModal('payment-account', <?= htmlspecialchars(json_encode($pa)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
+                      <button type="button" onclick="openDeleteModal('payment-account', <?= htmlspecialchars($pa['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
+                    </td>
+                  </tr>
+                <?php endforeach; endif; ?>
+              </tbody>
+            </table>
+
+          <?php elseif ($tab === 'nim-format'): ?>
+            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
+              <thead class="bg-slate-50/50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Format</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Pola Format</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <?php if (empty($nim_formats)): ?>
+                  <tr><td colspan="5" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🔢</div><h3 class="text-xs font-bold text-slate-700">Format Custom NIM Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada format custom NIM yang terdaftar.</p></div></td></tr>
+                <?php else: foreach ($nim_formats as $nf): ?>
+                  <tr class="hover:bg-slate-50/30 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($nf['id']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($nf['name']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650"><code><?= htmlspecialchars($nf['format_pattern']) ?></code></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $nf['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-650' ?>">
+                        <?= $nf['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
+                      <button type="button" onclick="openEditModal('nim-format', <?= htmlspecialchars(json_encode($nf)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
+                      <button type="button" onclick="openDeleteModal('nim-format', <?= htmlspecialchars($nf['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
                     </td>
                   </tr>
                 <?php endforeach; endif; ?>
@@ -325,6 +370,12 @@
         <input type="text" id="input-name" name="name" placeholder="Masukkan nama" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
       </div>
 
+      <!-- Dynamic Field: description (Wave) -->
+      <div class="space-y-1 modal-field hidden" id="field-description">
+        <label for="input-description" class="block text-sm font-semibold text-slate-700">Keterangan / Deskripsi</label>
+        <textarea id="input-description" name="description" placeholder="Masukkan keterangan gelombang" rows="2" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50"></textarea>
+      </div>
+
       <!-- Dynamic Field: dates (Wave) -->
       <div class="grid grid-cols-2 gap-4 modal-field hidden" id="field-dates">
         <div class="space-y-1">
@@ -357,6 +408,35 @@
       <div class="space-y-1 modal-field hidden" id="field-location">
         <label for="input-location" class="block text-sm font-semibold text-slate-700">Lokasi Gedung / Ruangan</label>
         <input type="text" id="input-location" name="location" placeholder="Masukkan lokasi detail" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+      </div>
+
+      <!-- Dynamic Fields: payment-account -->
+      <div class="space-y-1 modal-field hidden" id="field-bank-name">
+        <label for="input-bank-name" class="block text-sm font-semibold text-slate-700">Nama Bank</label>
+        <input type="text" id="input-bank-name" name="bank_name" placeholder="Contoh: Mandiri, BCA" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+      </div>
+      <div class="space-y-1 modal-field hidden" id="field-account-number">
+        <label for="input-account-number" class="block text-sm font-semibold text-slate-700">Nomor Rekening</label>
+        <input type="text" id="input-account-number" name="account_number" placeholder="Masukkan nomor rekening" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+      </div>
+      <div class="space-y-1 modal-field hidden" id="field-account-holder">
+        <label for="input-account-holder" class="block text-sm font-semibold text-slate-700">Nama Pemilik Rekening</label>
+        <input type="text" id="input-account-holder" name="account_holder" placeholder="Masukkan nama pemilik rekening" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+      </div>
+
+      <!-- Dynamic Fields: nim-format -->
+      <div class="space-y-1 modal-field hidden" id="field-format-pattern">
+        <label for="input-format-pattern" class="block text-sm font-semibold text-slate-700">Pola Format NIM</label>
+        <input type="text" id="input-format-pattern" name="format_pattern" placeholder="Contoh: {YEAR}{PRODI_CODE}{SEQ}" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+        <div class="bg-indigo-50 p-3 rounded-lg text-[10px] text-indigo-750 space-y-1 mt-1 font-medium">
+          <p class="font-bold">Placeholder yang didukung:</p>
+          <ul class="list-disc pl-4 space-y-0.5">
+            <li><code>{YEAR}</code>: Tahun akademik masuk (Contoh: 2026)</li>
+            <li><code>{PRODI_CODE}</code>: Kode program studi (Contoh: IF)</li>
+            <li><code>{DATE}</code>: Tanggal generate (format dmy, Contoh: 170726)</li>
+            <li><code>{SEQ}</code>: Sequence nomor urut mahasiswa (Contoh: 001, 002)</li>
+          </ul>
+        </div>
       </div>
 
       <!-- Dynamic Field: Checkbox is_active -->
@@ -416,10 +496,15 @@
     // Clear inputs
     document.getElementById('input-year').value = '';
     document.getElementById('input-name').value = '';
+    document.getElementById('input-description').value = '';
     document.getElementById('input-start').value = '';
     document.getElementById('input-end').value = '';
     document.getElementById('input-code').value = '';
     document.getElementById('input-location').value = '';
+    document.getElementById('input-bank-name').value = '';
+    document.getElementById('input-account-number').value = '';
+    document.getElementById('input-account-holder').value = '';
+    document.getElementById('input-format-pattern').value = '';
     document.getElementById('input-active').checked = true;
     document.getElementById('input-required').checked = true;
 
@@ -435,11 +520,16 @@
     // Fill inputs
     if (item.year) document.getElementById('input-year').value = item.year;
     if (item.name) document.getElementById('input-name').value = item.name;
+    if (item.description) document.getElementById('input-description').value = item.description;
     if (item.start_date) document.getElementById('input-start').value = item.start_date;
     if (item.end_date) document.getElementById('input-end').value = item.end_date;
     if (item.code) document.getElementById('input-code').value = item.code;
     if (item.faculty_id) document.getElementById('input-faculty').value = item.faculty_id;
     if (item.location) document.getElementById('input-location').value = item.location;
+    if (item.bank_name) document.getElementById('input-bank-name').value = item.bank_name;
+    if (item.account_number) document.getElementById('input-account-number').value = item.account_number;
+    if (item.account_holder) document.getElementById('input-account-holder').value = item.account_holder;
+    if (item.format_pattern) document.getElementById('input-format-pattern').value = item.format_pattern;
     
     if (item.is_active !== undefined) {
       document.getElementById('input-active').checked = parseInt(item.is_active) === 1;
@@ -468,6 +558,7 @@
       document.getElementById('field-active').classList.remove('hidden');
     } else if (tab === 'wave') {
       document.getElementById('field-name').classList.remove('hidden');
+      document.getElementById('field-description').classList.remove('hidden');
       document.getElementById('field-dates').classList.remove('hidden');
       document.getElementById('field-active').classList.remove('hidden');
     } else if (tab === 'faculty') {
@@ -480,12 +571,19 @@
     } else if (tab === 'admission-path' || tab === 'class') {
       document.getElementById('field-name').classList.remove('hidden');
       document.getElementById('field-active').classList.remove('hidden');
-    } else if (tab === 'selection-room') {
-      document.getElementById('field-name').classList.remove('hidden');
-      document.getElementById('field-location').classList.remove('hidden');
     } else if (tab === 'document-type') {
       document.getElementById('field-name').classList.remove('hidden');
+      document.getElementById('field-description').classList.remove('hidden');
       document.getElementById('field-required').classList.remove('hidden');
+    } else if (tab === 'payment-account') {
+      document.getElementById('field-bank-name').classList.remove('hidden');
+      document.getElementById('field-account-number').classList.remove('hidden');
+      document.getElementById('field-account-holder').classList.remove('hidden');
+      document.getElementById('field-active').classList.remove('hidden');
+    } else if (tab === 'nim-format') {
+      document.getElementById('field-name').classList.remove('hidden');
+      document.getElementById('field-format-pattern').classList.remove('hidden');
+      document.getElementById('field-active').classList.remove('hidden');
     }
   }
 

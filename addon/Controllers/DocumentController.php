@@ -40,9 +40,54 @@ class DocumentController
             $mappedDocs[$doc['document_type_id']] = $doc;
         }
 
+        $db = $this->registrations->getDb();
+        $stmt = $db->prepare("SELECT * FROM registration_programs WHERE registration_id = :id LIMIT 1");
+        $stmt->execute(['id' => $regId]);
+        $regProgram = $stmt->fetch() ?: null;
+
+        $requiredDocTypes = [];
+        if ($regProgram && $registration['wave_id']) {
+            $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+            $stmt->execute([
+                'wave_id' => $registration['wave_id'],
+                'prodi_id' => $regProgram['program1_id']
+            ]);
+            $waveStudyProgram = $stmt->fetch() ?: null;
+
+            if ($waveStudyProgram) {
+                $reqDocs = json_decode($waveStudyProgram['required_documents'] ?? '[]', true) ?: [];
+                $reqDocIds = [];
+                $docMeta = [];
+                foreach ($reqDocs as $rd) {
+                    if (isset($rd['document_type_id'])) {
+                        $reqDocIds[] = (int)$rd['document_type_id'];
+                        $docMeta[(int)$rd['document_type_id']] = [
+                            'name' => $rd['name'],
+                            'description' => $rd['description'] ?? ''
+                        ];
+                    }
+                }
+
+                if (!empty($reqDocIds)) {
+                    $placeholders = implode(',', array_fill(0, count($reqDocIds), '?'));
+                    $stmt = $db->prepare("SELECT * FROM document_types WHERE id IN ($placeholders)");
+                    $stmt->execute($reqDocIds);
+                    $documentTypes = $stmt->fetchAll() ?: [];
+
+                    foreach ($documentTypes as &$dt) {
+                        if (isset($docMeta[$dt['id']])) {
+                            $dt['name'] = $docMeta[$dt['id']]['name'];
+                            $dt['description'] = $docMeta[$dt['id']]['description'];
+                        }
+                    }
+                    $requiredDocTypes = $documentTypes;
+                }
+            }
+        }
+
         $data = [
             'registration' => $registration,
-            'document_types' => $this->documentTypes->all(),
+            'document_types' => $requiredDocTypes,
             'uploaded_docs' => $mappedDocs
         ];
 
@@ -227,30 +272,42 @@ class DocumentController
         $stmt->execute();
         $candidates = $stmt->fetchAll();
 
-        $docTypes = $this->documentTypes->all();
-        $requiredCount = 0;
-        foreach ($docTypes as $dt) {
-            if ($dt['is_required']) {
-                $requiredCount++;
-            }
-        }
-
         foreach ($candidates as &$c) {
-            $docs = $this->documents->findByRegistrationId($c['id']);
-            $uploadedCount = 0;
-            $approvedCount = 0;
-            foreach ($docs as $doc) {
-                foreach ($docTypes as $dt) {
-                    if ($dt['id'] === $doc['document_type_id'] && $dt['is_required']) {
-                        $uploadedCount++;
-                        if ($doc['status'] === 'Approved') {
-                            $approvedCount++;
+            $stmt = $db->prepare("SELECT * FROM registration_programs WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $c['id']]);
+            $prog = $stmt->fetch() ?: null;
+
+            $requiredDocIds = [];
+            if ($prog && $c['wave_id']) {
+                $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+                $stmt->execute([
+                    'wave_id' => $c['wave_id'],
+                    'prodi_id' => $prog['program1_id']
+                ]);
+                $waveStudyProgram = $stmt->fetch() ?: null;
+                if ($waveStudyProgram) {
+                    $reqDocs = json_decode($waveStudyProgram['required_documents'] ?? '[]', true) ?: [];
+                    foreach ($reqDocs as $rd) {
+                        if (isset($rd['document_type_id'])) {
+                            $requiredDocIds[] = (int)$rd['document_type_id'];
                         }
                     }
                 }
             }
+
+            $docs = $this->documents->findByRegistrationId($c['id']);
+            $uploadedCount = 0;
+            $approvedCount = 0;
+            foreach ($docs as $doc) {
+                if (in_array((int)$doc['document_type_id'], $requiredDocIds, true)) {
+                    $uploadedCount++;
+                    if ($doc['status'] === 'Approved') {
+                        $approvedCount++;
+                    }
+                }
+            }
             $c['uploaded_count'] = $uploadedCount;
-            $c['required_count'] = $requiredCount;
+            $c['required_count'] = count($requiredDocIds);
             $c['approved_count'] = $approvedCount;
         }
 
@@ -320,13 +377,53 @@ class DocumentController
             $mappedDocs[$doc['document_type_id']] = $doc;
         }
 
+        $requiredDocTypes = [];
+        if ($program && $registration['wave_id']) {
+            $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+            $stmt->execute([
+                'wave_id' => $registration['wave_id'],
+                'prodi_id' => $program['program1_id']
+            ]);
+            $waveStudyProgram = $stmt->fetch() ?: null;
+
+            if ($waveStudyProgram) {
+                $reqDocs = json_decode($waveStudyProgram['required_documents'] ?? '[]', true) ?: [];
+                $reqDocIds = [];
+                $docMeta = [];
+                foreach ($reqDocs as $rd) {
+                    if (isset($rd['document_type_id'])) {
+                        $reqDocIds[] = (int)$rd['document_type_id'];
+                        $docMeta[(int)$rd['document_type_id']] = [
+                            'name' => $rd['name'],
+                            'description' => $rd['description'] ?? ''
+                        ];
+                    }
+                }
+
+                if (!empty($reqDocIds)) {
+                    $placeholders = implode(',', array_fill(0, count($reqDocIds), '?'));
+                    $stmt = $db->prepare("SELECT * FROM document_types WHERE id IN ($placeholders)");
+                    $stmt->execute($reqDocIds);
+                    $documentTypes = $stmt->fetchAll() ?: [];
+
+                    foreach ($documentTypes as &$dt) {
+                        if (isset($docMeta[$dt['id']])) {
+                            $dt['name'] = $docMeta[$dt['id']]['name'];
+                            $dt['description'] = $docMeta[$dt['id']]['description'];
+                        }
+                    }
+                    $requiredDocTypes = $documentTypes;
+                }
+            }
+        }
+
         $data = [
             'candidate' => $candInfo,
             'address' => $address,
             'parents' => $parents,
             'education' => $education,
             'program' => $program,
-            'document_types' => $this->documentTypes->all(),
+            'document_types' => $requiredDocTypes,
             'uploaded_docs' => $mappedDocs
         ];
 

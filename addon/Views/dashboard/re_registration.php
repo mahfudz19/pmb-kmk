@@ -58,6 +58,13 @@
             <span class="text-sm font-extrabold text-indigo-650">Rp <?= number_format($tuition_fee, 0, ',', '.') ?></span>
           </div>
         </div>
+        <?php if ($wave_study_program && !empty($wave_study_program['reregistration_fee_archive'])): ?>
+          <div class="pt-2 border-t border-slate-100">
+            <a href="<?= htmlspecialchars($wave_study_program['reregistration_fee_archive']) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
+              📄 Unduh Brosur / Panduan UKT (PDF)
+            </a>
+          </div>
+        <?php endif; ?>
       </div>
 
       <!-- Bank Transfer Instructions -->
@@ -67,17 +74,17 @@
         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">Bank</span>
-            <strong class="text-slate-800 font-bold">Mandiri</strong>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['bank_name'] ?? 'Mandiri') ?></strong>
           </div>
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">No. Rekening</span>
             <span class="flex items-center gap-1">
-              <strong class="text-slate-800 font-bold">124-000-987-6543</strong>
+              <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['account_number'] ?? '124-000-987-6543') ?></strong>
             </span>
           </div>
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">Atas Nama</span>
-            <strong class="text-slate-800 font-bold">PMB KAMPUS MANDIRI KENCANA</strong>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['account_holder'] ?? 'PMB KAMPUS MANDIRI KENCANA') ?></strong>
           </div>
         </div>
         <div class="text-[11px] text-amber-600 bg-amber-50 p-3.5 rounded-xl border border-amber-100 flex gap-2">
@@ -118,50 +125,7 @@
           ?>
 
           <div class="space-y-4">
-            <!-- SKL File -->
-            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="space-y-1">
-                <label class="block text-xs font-bold text-slate-700">Scan Ijazah Asli / SKL (PDF/JPG/PNG, Max 2MB) <span class="text-red-500">*</span></label>
-                <?php if ($re_registration && $re_registration['skl_path']): ?>
-                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=skl" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
-                    👁️ Lihat Berkas Terunggah
-                  </a>
-                <?php endif; ?>
-              </div>
-              <div class="flex items-center">
-                <input type="file" name="skl_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              </div>
-            </div>
 
-            <!-- Health Certificate File -->
-            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="space-y-1">
-                <label class="block text-xs font-bold text-slate-700">Scan Surat Keterangan Sehat / Bebas Narkoba <span class="text-red-500">*</span></label>
-                <?php if ($re_registration && $re_registration['health_path']): ?>
-                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=health" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
-                    👁️ Lihat Berkas Terunggah
-                  </a>
-                <?php endif; ?>
-              </div>
-              <div class="flex items-center">
-                <input type="file" name="health_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              </div>
-            </div>
-
-            <!-- Statement File -->
-            <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="space-y-1">
-                <label class="block text-xs font-bold text-slate-700">Scan Surat Pernyataan Mahasiswa Baru <span class="text-red-500">*</span></label>
-                <?php if ($re_registration && $re_registration['statement_path']): ?>
-                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=statement" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
-                    👁️ Lihat Berkas Terunggah
-                  </a>
-                <?php endif; ?>
-              </div>
-              <div class="flex items-center">
-                <input type="file" name="statement_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
-              </div>
-            </div>
 
             <!-- Payment Receipt File -->
             <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -177,6 +141,7 @@
                 <input type="file" name="payment_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
               </div>
             </div>
+
           </div>
 
           <div class="border-t border-slate-100 pt-5 space-y-4">

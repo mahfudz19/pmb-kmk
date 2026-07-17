@@ -11,6 +11,7 @@ use App\Services\SessionService;
 use Addon\Models\ReRegistrationModel;
 use Addon\Models\RegistrationModel;
 use Addon\Models\SelectionResultModel;
+use Addon\Models\WaveStudyProgramModel;
 
 class ReRegistrationController
 {
@@ -18,7 +19,8 @@ class ReRegistrationController
         private SessionService $session,
         private ReRegistrationModel $reRegistrations,
         private RegistrationModel $registrations,
-        private SelectionResultModel $selectionResults
+        private SelectionResultModel $selectionResults,
+        private WaveStudyProgramModel $waveStudyPrograms
     ) {}
 
     private function getTuitionFee(int $programId): float
@@ -58,7 +60,18 @@ class ReRegistrationController
         $program = $stmt->fetch();
         $programName = $program ? $program['name'] : '-';
 
-        $tuitionFee = $this->getTuitionFee($passedProgramId);
+        $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+        $stmt->execute([
+            'wave_id' => $registration['wave_id'],
+            'prodi_id' => $passedProgramId
+        ]);
+        $waveStudyProgram = $stmt->fetch() ?: null;
+
+        $tuitionFee = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : $this->getTuitionFee($passedProgramId);
+
+        $stmt = $db->prepare("SELECT * FROM payment_accounts WHERE is_active = 1 LIMIT 1");
+        $stmt->execute();
+        $activePaymentAccount = $stmt->fetch() ?: null;
 
         $reReg = $this->reRegistrations->findByRegistrationId($registration['id']);
 
@@ -67,7 +80,9 @@ class ReRegistrationController
             'selection' => $selection,
             'program_name' => $programName,
             'tuition_fee' => $tuitionFee,
-            're_registration' => $reReg
+            're_registration' => $reReg,
+            'wave_study_program' => $waveStudyProgram,
+            'active_payment_account' => $activePaymentAccount
         ], [
             'path' => '/dashboard/re_registration',
             'meta' => ['title' => 'Daftar Ulang | ' . env('APP_NAME')]
@@ -104,7 +119,8 @@ class ReRegistrationController
             mkdir($storageDir, 0755, true);
         }
 
-        $fields = ['skl', 'health', 'statement', 'payment'];
+        // Standard fields
+        $fields = ['payment'];
         foreach ($fields as $field) {
             $fileKey = $field . '_file';
             if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
@@ -120,11 +136,19 @@ class ReRegistrationController
                 $filename = $field . '_' . $registration['id'] . '_' . uniqid() . '.' . $ext;
                 $targetPath = $storageDir . '/' . $filename;
                 
-                if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $moved = php_sapi_name() === 'cli' ? copy($file['tmp_name'], $targetPath) : move_uploaded_file($file['tmp_name'], $targetPath);
+                if ($moved) {
                     $data[$field . '_path'] = 'storage/app/re_registrations/' . $filename;
                 }
             }
         }
+
+        // Load Wave Study Program Config to process dynamic documents
+        $db = $this->registrations->getDb();
+        $selection = $this->selectionResults->findByRegistrationId($registration['id']);
+        $passedProgramId = $selection ? $selection['passed_program_id'] : null;
+
+        $data['dynamic_documents'] = json_encode([]);
 
         $paymentAmount = $request->input('payment_amount');
         if ($paymentAmount !== '') {
@@ -220,17 +244,25 @@ class ReRegistrationController
         $program = $stmt->fetch();
         $programName = $program ? $program['name'] : '-';
 
-        $expectedTuition = $this->getTuitionFee($passedProgramId);
+        $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+        $stmt->execute([
+            'wave_id' => $registration['wave_id'],
+            'prodi_id' => $passedProgramId
+        ]);
+        $waveStudyProgram = $stmt->fetch() ?: null;
+
+        $expectedTuition = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : $this->getTuitionFee($passedProgramId);
 
         return $response->renderPage([
             'registration' => $registration,
             'selection' => $selection,
             'program_name' => $programName,
             'expected_tuition' => $expectedTuition,
-            're_registration' => $reReg
+            're_registration' => $reReg,
+            'wave_study_program' => $waveStudyProgram
         ], [
             'path' => '/admin/re_registrations/detail',
-            'meta' => ['title' => 'Detail Daftar Ulang | ' . env('APP_NAME')]
+            'meta' => ['title' => 'Detail Verifikasi Daftar Ulang | ' . env('APP_NAME')]
         ]);
     }
 
@@ -266,6 +298,16 @@ class ReRegistrationController
         if ($registration) {
             $userId = $registration['user_id'];
             if ($status === 'Approved') {
+                $db = $this->registrations->getDb();
+                $selection = $this->selectionResults->findByRegistrationId($registration['id']);
+                
+                if (empty($registration['nim'])) {
+                    $nim = $this->generateNim($registration, $selection, $db);
+                    $this->registrations->updateById($registration['id'], [
+                        'nim' => $nim
+                    ]);
+                }
+
                 send_system_notification($userId, 'Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui. Anda resmi terdaftar sebagai mahasiswa baru.', 'success');
                 send_email_notification($userId, $registration['email'], 'Verifikasi Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui oleh panitia PMB Kampus Mandiri Kencana. Anda resmi terdaftar sebagai mahasiswa baru.');
             } else {
@@ -284,9 +326,10 @@ class ReRegistrationController
         }
 
         $reRegId = (int) $request->input('id');
-        $fileKey = $request->input('file'); // 'skl', 'health', 'statement', 'payment'
+        $fileKey = $request->input('file');
 
-        if (!$reRegId || !in_array($fileKey, ['skl', 'health', 'statement', 'payment'])) {
+        $isDynamic = str_starts_with($fileKey, 'dynamic_doc_');
+        if (!$reRegId || (!in_array($fileKey, ['skl', 'health', 'statement', 'payment']) && !$isDynamic)) {
             $response->setStatusCode(400);
             echo "Parameter tidak valid.";
             exit;
@@ -309,8 +352,14 @@ class ReRegistrationController
             exit;
         }
 
-        $pathField = $fileKey . '_path';
-        $relativeFilePath = $reReg[$pathField];
+        if ($isDynamic) {
+            $index = (int) str_replace('dynamic_doc_', '', $fileKey);
+            $oldDocs = json_decode($reReg['dynamic_documents'] ?? '[]', true) ?: [];
+            $relativeFilePath = $oldDocs[$index]['path'] ?? null;
+        } else {
+            $pathField = $fileKey . '_path';
+            $relativeFilePath = $reReg[$pathField];
+        }
 
         if (empty($relativeFilePath)) {
             $response->setStatusCode(404);
@@ -337,5 +386,58 @@ class ReRegistrationController
         header('Content-Disposition: inline; filename="' . basename($absoluteFilePath) . '"');
         readfile($absoluteFilePath);
         exit;
+    }
+
+    private function generateNim(array $registration, array $selection, $db): string
+    {
+        $stmt = $db->prepare("SELECT * FROM nim_formats WHERE is_active = 1 LIMIT 1");
+        $stmt->execute();
+        $nimFormat = $stmt->fetch();
+        $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR}{PRODI_CODE}{SEQ}';
+
+        $yearStr = '2026';
+        if ($registration['academic_year_id']) {
+            $stmt = $db->prepare("SELECT year FROM academic_years WHERE id = :id LIMIT 1");
+            $stmt->execute(['id' => $registration['academic_year_id']]);
+            $ay = $stmt->fetch();
+            if ($ay) {
+                $yearStr = substr($ay['year'], 0, 4);
+            }
+        }
+
+        $prodiCode = '';
+        $passedProgramId = $selection['passed_program_id'] ?? null;
+        if ($passedProgramId) {
+            $stmt = $db->prepare("SELECT code FROM study_programs WHERE id = :id LIMIT 1");
+            $stmt->execute(['id' => $passedProgramId]);
+            $sp = $stmt->fetch();
+            if ($sp) {
+                $prodiCode = $sp['code'];
+            }
+        }
+
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as count 
+            FROM registrations r
+            JOIN selection_results sr ON r.id = sr.registration_id
+            WHERE r.academic_year_id = :ay_id 
+              AND sr.passed_program_id = :prodi_id
+              AND r.nim IS NOT NULL
+        ");
+        $stmt->execute([
+            'ay_id' => $registration['academic_year_id'],
+            'prodi_id' => $passedProgramId
+        ]);
+        $count = (int) ($stmt->fetch()['count'] ?? 0);
+        $nextSeq = $count + 1;
+        $seqStr = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+
+        $nim = str_replace(
+            ['{YEAR}', '{PRODI_CODE}', '{DATE}', '{SEQ}'],
+            [$yearStr, $prodiCode, date('dmy'), $seqStr],
+            $pattern
+        );
+
+        return $nim;
     }
 }

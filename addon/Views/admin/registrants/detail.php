@@ -19,7 +19,14 @@
           <span>← Kembali ke Manajemen Pendaftar</span>
         </a>
       </div>
-      <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight"><?= htmlspecialchars($registration['full_name']) ?></h1>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight"><?= htmlspecialchars($registration['full_name']) ?></h1>
+        <?php if (!empty($registration['nim'])): ?>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-250">
+            NIM: <?= htmlspecialchars($registration['nim']) ?>
+          </span>
+        <?php endif; ?>
+      </div>
       <p class="text-xs text-slate-500">ID Registrasi: #<?= $registration['id'] ?> | Email: <?= htmlspecialchars($registration['email']) ?></p>
     </div>
     
@@ -54,6 +61,12 @@
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Biodata Pribadi</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <?php if (!empty($registration['nim'])): ?>
+            <div class="col-span-2">
+              <span class="text-slate-400 font-medium block">Nomor Induk Mahasiswa (NIM)</span>
+              <strong class="text-emerald-700 font-extrabold text-sm"><?= htmlspecialchars($registration['nim']) ?></strong>
+            </div>
+          <?php endif; ?>
           <div>
             <span class="text-slate-400 font-medium block">Nomor Induk Kependudukan (NIK)</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($registration['nik']) ?></strong>
@@ -103,18 +116,14 @@
       <!-- Alamat Lengkap -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Alamat Tempat Tinggal</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div>
-            <span class="text-slate-400 font-medium block">Provinsi</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($address['province'] ?? '-') ?></strong>
-          </div>
-          <div>
-            <span class="text-slate-400 font-medium block">Kota / Kabupaten</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($address['city'] ?? '-') ?></strong>
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div>
             <span class="text-slate-400 font-medium block">Kecamatan</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($address['district'] ?? '-') ?></strong>
+          </div>
+          <div>
+            <span class="text-slate-400 font-medium block">Kode Pos</span>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($address['postal_code'] ?? '-') ?></strong>
           </div>
         </div>
         <div class="text-xs">
@@ -124,27 +133,101 @@
       </div>
 
       <!-- Data Orang Tua -->
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Data Orang Tua / Wali</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          <div>
-            <span class="text-slate-400 font-medium block">Nama Ayah Kandung</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_name'] ?? '-') ?></strong>
+        
+        <?php if (!empty($parent['father_name'])): ?>
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👨 Data Ayah</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div>
+                <span class="text-slate-400 font-medium block">Nama Lengkap</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_name']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">NIK</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_nik'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Tanggal Lahir</span>
+                <strong class="text-slate-800 font-bold"><?= !empty($parent['father_birth_date']) ? date('d-m-Y', strtotime($parent['father_birth_date'])) : '-' ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pendidikan Terakhir</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_education'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pekerjaan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_occupation'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Penghasilan Bulanan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_income'] ?? '-') ?></strong>
+              </div>
+            </div>
           </div>
-          <div>
-            <span class="text-slate-400 font-medium block">Pekerjaan Ayah</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_occupation'] ?? '-') ?></strong>
+        <?php endif; ?>
+
+        <?php if (!empty($parent['mother_name'])): ?>
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👩 Data Ibu</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div>
+                <span class="text-slate-400 font-medium block">Nama Lengkap</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_name']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">NIK</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_nik'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Tanggal Lahir</span>
+                <strong class="text-slate-800 font-bold"><?= !empty($parent['mother_birth_date']) ? date('d-m-Y', strtotime($parent['mother_birth_date'])) : '-' ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pendidikan Terakhir</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_education'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pekerjaan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_occupation'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Penghasilan Bulanan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_income'] ?? '-') ?></strong>
+              </div>
+            </div>
           </div>
-          <div>
-            <span class="text-slate-400 font-medium block">Nama Ibu Kandung</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_name'] ?? '-') ?></strong>
+        <?php endif; ?>
+
+        <?php if (!empty($parent['guardian_name'])): ?>
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👤 Data Wali</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div>
+                <span class="text-slate-400 font-medium block">Nama Lengkap</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['guardian_name']) ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Tanggal Lahir</span>
+                <strong class="text-slate-800 font-bold"><?= !empty($parent['guardian_birth_date']) ? date('d-m-Y', strtotime($parent['guardian_birth_date'])) : '-' ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pendidikan Terakhir</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['guardian_education'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Pekerjaan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['guardian_occupation'] ?? '-') ?></strong>
+              </div>
+              <div>
+                <span class="text-slate-400 font-medium block">Penghasilan Bulanan</span>
+                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['guardian_income'] ?? '-') ?></strong>
+              </div>
+            </div>
           </div>
-          <div>
-            <span class="text-slate-400 font-medium block">Pekerjaan Ibu</span>
-            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_occupation'] ?? '-') ?></strong>
-          </div>
-        </div>
-      </div>
+        <?php endif; ?>
+    </div>
     </div>
 
     <!-- Right Column: Program Studi, Berkas, Seleksi (1 col span) -->
@@ -187,10 +270,7 @@
               </div>
             <?php endforeach; ?>
           <?php endif; ?>
-        </div>
-      </div>
-
-      <!-- Hasil Seleksi -->
+              <!-- Hasil Seleksi -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Hasil Ujian & Seleksi</h3>
         <div class="space-y-3 text-xs">
@@ -219,6 +299,54 @@
           <?php endif; ?>
         </div>
       </div>
+
+      <!-- Tahapan Ujian Masuk & Status -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">Tahapan Seleksi Gelombang</h3>
+        
+        <?php if (!$wave_study_program): ?>
+          <p class="text-slate-400 font-medium italic text-xs">Jadwal seleksi program studi tidak dikonfigurasi.</p>
+        <?php else: 
+          $stages = json_decode($wave_study_program['exam_stages'] ?? '[]', true) ?: [];
+          if (empty($stages)):
+        ?>
+          <p class="text-slate-400 font-medium italic text-xs">Belum ada tahapan ujian seleksi yang dikonfigurasi.</p>
+        <?php else: ?>
+          <div class="space-y-4">
+            <?php foreach ($stages as $stg): 
+              $res = array_values(array_filter($exam_results, fn($r) => $r['stage_index'] == $stg['stage_number']))[0] ?? null;
+              $status = $res ? $res['status'] : 'Pending';
+            ?>
+              <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-150 space-y-2.5 text-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-slate-800">Tahap <?= $stg['stage_number'] ?></span>
+                  <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-600') ?>">
+                    <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-500">
+                  <div><strong>Tanggal:</strong> <?= htmlspecialchars($stg['date']) ?></div>
+                  <div><strong>Jam:</strong> <?= htmlspecialchars($stg['time']) ?></div>
+                  <div class="col-span-2"><strong>Tempat:</strong> <?= htmlspecialchars($stg['place']) ?> (<?= htmlspecialchars($stg['type']) ?>)</div>
+                </div>
+
+                <!-- Update Status Form -->
+                <form action="/admin/registrants/exam-stage/save" method="POST" class="flex gap-2 pt-1.5 border-t border-slate-200/50">
+                  <input type="hidden" name="registration_id" value="<?= htmlspecialchars($registration['id']) ?>">
+                  <input type="hidden" name="stage_number" value="<?= htmlspecialchars($stg['stage_number']) ?>">
+                  <select name="status" class="flex-1 px-2.5 py-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">
+                    <option value="Lulus" <?= $status === 'Lulus' ? 'selected' : '' ?>>Lolos</option>
+                    <option value="Tidak Lulus" <?= $status === 'Tidak Lulus' ? 'selected' : '' ?>>Gagal</option>
+                    <option value="Pending" <?= $status === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                  </select>
+                  <button type="submit" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-sm">Update</button>
+                </form>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; endif; ?>
+      </div>
+
     </div>
   </div>
 </div>

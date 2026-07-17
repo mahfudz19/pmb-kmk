@@ -75,56 +75,6 @@
         <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Berkas Persyaratan Daftar Ulang</h3>
         
         <div class="divide-y divide-slate-100">
-          <!-- SKL File Row -->
-          <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div>
-              <h4 class="font-bold text-slate-800">Scan Ijazah Asli / SKL</h4>
-              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Dokumen tanda kelulusan sekolah menengah asal.</p>
-            </div>
-            <div>
-              <?php if ($re_registration && $re_registration['skl_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=skl" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
-                  👁️ Buka File
-                </a>
-              <?php else: ?>
-                <span class="text-slate-400 italic font-semibold">Belum Diunggah</span>
-              <?php endif; ?>
-            </div>
-          </div>
-
-          <!-- Health Certificate Row -->
-          <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div>
-              <h4 class="font-bold text-slate-800">Scan Surat Keterangan Sehat / Bebas Narkoba</h4>
-              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Surat resmi dari instansi kesehatan / kepolisian.</p>
-            </div>
-            <div>
-              <?php if ($re_registration && $re_registration['health_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=health" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
-                  👁️ Buka File
-                </a>
-              <?php else: ?>
-                <span class="text-slate-400 italic font-semibold">Belum Diunggah</span>
-              <?php endif; ?>
-            </div>
-          </div>
-
-          <!-- Statement Row -->
-          <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div>
-              <h4 class="font-bold text-slate-800">Scan Surat Pernyataan Mahasiswa Baru</h4>
-              <p class="text-[10px] text-slate-400 font-medium mt-0.5">Surat pernyataan kesanggupan menaati peraturan kampus.</p>
-            </div>
-            <div>
-              <?php if ($re_registration && $re_registration['statement_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=statement" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
-                  👁️ Buka File
-                </a>
-              <?php else: ?>
-                <span class="text-slate-400 italic font-semibold">Belum Diunggah</span>
-              <?php endif; ?>
-            </div>
-          </div>
 
           <!-- Payment Receipt Row -->
           <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
@@ -142,6 +92,7 @@
               <?php endif; ?>
             </div>
           </div>
+
         </div>
 
         <?php if ($re_registration): ?>

@@ -17,6 +17,8 @@ use Addon\Models\AdmissionPathModel;
 use Addon\Models\ClassModel;
 use Addon\Models\StudyProgramModel;
 
+use Addon\Models\RegistrationSpecialNeedModel;
+
 class RegistrationController
 {
     public function __construct(
@@ -29,8 +31,26 @@ class RegistrationController
         private WaveModel $waves,
         private AdmissionPathModel $admissionPaths,
         private ClassModel $classes,
-        private StudyProgramModel $studyPrograms
+        private StudyProgramModel $studyPrograms,
+        private RegistrationSpecialNeedModel $specialNeeds
     ) {}
+
+    private function convertDateToDb(?string $dateStr): ?string
+    {
+        if (empty($dateStr)) return null;
+        $parts = explode('/', $dateStr);
+        if (count($parts) === 3) {
+            return $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+        }
+        return $dateStr;
+    }
+
+    private function convertDateToUi(?string $dateStr): string
+    {
+        if (empty($dateStr)) return '';
+        $timestamp = strtotime($dateStr);
+        return $timestamp ? date('d/m/Y', $timestamp) : $dateStr;
+    }
 
     public function showForm(Request $request, Response $response): View|RedirectResponse
     {
@@ -47,10 +67,22 @@ class RegistrationController
 
         $regId = $registration ? $registration['id'] : null;
 
+        if ($registration) {
+            $registration['birth_date'] = $this->convertDateToUi($registration['birth_date'] ?? '');
+        }
+
+        $parents = $regId ? $this->parents->findByRegistrationId($regId) : null;
+        if ($parents) {
+            $parents['father_birth_date'] = $this->convertDateToUi($parents['father_birth_date'] ?? '');
+            $parents['mother_birth_date'] = $this->convertDateToUi($parents['mother_birth_date'] ?? '');
+            $parents['guardian_birth_date'] = $this->convertDateToUi($parents['guardian_birth_date'] ?? '');
+        }
+
         $data = [
             'registration' => $registration,
             'address' => $regId ? $this->addresses->findByRegistrationId($regId) : null,
-            'parents' => $regId ? $this->parents->findByRegistrationId($regId) : null,
+            'parents' => $parents,
+            'special_needs' => $regId ? $this->specialNeeds->findByRegistrationId($regId) : null,
             'education' => $regId ? $this->educations->findByRegistrationId($regId) : null,
             'program' => $regId ? $this->programs->findByRegistrationId($regId) : null,
             
@@ -85,21 +117,69 @@ class RegistrationController
 
         $regId = $registration ? $registration['id'] : null;
 
-        // Step 1: Data Pribadi
         if ($step === 1) {
             $fullName = $request->input('full_name');
-            $nik = $request->input('nik');
-            $nisn = $request->input('nisn');
             $birthPlace = $request->input('birth_place');
             $birthDate = $request->input('birth_date');
             $gender = $request->input('gender');
             $religion = $request->input('religion');
-            $email = $request->input('email');
-            $phone = $request->input('phone');
+            $motherName = $request->input('mother_name');
+            $infoSource = $request->input('info_source');
 
-            if (!$fullName || !$nik || !$nisn || !$birthPlace || !$birthDate || !$gender || !$religion || !$email || !$phone) {
+            if (!$fullName || !$birthPlace || !$birthDate || !$gender || !$religion || !$motherName || !$infoSource) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Harap isi semua kolom wajib pada data pribadi']);
+            }
+
+            $regData = [
+                'user_id' => $userId,
+                'full_name' => $fullName,
+                'birth_place' => $birthPlace,
+                'birth_date' => $this->convertDateToDb($birthDate),
+                'gender' => $gender,
+                'religion' => $religion,
+                'mother_name' => $motherName,
+                'info_source' => $infoSource,
+                'status' => 'Draft'
+            ];
+
+            if ($regId) {
+                $this->registrations->updateById($regId, $regData);
+            } else {
+                $regId = $this->registrations->insert($regData);
+            }
+        }
+
+        if ($step === 2) {
+            if (!$regId) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Selesaikan data pribadi terlebih dahulu']);
+            }
+
+            $citizenship = $request->input('citizenship');
+            $nik = $request->input('nik');
+            $nisn = $request->input('nisn');
+            $npwp = $request->input('npwp') ?: null;
+            $street = $request->input('street') ?: null;
+            $telephone = $request->input('telephone') ?: null;
+            $dusun = $request->input('dusun') ?: null;
+            $rt = $request->input('rt') ?: null;
+            $rw = $request->input('rw') ?: null;
+            $hp = $request->input('hp');
+            $kelurahan = $request->input('subdistrict');
+            $postalCode = $request->input('postal_code') ?: null;
+            $email = $request->input('email');
+            $kps_receiver = $request->input('kps_receiver');
+            $kecamatan = $request->input('district');
+            $transportation = $request->input('transportation') ?: null;
+            $living_type = $request->input('living_type') ?: null;
+            $province = $request->input('province') ?: null;
+            $city = $request->input('city') ?: null;
+            $address = $request->input('address') ?: null;
+
+            if (!$citizenship || !$nik || !$nisn || !$hp || !$kelurahan || !$email || !$kps_receiver || !$kecamatan) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Harap isi semua kolom wajib pada alamat']);
             }
 
             if (!is_numeric($nik) || strlen($nik) !== 16) {
@@ -117,63 +197,40 @@ class RegistrationController
                 return $response->json(['success' => false, 'message' => 'Format email tidak valid']);
             }
 
-            if (!is_numeric($phone) || strlen($phone) < 9 || strlen($phone) > 15) {
+            if (!is_numeric($hp) || strlen($hp) < 9 || strlen($hp) > 15) {
                 $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Nomor telepon harus berupa angka dengan panjang 9-15 digit']);
+                return $response->json(['success' => false, 'message' => 'Nomor HP harus berupa angka dengan panjang 9-15 digit']);
             }
 
-            $regData = [
-                'user_id' => $userId,
-                'full_name' => $fullName,
+            if ($postalCode && (!is_numeric($postalCode) || strlen($postalCode) !== 5)) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Kode Pos harus berupa 5 digit angka']);
+            }
+
+            $this->registrations->updateById($regId, [
                 'nik' => $nik,
                 'nisn' => $nisn,
-                'birth_place' => $birthPlace,
-                'birth_date' => $birthDate,
-                'gender' => $gender,
-                'religion' => $religion,
-                'email' => $email,
-                'phone' => $phone,
-                'status' => 'Draft'
-            ];
-
-            if ($regId) {
-                $this->registrations->updateById($regId, $regData);
-            } else {
-                $regId = $this->registrations->insert($regData);
-            }
-        }
-
-        // Step 2: Alamat
-        if ($step === 2) {
-            if (!$regId) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Selesaikan data pribadi terlebih dahulu']);
-            }
-
-            $province = $request->input('province');
-            $city = $request->input('city');
-            $district = $request->input('district');
-            $subdistrict = $request->input('subdistrict');
-            $postalCode = $request->input('postal_code');
-            $address = $request->input('address');
-
-            if (!$province || !$city || !$district || !$subdistrict || !$postalCode || !$address) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Harap isi semua kolom alamat lengkap']);
-            }
-
-            if (!is_numeric($postalCode) || strlen($postalCode) !== 5) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Kode Pos harus berupa angka dan berjumlah 5 digit']);
-            }
+                'phone' => $hp,
+                'email' => $email
+            ]);
 
             $addrData = [
                 'registration_id' => $regId,
+                'citizenship' => $citizenship,
+                'npwp' => $npwp,
+                'street' => $street,
+                'telephone' => $telephone,
+                'dusun' => $dusun,
+                'rt' => $rt,
+                'rw' => $rw,
+                'subdistrict' => $kelurahan,
+                'kps_receiver' => $kps_receiver,
+                'district' => $kecamatan,
+                'transportation' => $transportation,
+                'living_type' => $living_type,
+                'postal_code' => $postalCode,
                 'province' => $province,
                 'city' => $city,
-                'district' => $district,
-                'subdistrict' => $subdistrict,
-                'postal_code' => $postalCode,
                 'address' => $address
             ];
 
@@ -185,7 +242,6 @@ class RegistrationController
             }
         }
 
-        // Step 3: Orang Tua
         if ($step === 3) {
             if (!$regId) {
                 $response->setStatusCode(400);
@@ -193,39 +249,64 @@ class RegistrationController
             }
 
             $fatherName = $request->input('father_name');
+            $fatherNik = $request->input('father_nik');
+            $fatherBirthDate = $request->input('father_birth_date');
             $fatherEducation = $request->input('father_education');
             $fatherOccupation = $request->input('father_occupation');
             $fatherIncome = $request->input('father_income');
 
-            $motherName = $request->input('mother_name');
+            $motherName = $request->input('parent_mother_name') ?: $request->input('mother_name');
+            $motherNik = $request->input('mother_nik');
+            $motherBirthDate = $request->input('mother_birth_date');
             $motherEducation = $request->input('mother_education');
             $motherOccupation = $request->input('mother_occupation');
             $motherIncome = $request->input('mother_income');
 
-            $guardianName = $request->input('guardian_name') ?: null;
-            $guardianEducation = $request->input('guardian_education') ?: null;
-            $guardianOccupation = $request->input('guardian_occupation') ?: null;
-            $guardianIncome = $request->input('guardian_income') ?: null;
+            $guardianName = $request->input('guardian_name');
+            $guardianBirthDate = $request->input('guardian_birth_date');
+            $guardianEducation = $request->input('guardian_education');
+            $guardianOccupation = $request->input('guardian_occupation');
+            $guardianIncome = $request->input('guardian_income');
 
-            if (!$fatherName || !$fatherEducation || !$fatherOccupation || !$fatherIncome || !$motherName || !$motherEducation || !$motherOccupation || !$motherIncome) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Harap isi kolom data ayah & ibu']);
+            $isParentFilled = !empty($fatherName) || !empty($motherName);
+
+            if ($isParentFilled) {
+                if (!$fatherName || !$fatherNik || !$fatherBirthDate || !$fatherEducation || !$fatherOccupation || !$fatherIncome ||
+                    !$motherName || !$motherNik || !$motherBirthDate || !$motherEducation || !$motherOccupation || !$motherIncome) {
+                    $response->setStatusCode(400);
+                    return $response->json(['success' => false, 'message' => 'Harap lengkapi semua kolom data Orang Tua (Ayah dan Ibu)']);
+                }
+
+                if (!is_numeric($fatherNik) || strlen($fatherNik) !== 16 || !is_numeric($motherNik) || strlen($motherNik) !== 16) {
+                    $response->setStatusCode(400);
+                    return $response->json(['success' => false, 'message' => 'NIK orang tua harus berupa 16 digit angka']);
+                }
+            } else {
+                if (!$guardianName || !$guardianBirthDate || !$guardianEducation || !$guardianOccupation || !$guardianIncome) {
+                    $response->setStatusCode(400);
+                    return $response->json(['success' => false, 'message' => 'Jika Orang Tua tidak diisi, maka semua kolom data Wali wajib diisi']);
+                }
             }
 
             $parentData = [
                 'registration_id' => $regId,
-                'father_name' => $fatherName,
-                'father_education' => $fatherEducation,
-                'father_occupation' => $fatherOccupation,
-                'father_income' => $fatherIncome,
-                'mother_name' => $motherName,
-                'mother_education' => $motherEducation,
-                'mother_occupation' => $motherOccupation,
-                'mother_income' => $motherIncome,
-                'guardian_name' => $guardianName,
-                'guardian_education' => $guardianEducation,
-                'guardian_occupation' => $guardianOccupation,
-                'guardian_income' => $guardianIncome
+                'father_name' => $fatherName ?: null,
+                'father_nik' => $fatherNik ?: null,
+                'father_birth_date' => $fatherBirthDate ? $this->convertDateToDb($fatherBirthDate) : null,
+                'father_education' => $fatherEducation ?: null,
+                'father_occupation' => $fatherOccupation ?: null,
+                'father_income' => $fatherIncome ?: null,
+                'mother_name' => $motherName ?: null,
+                'mother_nik' => $motherNik ?: null,
+                'mother_birth_date' => $motherBirthDate ? $this->convertDateToDb($motherBirthDate) : null,
+                'mother_education' => $motherEducation ?: null,
+                'mother_occupation' => $motherOccupation ?: null,
+                'mother_income' => $motherIncome ?: null,
+                'guardian_name' => $guardianName ?: null,
+                'guardian_birth_date' => $guardianBirthDate ? $this->convertDateToDb($guardianBirthDate) : null,
+                'guardian_education' => $guardianEducation ?: null,
+                'guardian_occupation' => $guardianOccupation ?: null,
+                'guardian_income' => $guardianIncome ?: null
             ];
 
             $existingParents = $this->parents->findByRegistrationId($regId);
@@ -236,8 +317,41 @@ class RegistrationController
             }
         }
 
-        // Step 4: Pendidikan
         if ($step === 4) {
+            if (!$regId) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
+            }
+
+            $hasSpecialNeeds = $request->input('has_special_needs');
+            $studentNeeds = $request->input('student_needs') ?: [];
+            $fatherNeeds = $request->input('father_needs') ?: [];
+            $motherNeeds = $request->input('mother_needs') ?: [];
+            $guardianNeeds = $request->input('guardian_needs') ?: [];
+
+            if (!$hasSpecialNeeds) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Pilihan Kebutuhan Khusus wajib diisi']);
+            }
+
+            $needsData = [
+                'registration_id' => $regId,
+                'has_special_needs' => $hasSpecialNeeds,
+                'student_needs' => json_encode($studentNeeds),
+                'father_needs' => json_encode($fatherNeeds),
+                'mother_needs' => json_encode($motherNeeds),
+                'guardian_needs' => json_encode($guardianNeeds)
+            ];
+
+            $existingNeeds = $this->specialNeeds->findByRegistrationId($regId);
+            if ($existingNeeds) {
+                $this->specialNeeds->updateById($existingNeeds['id'], $needsData);
+            } else {
+                $this->specialNeeds->insert($needsData);
+            }
+        }
+
+        if ($step === 5) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
@@ -281,8 +395,7 @@ class RegistrationController
             }
         }
 
-        // Step 5: Pilihan PMB & Simpan
-        if ($step === 5) {
+        if ($step === 6) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
@@ -305,7 +418,6 @@ class RegistrationController
                 return $response->json(['success' => false, 'message' => 'Pilihan program studi 1 dan program studi 2 tidak boleh sama']);
             }
 
-            // Update registration basic fields
             $this->registrations->updateById($regId, [
                 'academic_year_id' => $ayId,
                 'wave_id' => $waveId,
@@ -313,7 +425,6 @@ class RegistrationController
                 'class_id' => $classId
             ]);
 
-            // Save programs relation
             $progData = [
                 'registration_id' => $regId,
                 'program1_id' => $prog1Id,
@@ -352,6 +463,10 @@ class RegistrationController
         $classId = $request->input('class_id');
         $prog1Id = $request->input('program1_id');
         $prog2Id = $request->input('program2_id') ?: null;
+
+        if ($prog1Id && $prog2Id && $prog1Id == $prog2Id) {
+            return $response->redirect('/pendaftaran?error=Pilihan+program+studi+1+dan+program+studi+2+tidak+boleh+sama');
+        }
 
         if ($ayId && $waveId && $pathId && $classId && $prog1Id) {
             $this->registrations->updateById($regId, [

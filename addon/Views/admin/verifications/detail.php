@@ -52,8 +52,6 @@
           <span>📍</span> Alamat Tinggal
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <p class="text-slate-500"><strong class="text-slate-700">Provinsi:</strong> <span class="font-medium"><?= htmlspecialchars($address['province'] ?? '-') ?></span></p>
-          <p class="text-slate-500"><strong class="text-slate-700">Kabupaten/Kota:</strong> <span class="font-medium"><?= htmlspecialchars($address['city'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Kecamatan:</strong> <span class="font-medium"><?= htmlspecialchars($address['district'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Kelurahan:</strong> <span class="font-medium"><?= htmlspecialchars($address['subdistrict'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Kode Pos:</strong> <span class="font-medium"><?= htmlspecialchars($address['postal_code'] ?? '-') ?></span></p>

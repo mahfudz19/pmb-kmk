@@ -13,6 +13,7 @@ class WaveModel extends Model
     protected array $schema = [
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
         'name' => ['type' => 'varchar', 'length' => 50, 'nullable' => false],
+        'description' => ['type' => 'text', 'nullable' => true],
         'start_date' => ['type' => 'date', 'nullable' => false],
         'end_date' => ['type' => 'date', 'nullable' => false],
         'is_active' => ['type' => 'boolean', 'nullable' => false, 'default' => 1]

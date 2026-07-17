@@ -58,6 +58,16 @@
           <input type="text" name="campus_phone" value="<?= htmlspecialchars($settings['campus_phone'] ?? '') ?>" class="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-800" required>
         </div>
 
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nama Ketua Panitia PMB</label>
+          <input type="text" name="pmb_chairman_name" value="<?= htmlspecialchars($settings['pmb_chairman_name'] ?? 'Prof. Dr. Ir. Hermawan') ?>" class="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-800" required>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">NIP Ketua Panitia PMB</label>
+          <input type="text" name="pmb_chairman_nip" value="<?= htmlspecialchars($settings['pmb_chairman_nip'] ?? 'NIP. 19750812 200212 1 002') ?>" class="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-800" required>
+        </div>
+
         <div class="space-y-1.5 col-span-2">
           <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Logo Kampus</label>
           <div class="flex items-center gap-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">

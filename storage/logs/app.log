@@ -1,0 +1,52 @@
+[2026-07-17 14:51:31] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (2, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:51:47] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (3, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:52:43] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (4, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:52:55] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (5, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:52:56] [app] ERROR: Database query failed: 
+        INSERT INTO registration_exam_results (registration_id, stage_number, status, created_at, updated_at)
+        VALUES (5, 1, 'Pass', NOW(), NOW())
+    ; error =>SQLSTATE[42S22]: Column not found: 1054 Unknown column 'stage_number' in 'field list'
+[2026-07-17 14:52:56] [app] ERROR: Database query failed: 
+        INSERT INTO registration_exam_results (registration_id, stage_number, status, created_at, updated_at)
+        VALUES (5, 2, 'Pass', NOW(), NOW())
+    ; error =>SQLSTATE[42S22]: Column not found: 1054 Unknown column 'stage_number' in 'field list'
+[2026-07-17 14:53:21] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (6, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:53:21] [app] ERROR: Database query failed: 
+        INSERT INTO registration_exam_results (registration_id, stage_number, status, created_at, updated_at)
+        VALUES (6, 1, 'Pass', NOW(), NOW())
+    ; error =>SQLSTATE[42S22]: Column not found: 1054 Unknown column 'stage_number' in 'field list'
+[2026-07-17 14:53:21] [app] ERROR: Database query failed: 
+        INSERT INTO registration_exam_results (registration_id, stage_number, status, created_at, updated_at)
+        VALUES (6, 2, 'Pass', NOW(), NOW())
+    ; error =>SQLSTATE[42S22]: Column not found: 1054 Unknown column 'stage_number' in 'field list'
+[2026-07-17 14:54:40] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (7, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:55:04] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (8, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:55:44] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (9, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value
+[2026-07-17 14:56:14] [app] ERROR: Database query failed: 
+        INSERT INTO registration_payments (registration_id, bank_name, account_name, amount, payment_date, status, created_at, updated_at)
+        VALUES (10, 'BCA', 'Budi Luhur', 250000, '2026-07-17', 'Approved', NOW(), NOW())
+    ; error =>SQLSTATE[HY000]: General error: 1364 Field 'file_path' doesn't have a default value

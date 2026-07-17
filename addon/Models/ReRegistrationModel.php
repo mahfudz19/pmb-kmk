@@ -21,7 +21,8 @@ class ReRegistrationModel extends Model
         'status' => ['type' => 'enum', 'values' => ['Pending', 'Approved', 'Rejected'], 'nullable' => false, 'default' => 'Pending'],
         'rejection_reason' => ['type' => 'text', 'nullable' => true],
         'verified_by' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'nullable' => true],
-        'verified_at' => ['type' => 'datetime', 'nullable' => true]
+        'verified_at' => ['type' => 'datetime', 'nullable' => true],
+        'dynamic_documents' => ['type' => 'text', 'nullable' => true]
     ];
 
     protected array $seed = [];

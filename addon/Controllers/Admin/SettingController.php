@@ -66,13 +66,20 @@ class SettingController
             'campus_name', 'campus_address', 'campus_email', 'campus_phone',
             'registration_number_format', 'smtp_host', 'smtp_port',
             'smtp_username', 'smtp_password', 'smtp_encryption',
-            'smtp_from_address', 'smtp_from_name'
+            'smtp_from_address', 'smtp_from_name',
+            'pmb_chairman_name', 'pmb_chairman_nip'
         ];
 
         $db = $this->settings->getDb();
         foreach ($keys as $key) {
             $val = $request->input($key);
             if ($val !== null) {
+                $check = $db->prepare("SELECT COUNT(*) as count FROM settings WHERE `key` = :key");
+                $check->execute(['key' => $key]);
+                if ((int)($check->fetch()['count'] ?? 0) === 0) {
+                    $insert = $db->prepare("INSERT INTO settings (`key`, `value`) VALUES (:key, '')");
+                    $insert->execute(['key' => $key]);
+                }
                 $stmt = $db->prepare("UPDATE settings SET value = :val WHERE `key` = :key");
                 $stmt->execute(['val' => $val, 'key' => $key]);
             }

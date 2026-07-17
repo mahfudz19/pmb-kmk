@@ -211,6 +211,20 @@ class RegistrantController
         $stmt->execute(['reg_id' => $regId]);
         $selection = $stmt->fetch();
 
+        $waveStudyProgram = null;
+        if ($registration['wave_id'] && $prog && $prog['program1_id']) {
+            $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+            $stmt->execute([
+                'wave_id' => $registration['wave_id'],
+                'prodi_id' => $prog['program1_id']
+            ]);
+            $waveStudyProgram = $stmt->fetch() ?: null;
+        }
+
+        $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
+        $stmt->execute(['reg_id' => $regId]);
+        $examResults = $stmt->fetchAll() ?: [];
+
         return $response->renderPage([
             'registration' => $registration,
             'programs' => $prog,
@@ -218,11 +232,52 @@ class RegistrantController
             'education' => $education,
             'parent' => $parent,
             'documents' => $docs,
-            'selection' => $selection
+            'selection' => $selection,
+            'wave_study_program' => $waveStudyProgram,
+            'exam_results' => $examResults
         ], [
             'path' => '/admin/registrants/detail',
             'meta' => ['title' => 'Detail Pendaftar | ' . env('APP_NAME')]
         ]);
+    }
+
+    public function saveExamStageStatus(Request $request, Response $response): RedirectResponse
+    {
+        if ($redirect = $this->checkAccess($response)) return $redirect;
+
+        $regId = (int)$request->input('registration_id');
+        $stageNumber = (int)$request->input('stage_number');
+        $status = $request->input('status');
+
+        if (!$regId || !$stageNumber || !in_array($status, ['Lulus', 'Tidak Lulus', 'Pending'])) {
+            return $response->redirect('/admin/registrants/detail?id=' . $regId . '&error=Input+tidak+valid');
+        }
+
+        $db = $this->registrations->getDb();
+        $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id AND stage_index = :stage_index LIMIT 1");
+        $stmt->execute(['reg_id' => $regId, 'stage_index' => $stageNumber]);
+        $existing = $stmt->fetch();
+
+        if ($existing) {
+            $stmt = $db->prepare("UPDATE registration_exam_results SET status = :status, updated_at = :now WHERE id = :id");
+            $stmt->execute([
+                'status' => $status,
+                'now' => date('Y-m-d H:i:s'),
+                'id' => $existing['id']
+            ]);
+        } else {
+            $stmt = $db->prepare("INSERT INTO registration_exam_results (registration_id, stage_index, status, created_at, updated_at) VALUES (:reg_id, :stage_index, :status, :created_at, :updated_at)");
+            $stmt->execute([
+                'reg_id' => $regId,
+                'stage_index' => $stageNumber,
+                'status' => $status,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        log_activity('UPDATE_EXAM_STAGE_STATUS', "Memperbarui status ujian tahap {$stageNumber} pendaftar ID {$regId} menjadi {$status}.");
+        return $response->redirect('/admin/registrants/detail?id=' . $regId . '&success=Status+tahap+ujian+berhasil+diperbarui');
     }
 
     public function editRegistrantForm(Request $request, Response $response): View | RedirectResponse
@@ -261,19 +316,47 @@ class RegistrantController
         $stmt->execute();
         $programsList = $stmt->fetchAll();
 
+        $stmt = $db->prepare("SELECT * FROM academic_years ORDER BY year DESC");
+        $stmt->execute();
+        $academicYears = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM waves ORDER BY name ASC");
+        $stmt->execute();
+        $waves = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM admission_paths ORDER BY name ASC");
+        $stmt->execute();
+        $admissionPaths = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT * FROM classes ORDER BY name ASC");
+        $stmt->execute();
+        $classes = $stmt->fetchAll();
+
+        $stmt = $db->prepare("SELECT wave_id, study_program_id FROM wave_study_programs");
+        $stmt->execute();
+        $waveProdiList = $stmt->fetchAll() ?: [];
+        $waveProdis = [];
+        foreach ($waveProdiList as $wp) {
+            $waveProdis[$wp['wave_id']][] = (int)$wp['study_program_id'];
+        }
+
         return $response->renderPage([
             'registration' => $registration,
             'programs' => $prog,
             'address' => $address,
             'education' => $education,
             'parent' => $parent,
-            'study_programs' => $programsList
+            'study_programs' => $programsList,
+            'academic_years' => $academicYears,
+            'waves' => $waves,
+            'admission_paths' => $admissionPaths,
+            'classes' => $classes,
+            'wave_prodis' => $waveProdis
         ], [
             'path' => '/admin/registrants/edit',
             'meta' => ['title' => 'Koreksi Data Pendaftar | ' . env('APP_NAME')]
         ]);
     }
-
     public function updateRegistrant(Request $request, Response $response): RedirectResponse
     {
         if ($redirect = $this->checkAccess($response)) return $redirect;
@@ -281,6 +364,21 @@ class RegistrantController
         $regId = (int) $request->input('id');
         if (!$regId) {
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+valid');
+        }
+
+        $ayId = $request->input('academic_year_id');
+        $waveId = $request->input('wave_id');
+        $pathId = $request->input('admission_path_id');
+        $classId = $request->input('class_id');
+        $prog1Id = $request->input('program1_id');
+        $prog2Id = $request->input('program2_id') ?: null;
+
+        if (!$ayId || !$waveId || !$pathId || !$classId || !$prog1Id) {
+            return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Harap lengkapi semua pilihan PMB wajib'));
+        }
+
+        if ($prog1Id == $prog2Id) {
+            return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Pilihan program studi 1 dan program studi 2 tidak boleh sama'));
         }
 
         $db = $this->registrations->getDb();
@@ -296,7 +394,13 @@ class RegistrantController
                 'birth_date' => $request->input('birth_date'),
                 'gender' => $request->input('gender'),
                 'religion' => $request->input('religion'),
-                'phone' => $request->input('phone')
+                'phone' => $request->input('phone'),
+                'mother_name' => $request->input('mother_name'),
+                'info_source' => $request->input('info_source'),
+                'academic_year_id' => (int)$request->input('academic_year_id'),
+                'wave_id' => (int)$request->input('wave_id'),
+                'admission_path_id' => (int)$request->input('admission_path_id'),
+                'class_id' => (int)$request->input('class_id')
             ]);
 
             $stmt = $db->prepare("UPDATE registration_programs SET program1_id = :p1, program2_id = :p2 WHERE registration_id = :reg_id");
@@ -308,37 +412,99 @@ class RegistrantController
 
             $stmt = $db->prepare("
                 UPDATE registration_addresses 
-                SET province = :province, city = :city, district = :district, address = :address 
+                SET province = '',
+                    city = '',
+                    district = :district,
+                    subdistrict = :subdistrict,
+                    postal_code = :postal_code,
+                    address = :address,
+                    kps_receiver = :kps_receiver,
+                    transportation = :transportation,
+                    living_type = :living_type,
+                    citizenship = :citizenship,
+                    npwp = :npwp,
+                    street = :street,
+                    telephone = :telephone,
+                    dusun = :dusun,
+                    rt = :rt,
+                    rw = :rw
                 WHERE registration_id = :reg_id
             ");
             $stmt->execute([
-                'province' => $request->input('province'),
-                'city' => $request->input('city'),
                 'district' => $request->input('district'),
+                'subdistrict' => $request->input('subdistrict'),
+                'postal_code' => $request->input('postal_code'),
                 'address' => $request->input('address'),
+                'kps_receiver' => $request->input('kps_receiver'),
+                'transportation' => $request->input('transportation') ?: null,
+                'living_type' => $request->input('living_type') ?: null,
+                'citizenship' => $request->input('citizenship') ?: null,
+                'npwp' => $request->input('npwp') ?: null,
+                'street' => $request->input('street') ?: null,
+                'telephone' => $request->input('telephone') ?: null,
+                'dusun' => $request->input('dusun') ?: null,
+                'rt' => $request->input('rt') ?: null,
+                'rw' => $request->input('rw') ?: null,
                 'reg_id' => $regId
             ]);
 
             $stmt = $db->prepare("
                 UPDATE registration_educations 
-                SET school_name = :school, school_major = :major, graduation_year = :year 
+                SET school_name = :school,
+                    school_major = :major,
+                    graduation_year = :year,
+                    diploma_number = :diploma_number,
+                    average_score = :average_score
                 WHERE registration_id = :reg_id
             ");
             $stmt->execute([
                 'school' => $request->input('school_name'),
                 'major' => $request->input('major'),
                 'year' => (int)$request->input('graduation_year'),
+                'diploma_number' => $request->input('diploma_number') ?: null,
+                'average_score' => $request->input('average_score') ? (float)$request->input('average_score') : 0.0,
                 'reg_id' => $regId
             ]);
 
             $stmt = $db->prepare("
                 UPDATE registration_parents 
-                SET father_name = :father, mother_name = :mother 
+                SET father_name = :father_name,
+                    father_nik = :father_nik,
+                    father_birth_date = :father_birth_date,
+                    father_education = :father_education,
+                    father_occupation = :father_occupation,
+                    father_income = :father_income,
+                    mother_name = :mother_name,
+                    mother_nik = :mother_nik,
+                    mother_birth_date = :mother_birth_date,
+                    mother_education = :mother_education,
+                    mother_occupation = :mother_occupation,
+                    mother_income = :mother_income,
+                    guardian_name = :guardian_name,
+                    guardian_birth_date = :guardian_birth_date,
+                    guardian_education = :guardian_education,
+                    guardian_occupation = :guardian_occupation,
+                    guardian_income = :guardian_income
                 WHERE registration_id = :reg_id
             ");
             $stmt->execute([
-                'father' => $request->input('father_name'),
-                'mother' => $request->input('mother_name'),
+                'father_name' => $request->input('father_name') ?: null,
+                'father_nik' => $request->input('father_nik') ?: null,
+                'father_birth_date' => $request->input('father_birth_date') ?: null,
+                'father_education' => $request->input('father_education') ?: null,
+                'father_occupation' => $request->input('father_occupation') ?: null,
+                'father_income' => $request->input('father_income') ?: null,
+                'mother_name' => $request->input('mother_name') ?: null,
+                'mother_nik' => $request->input('mother_nik') ?: null,
+                'mother_birth_date' => $request->input('mother_birth_date') ?: null,
+                'mother_education' => $request->input('mother_education') ?: null,
+                'mother_occupation' => $request->input('mother_occupation') ?: null,
+                'mother_income' => $request->input('mother_income') ?: null,
+                'guardian_name' => $request->input('guardian_name') ?: null,
+                'guardian_birth_date' => $request->input('guardian_birth_date') ?: null,
+                'guardian_education' => $request->input('guardian_education') ?: null,
+                'guardian_occupation' => $request->input('guardian_occupation') ?: null,
+                'guardian_income' => $request->input('guardian_income') ?: null,
                 'reg_id' => $regId
             ]);
 
@@ -509,7 +675,7 @@ class RegistrantController
         <body>
             <div class="card-border">
                 <div class="header">
-                    <h3>KAMPUS MANDIRI KENCANA</h3>
+                    <h3><?= strtoupper(htmlspecialchars(get_setting('campus_name', 'KAMPUS MANDIRI KENCANA'))) ?></h3>
                     <p>PANITIA PENERIMAAN MAHASISWA BARU (PMB) <?= date('Y') ?></p>
                 </div>
                 <div class="title">KARTU PESERTA UJIAN SELEKSI</div>
@@ -557,8 +723,8 @@ class RegistrantController
                     <div class="footer-right">
                         <p>Ketua Panitia PMB,</p>
                         <br><br><br>
-                        <p><strong>Prof. Dr. Ir. Hermawan</strong></p>
-                        <p>NIP. 19750812 200212 1 002</p>
+                        <p><strong><?= htmlspecialchars(get_setting('pmb_chairman_name', 'Prof. Dr. Ir. Hermawan')) ?></strong></p>
+                        <p><?= htmlspecialchars(get_setting('pmb_chairman_nip', 'NIP. 19750812 200212 1 002')) ?></p>
                     </div>
                     <div class="clearfix"></div>
                 </div>
@@ -628,7 +794,7 @@ class RegistrantController
         </head>
         <body>
             <div class="header">
-                <h2>KAMPUS MANDIRI KENCANA</h2>
+                <h2><?= strtoupper(htmlspecialchars(get_setting('campus_name', 'KAMPUS MANDIRI KENCANA'))) ?></h2>
                 <h3>PANITIA PENERIMAAN MAHASISWA BARU (PMB) TAHUN AKADEMIK <?= date('Y') ?>/<?= date('Y') + 1 ?></h3>
             </div>
             <div class="title">FORMULIR PENDAFTARAN MAHASISWA BARU</div>
@@ -706,24 +872,24 @@ class RegistrantController
             <div class="section-title">3. Alamat Tinggal</div>
             <table>
                 <tr>
-                    <td class="label">Provinsi</td>
-                    <td class="colon">:</td>
-                    <td><?= htmlspecialchars($address['province'] ?? '-') ?></td>
-                </tr>
-                <tr>
-                    <td class="label">Kota / Kabupaten</td>
-                    <td class="colon">:</td>
-                    <td><?= htmlspecialchars($address['city'] ?? '-') ?></td>
-                </tr>
-                <tr>
                     <td class="label">Kecamatan</td>
                     <td class="colon">:</td>
                     <td><?= htmlspecialchars($address['district'] ?? '-') ?></td>
                 </tr>
                 <tr>
-                    <td class="label">Alamat Lengkap</td>
+                    <td class="label">Kelurahan</td>
+                    <td class="colon">:</td>
+                    <td><?= htmlspecialchars($address['subdistrict'] ?? '-') ?></td>
+                </tr>
+                <tr>
+                    <td class="label">Alamat Lengkap (Jalan, Dusun, RT/RW)</td>
                     <td class="colon">:</td>
                     <td><?= htmlspecialchars($address['address'] ?? '-') ?></td>
+                </tr>
+                <tr>
+                    <td class="label">Kode Pos</td>
+                    <td class="colon">:</td>
+                    <td><?= htmlspecialchars($address['postal_code'] ?? '-') ?></td>
                 </tr>
             </table>
 
@@ -770,6 +936,14 @@ class RegistrantController
                 </tr>
             </table>
 
+            <?php
+            $campusAddress = get_setting('campus_address', 'Jakarta');
+            $city = 'Jakarta';
+            $parts = explode(',', $campusAddress);
+            if (count($parts) > 1) {
+                $city = trim(end($parts));
+            }
+            ?>
             <table class="footer-table">
                 <tr>
                     <td>
@@ -778,8 +952,8 @@ class RegistrantController
                         <p><strong><?= htmlspecialchars($registration['full_name']) ?></strong></p>
                     </td>
                     <td>
-                        <p>Jakarta, <?= date('d-m-Y') ?></p>
-                        <p>Petugas PMB KMK,</p>
+                        <p><?= htmlspecialchars($city) ?>, <?= date('d-m-Y') ?></p>
+                        <p>Petugas PMB,</p>
                         <br><br><br>
                         <p>___________________________</p>
                     </td>

@@ -13,7 +13,8 @@ class DocumentTypeModel extends Model
     protected array $schema = [
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
         'name' => ['type' => 'varchar', 'length' => 100, 'nullable' => false],
-        'is_required' => ['type' => 'boolean', 'nullable' => false, 'default' => 1]
+        'is_required' => ['type' => 'boolean', 'nullable' => false, 'default' => 1],
+        'description' => ['type' => 'text', 'nullable' => true]
     ];
 
     protected array $seed = [

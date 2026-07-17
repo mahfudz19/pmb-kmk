@@ -9,7 +9,7 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
     <div class="space-y-1">
       <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Verifikasi Daftar Ulang</h1>
-      <p class="text-xs text-slate-500">Tinjau berkas persyaratan dan bukti pembayaran biaya kuliah awal dari calon mahasiswa baru.</p>
+      <p class="text-xs text-slate-500">Tinjau bukti pembayaran biaya kuliah awal dari calon mahasiswa baru.</p>
     </div>
   </div>
 
@@ -92,7 +92,7 @@
                       🔎 Tinjau
                     </a>
                   <?php else: ?>
-                    <span class="text-slate-355 italic font-semibold">Menunggu Berkas</span>
+                    <span class="text-slate-355 italic font-semibold">Menunggu Pembayaran</span>
                   <?php endif; ?>
                 </td>
               </tr>

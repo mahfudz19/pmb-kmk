@@ -143,6 +143,12 @@ class AnnouncementController
         $dompdf = new Dompdf($options);
 
         $today = date('d F Y');
+        $campusAddress = get_setting('campus_address', 'Jakarta');
+        $city = 'Jakarta';
+        $parts = explode(',', $campusAddress);
+        if (count($parts) > 1) {
+            $city = trim(end($parts));
+        }
         $letterNo = "No: " . (100 + $registration['id']) . "/PMB-KMK/VII/" . date('Y');
 
         $html = '
@@ -231,9 +237,9 @@ class AnnouncementController
         <body>
             <div class="kop-surat">
                 <h1>PANITIA SELEKSI PENERIMAAN MAHASISWA BARU</h1>
-                <h1>KAMPUS MANDIRI KENCANA (KMK)</h1>
-                <p>Jl. Pendidikan Kencana No. 45, Jakarta Selatan | Telp: (021) 789456</p>
-                <p>Email: pmb@kmk.ac.id | Website: www.kmk.ac.id</p>
+                <h1>' . strtoupper(htmlspecialchars(get_setting('campus_name', 'KAMPUS MANDIRI KENCANA'))) . '</h1>
+                <p>' . htmlspecialchars(get_setting('campus_address', 'Jl. Pendidikan Kencana No. 45, Jakarta Selatan')) . ' | Telp: ' . htmlspecialchars(get_setting('campus_phone', '(021) 789456')) . '</p>
+                <p>Email: ' . htmlspecialchars(get_setting('campus_email', 'pmb@kmk.ac.id')) . '</p>
             </div>
 
             <div class="title">SURAT KEPUTUSAN HASIL SELEKSI</div>
@@ -279,11 +285,11 @@ class AnnouncementController
                 <tr>
                     <td></td>
                     <td class="signature-panel">
-                        <p>Jakarta, ' . $today . '</p>
-                        <p>Ketua Panitia PMB KMK,</p>
+                        <p>' . htmlspecialchars($city) . ', ' . $today . '</p>
+                        <p>Ketua Panitia PMB,</p>
                         <br><br><br><br>
-                        <p><strong>Prof. Dr. Ir. Hermawan, M.T.</strong></p>
-                        <p>NIP. 19750812 200212 1 002</p>
+                        <p><strong>' . htmlspecialchars(get_setting('pmb_chairman_name', 'Prof. Dr. Ir. Hermawan, M.T.')) . '</strong></p>
+                        <p>' . htmlspecialchars(get_setting('pmb_chairman_nip', 'NIP. 19750812 200212 1 002')) . '</p>
                     </td>
                 </tr>
             </table>
