@@ -52,11 +52,16 @@ class SelectionController
 
         $stmt = $db->prepare("
             SELECT r.*, u.email, 
+                   rp.program1_id, rp.program2_id,
+                   sp1.name as program1_name, sp2.name as program2_name,
                    sr.test_score, sr.interview_score, sr.interview_notes, 
                    sr.status as selection_status, sr.passed_program_id, sr.notes as selection_notes,
                    sr.is_published
             FROM registrations r
             JOIN users u ON r.user_id = u.id
+            LEFT JOIN registration_programs rp ON r.id = rp.registration_id
+            LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id
+            LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
             LEFT JOIN selection_results sr ON r.id = sr.registration_id
             WHERE r.status != 'Draft'
             ORDER BY r.updated_at DESC

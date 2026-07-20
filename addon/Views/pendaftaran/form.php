@@ -5,8 +5,28 @@ $negaraList = $jsonData['kewarganegaraan'][0] ?? [];
 $tinggalList = $jsonData['jenis_tinggal'][0] ?? [];
 $transportList = $jsonData['alat_transportasi'][0] ?? [];
 $pendidikanList = $jsonData['jenjang_pendidikan'][0] ?? [];
-$penghasilanList = $jsonData['penghasilan'][0] ?? [];
+usort($pendidikanList, function($a, $b) {
+    return ((int)($a['id_jenj_didik'] ?? 0)) <=> ((int)($b['id_jenj_didik'] ?? 0));
+});
+
+$penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], function($item) {
+    return !empty($item['nm_penghasilan']);
+}));
+usort($penghasilanList, function($a, $b) {
+    return ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0));
+});
+
 $pekerjaanList = $jsonData['pekerjaan'][0] ?? [];
+usort($pekerjaanList, function($a, $b) {
+    $nameA = $a['nm_pekerjaan'] ?? '';
+    $nameB = $b['nm_pekerjaan'] ?? '';
+    if ($nameA === 'Tidak bekerja') return -1;
+    if ($nameB === 'Tidak bekerja') return 1;
+    if ($nameA === 'Lainnya' || $nameA === 'Sudah Meninggal') return 1;
+    if ($nameB === 'Lainnya' || $nameB === 'Sudah Meninggal') return -1;
+    return strcasecmp($nameA, $nameB);
+});
+
 $wilayahList = $jsonData['wilayah'][0] ?? [];
 
 $studentNeedsArr = json_decode($special_needs['student_needs'] ?? '[]', true) ?: [];
@@ -173,7 +193,7 @@ foreach ($waveProdiList as $wp) {
 
           <div class="space-y-1">
             <label for="nisn" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">NISN <span class="text-red-550">*</span></label>
-            <input type="text" id="nisn" name="nisn" maxlength="10" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium" placeholder="10 digit NISN">
+            <input type="text" id="nisn" name="nisn" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium" placeholder="Nomor NISN">
           </div>
 
           <div class="space-y-1">
@@ -214,12 +234,13 @@ foreach ($waveProdiList as $wp) {
             <span class="text-[10px] text-slate-400 font-medium block mt-0.5">* Gunakan format: 081234567890</span>
           </div>
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <label for="district" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Kecamatan <span class="text-red-550">*</span></label>
+            <input type="text" id="district_search" oninput="filterDistricts(this.value)" class="appearance-none block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-medium" placeholder="🔍 Cari nama kecamatan di sini...">
             <select id="district" name="district" onchange="onDistrictChange(this)" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
               <option value="" disabled <?= empty($address['district']) ? 'selected' : '' ?>>Pilih Kecamatan</option>
               <?php foreach ($wilayahList as $wil): ?>
-                <option value="<?= htmlspecialchars($wil['kecamatan']) ?>" data-kabupaten="<?= htmlspecialchars($wil['kabupaten']) ?>" data-provinsi="<?= htmlspecialchars($wil['provinsi']) ?>" <?= ($address['district'] ?? '') === $wil['kecamatan'] ? 'selected' : '' ?>><?= htmlspecialchars($wil['kecamatan']) ?></option>
+                <option value="<?= htmlspecialchars($wil['kecamatan']) ?>" data-kabupaten="<?= htmlspecialchars($wil['kabupaten']) ?>" data-provinsi="<?= htmlspecialchars($wil['provinsi']) ?>" <?= ($address['district'] ?? '') === $wil['kecamatan'] ? 'selected' : '' ?>><?= htmlspecialchars($wil['kecamatan']) ?> (<?= htmlspecialchars($wil['kabupaten']) ?>)</option>
               <?php endforeach; ?>
             </select>
           </div>
@@ -829,7 +850,7 @@ foreach ($waveProdiList as $wp) {
       if (!nik.value.trim()) return markError(nik, 'NIK wajib diisi');
       if (!/^\d{16}$/.test(nik.value.trim())) return markError(nik, 'NIK harus berupa 16 digit angka');
       if (!nisn.value.trim()) return markError(nisn, 'NISN wajib diisi');
-      if (!/^\d{10}$/.test(nisn.value.trim())) return markError(nisn, 'NISN harus berupa 10 digit angka');
+      if (!/^\d+$/.test(nisn.value.trim())) return markError(nisn, 'NISN harus berupa angka');
       if (!hp.value.trim()) return markError(hp, 'Nomor HP wajib diisi');
       if (!/^\d{9,15}$/.test(hp.value.trim())) return markError(hp, 'Nomor HP harus berupa 9-15 digit angka');
       if (telephone.value.trim() && !/^\d{9,15}$/.test(telephone.value.trim())) return markError(telephone, 'Nomor Telepon harus berupa angka');
@@ -1117,6 +1138,45 @@ foreach ($waveProdiList as $wp) {
   });
   p2Select.addEventListener('change', buildReviewSummary);
   updateStudyPrograms();
+
+  const allWilayahData = <?= json_encode($wilayahList) ?>;
+  const initialDistrictVal = <?= json_encode($address['district'] ?? '') ?>;
+
+  function filterDistricts(query) {
+    const select = document.getElementById('district');
+    const term = (query || '').toLowerCase().trim();
+    const currentVal = select.value || initialDistrictVal;
+
+    select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan</option>';
+
+    allWilayahData.forEach(item => {
+      const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
+      if (!term || fullText.includes(term)) {
+        const opt = document.createElement('option');
+        opt.value = item.kecamatan;
+        opt.setAttribute('data-kabupaten', item.kabupaten || '');
+        opt.setAttribute('data-provinsi', item.provinsi || '');
+        opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
+        if (item.kecamatan === currentVal) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      }
+    });
+  }
+
+  document.getElementById('wizard-form').addEventListener('submit', function(e) {
+    if (!validateStep(6)) {
+      e.preventDefault();
+      return false;
+    }
+    const decl = document.getElementById('declaration');
+    if (decl && !decl.checked) {
+      e.preventDefault();
+      showErrorAlert('Harap centang pernyataan keabsahan data terlebih dahulu.');
+      return false;
+    }
+  });
 
   // Trigger initial UI state
   toggleSpecialNeedsList(document.getElementById('has_special_needs').value);

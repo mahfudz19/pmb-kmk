@@ -22,9 +22,10 @@
       <?php 
         $step1_done = in_array($state, ['belum_bayar', 'verifikasi_pembayaran', 'upload_berkas', 'verifikasi_berkas', 'ujian_seleksi', 'lolos', 'tidak_lolos']);
         $step1_active = ($state === 'belum_daftar');
+        $step1_editable = !in_array($state, ['lolos', 'tidak_lolos']);
       ?>
-      <?php if ($state === 'belum_daftar'): ?>
-        <a data-spa href="/pendaftaran" class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10 hover:opacity-80 transition-opacity">
+      <?php if ($step1_editable): ?>
+        <a data-spa href="/pendaftaran" class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10 hover:opacity-80 transition-opacity" title="Klik untuk mengedit data formulir">
       <?php else: ?>
         <div class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10">
       <?php endif; ?>
@@ -32,10 +33,15 @@
           <?= $step1_done ? '✓' : '1' ?>
         </span>
         <div>
-          <h4 class="text-xs font-bold text-slate-800 leading-tight">Formulir</h4>
+          <h4 class="text-xs font-bold text-slate-800 leading-tight flex items-center justify-center gap-1">
+            Formulir
+            <?php if ($step1_editable && $state !== 'belum_daftar'): ?>
+              <span class="text-[9px] text-indigo-600 font-semibold bg-indigo-50 px-1 py-0.2 rounded border border-indigo-100">✏️ Edit</span>
+            <?php endif; ?>
+          </h4>
           <span class="text-[10px] text-slate-400 font-medium block">Biodata & Pilihan Prodi</span>
         </div>
-      <?php if ($state === 'belum_daftar'): ?>
+      <?php if ($step1_editable): ?>
         </a>
       <?php else: ?>
         </div>
@@ -151,12 +157,17 @@
 
     <?php elseif ($state === 'belum_bayar'): ?>
       <div class="space-y-6">
-        <div class="flex items-start gap-4 border-b border-slate-100 pb-4">
-          <span class="text-4xl">💳</span>
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Menunggu Pembayaran Biaya Pendaftaran</h2>
-            <p class="text-sm text-slate-500">Silakan lakukan transfer pembayaran biaya pendaftaran awal sebelum melanjutkan pengunggahan berkas.</p>
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-4">
+          <div class="flex items-start gap-4">
+            <span class="text-4xl">💳</span>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Menunggu Pembayaran Biaya Pendaftaran</h2>
+              <p class="text-sm text-slate-500">Silakan lakukan transfer pembayaran biaya pendaftaran awal sebelum melanjutkan pengunggahan berkas.</p>
+            </div>
           </div>
+          <a data-spa href="/pendaftaran" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100 shrink-0">
+            ✏️ Ubah Data Formulir
+          </a>
         </div>
 
         <?php if ($payment && $payment['status'] === 'Rejected'): ?>

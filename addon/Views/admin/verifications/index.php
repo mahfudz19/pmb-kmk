@@ -56,12 +56,12 @@
             ?>
             <tr class="hover:bg-slate-50/30 transition-colors">
               <td class="px-6 py-4">
-                <div class="font-bold text-slate-800"><?= htmlspecialchars($c['full_name']) ?></div>
-                <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($c['email']) ?></div>
+                <div class="font-bold text-slate-800"><?= htmlspecialchars((string)($c['full_name'] ?? '-')) ?></div>
+                <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars((string)($c['email'] ?? '-')) ?></div>
               </td>
               <td class="px-6 py-4 font-mono text-[11px]">
-                <div>NIK: <?= htmlspecialchars($c['nik']) ?></div>
-                <div>NISN: <?= htmlspecialchars($c['nisn']) ?></div>
+                <div>NIK: <?= htmlspecialchars((string)($c['nik'] ?? '-')) ?></div>
+                <div>NISN: <?= htmlspecialchars((string)($c['nisn'] ?? '-')) ?></div>
               </td>
               <td class="px-6 py-4 text-center font-bold text-slate-700">
                 <?= $c['approved_count'] ?> / <?= $c['required_count'] ?>

@@ -17,8 +17,28 @@ $negaraList = $jsonData['kewarganegaraan'][0] ?? [];
 $tinggalList = $jsonData['jenis_tinggal'][0] ?? [];
 $transportList = $jsonData['alat_transportasi'][0] ?? [];
 $pendidikanList = $jsonData['jenjang_pendidikan'][0] ?? [];
-$penghasilanList = $jsonData['penghasilan'][0] ?? [];
+usort($pendidikanList, function($a, $b) {
+    return ((int)($a['id_jenj_didik'] ?? 0)) <=> ((int)($b['id_jenj_didik'] ?? 0));
+});
+
+$penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], function($item) {
+    return !empty($item['nm_penghasilan']);
+}));
+usort($penghasilanList, function($a, $b) {
+    return ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0));
+});
+
 $pekerjaanList = $jsonData['pekerjaan'][0] ?? [];
+usort($pekerjaanList, function($a, $b) {
+    $nameA = $a['nm_pekerjaan'] ?? '';
+    $nameB = $b['nm_pekerjaan'] ?? '';
+    if ($nameA === 'Tidak bekerja') return -1;
+    if ($nameB === 'Tidak bekerja') return 1;
+    if ($nameA === 'Lainnya' || $nameA === 'Sudah Meninggal') return 1;
+    if ($nameB === 'Lainnya' || $nameB === 'Sudah Meninggal') return -1;
+    return strcasecmp($nameA, $nameB);
+});
+
 $wilayahList = $jsonData['wilayah'][0] ?? [];
 ?>
 
@@ -74,7 +94,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
             <div>
               <label for="nisn" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NISN (Nomor Induk Siswa Nasional)</label>
-              <input type="text" name="nisn" id="nisn" minlength="10" maxlength="10" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" required>
+              <input type="text" name="nisn" id="nisn" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" required>
             </div>
 
             <div>
@@ -169,12 +189,15 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
             <div>
               <label for="district" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kecamatan</label>
-              <select name="district" id="district" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" disabled <?= empty($address['district']) ? 'selected' : '' ?>>Pilih Kecamatan</option>
-                <?php foreach ($wilayahList as $wil): ?>
-                  <option value="<?= htmlspecialchars($wil['kecamatan']) ?>" <?= ($address['district'] ?? '') === $wil['kecamatan'] ? 'selected' : '' ?>><?= htmlspecialchars($wil['kecamatan']) ?></option>
-                <?php endforeach; ?>
-              </select>
+              <div class="space-y-1.5">
+                <input type="text" id="district_search" oninput="filterEditDistricts(this.value)" class="appearance-none block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-medium" placeholder="🔍 Cari nama kecamatan di sini...">
+                <select name="district" id="district" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
+                  <option value="" disabled <?= empty($address['district']) ? 'selected' : '' ?>>Pilih Kecamatan</option>
+                  <?php foreach ($wilayahList as $wil): ?>
+                    <option value="<?= htmlspecialchars($wil['kecamatan']) ?>" <?= ($address['district'] ?? '') === $wil['kecamatan'] ? 'selected' : '' ?>><?= htmlspecialchars($wil['kecamatan']) ?> (<?= htmlspecialchars($wil['kabupaten']) ?>)</option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
             </div>
 
             <div>
@@ -538,4 +561,28 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
   
   updateStudyPrograms();
 })();
+
+const allWilayahDataEdit = <?= json_encode($wilayahList) ?>;
+const initialDistrictValEdit = <?= json_encode($address['district'] ?? '') ?>;
+
+function filterEditDistricts(query) {
+  const select = document.getElementById('district');
+  const term = (query || '').toLowerCase().trim();
+  const currentVal = select.value || initialDistrictValEdit;
+
+  select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan</option>';
+
+  allWilayahDataEdit.forEach(item => {
+    const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
+    if (!term || fullText.includes(term)) {
+      const opt = document.createElement('option');
+      opt.value = item.kecamatan;
+      opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
+      if (item.kecamatan === currentVal) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    }
+  });
+}
 </script>

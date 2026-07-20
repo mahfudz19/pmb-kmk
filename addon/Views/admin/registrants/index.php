@@ -119,19 +119,19 @@
           <?php else: ?>
             <?php foreach ($registrants as $r): ?>
               <tr class="hover:bg-slate-50/70 border-b border-slate-100 transition-colors">
-                <td class="py-4 px-6 text-slate-400 font-semibold"><?= htmlspecialchars(get_registration_number($r)) ?></td>
+                <td class="py-4 px-6 text-slate-400 font-semibold"><?= htmlspecialchars((string)(get_registration_number($r) ?? '-')) ?></td>
                 <td class="py-4 px-6 font-bold text-slate-800">
-                  <div><?= htmlspecialchars($r['full_name']) ?></div>
-                  <div class="text-[10px] text-slate-400 font-medium tracking-wide"><?= htmlspecialchars($r['email']) ?></div>
+                  <div><?= htmlspecialchars((string)($r['full_name'] ?? '-')) ?></div>
+                  <div class="text-[10px] text-slate-400 font-medium tracking-wide"><?= htmlspecialchars((string)($r['email'] ?? '-')) ?></div>
                 </td>
                 <td class="py-4 px-6 text-slate-500 font-medium text-xs">
-                  <div>NIK: <span class="font-bold text-slate-700"><?= htmlspecialchars($r['nik']) ?></span></div>
-                  <div>NISN: <span class="font-bold text-slate-700"><?= htmlspecialchars($r['nisn']) ?></span></div>
+                  <div>NIK: <span class="font-bold text-slate-700"><?= htmlspecialchars((string)($r['nik'] ?? '-')) ?></span></div>
+                  <div>NISN: <span class="font-bold text-slate-700"><?= htmlspecialchars((string)($r['nisn'] ?? '-')) ?></span></div>
                 </td>
                 <td class="py-4 px-6 space-y-0.5">
-                  <div class="font-semibold text-slate-700"><span class="text-[9px] text-slate-400 font-bold">1:</span> <?= htmlspecialchars($r['program1_name'] ?? '-') ?></div>
-                  <?php if ($r['program2_name']): ?>
-                    <div class="text-[10px] text-slate-500 font-medium"><span class="text-[9px] text-slate-355 font-bold">2:</span> <?= htmlspecialchars($r['program2_name']) ?></div>
+                  <div class="font-semibold text-slate-700"><span class="text-[9px] text-slate-400 font-bold">1:</span> <?= htmlspecialchars((string)($r['program1_name'] ?? '-')) ?></div>
+                  <?php if (!empty($r['program2_name'])): ?>
+                    <div class="text-[10px] text-slate-500 font-medium"><span class="text-[9px] text-slate-355 font-bold">2:</span> <?= htmlspecialchars((string)$r['program2_name']) ?></div>
                   <?php endif; ?>
                 </td>
                 <td class="py-4 px-6 text-center">

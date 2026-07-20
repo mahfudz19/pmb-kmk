@@ -61,8 +61,8 @@ class RegistrationController
 
         $registration = $this->registrations->findByUserId($userId);
 
-        if ($registration && $registration['status'] !== 'Draft') {
-            return $response->redirect('/dashboard?error=Pendaftaran+Anda+sudah+dikunci+dan+tidak+dapat+diubah.');
+        if ($registration && in_array($registration['status'], ['Verified', 'Released'])) {
+            return $response->redirect('/dashboard?error=Pendaftaran+Anda+sudah+diverifikasi+dan+tidak+dapat+diubah.');
         }
 
         $regId = $registration ? $registration['id'] : null;
@@ -110,9 +110,9 @@ class RegistrationController
         $step = (int) $request->input('step');
         $registration = $this->registrations->findByUserId($userId);
 
-        if ($registration && $registration['status'] !== 'Draft') {
+        if ($registration && in_array($registration['status'], ['Verified', 'Released'])) {
             $response->setStatusCode(403);
-            return $response->json(['success' => false, 'message' => 'Pendaftaran sudah difinalisasi']);
+            return $response->json(['success' => false, 'message' => 'Pendaftaran sudah diverifikasi dan tidak dapat diubah']);
         }
 
         $regId = $registration ? $registration['id'] : null;
@@ -187,9 +187,9 @@ class RegistrationController
                 return $response->json(['success' => false, 'message' => 'NIK harus berupa angka dan berjumlah 16 digit']);
             }
 
-            if (!is_numeric($nisn) || strlen($nisn) !== 10) {
+            if (!is_numeric($nisn)) {
                 $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'NISN harus berupa angka dan berjumlah 10 digit']);
+                return $response->json(['success' => false, 'message' => 'NISN harus berupa angka']);
             }
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -451,48 +451,48 @@ class RegistrationController
 
         $registration = $this->registrations->findByUserId($userId);
 
-        if (!$registration || $registration['status'] !== 'Draft') {
+        if (!$registration || in_array($registration['status'], ['Verified', 'Released'])) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+valid+atau+sudah+dikunci');
         }
 
         $regId = $registration['id'];
 
-        $ayId = $request->input('academic_year_id');
-        $waveId = $request->input('wave_id');
-        $pathId = $request->input('admission_path_id');
-        $classId = $request->input('class_id');
-        $prog1Id = $request->input('program1_id');
-        $prog2Id = $request->input('program2_id') ?: null;
+        $existingProg = $this->programs->findByRegistrationId($regId);
+
+        $ayId = $request->input('academic_year_id') ?: ($registration['academic_year_id'] ?? null);
+        $waveId = $request->input('wave_id') ?: ($registration['wave_id'] ?? null);
+        $pathId = $request->input('admission_path_id') ?: ($registration['admission_path_id'] ?? null);
+        $classId = $request->input('class_id') ?: ($registration['class_id'] ?? null);
+        $prog1Id = $request->input('program1_id') ?: ($existingProg['program1_id'] ?? null);
+        $prog2Id = $request->input('program2_id') ?: ($existingProg['program2_id'] ?? null);
+
+        if (!$ayId || !$waveId || !$pathId || !$classId || !$prog1Id) {
+            return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi semua pilihan PMB dan program studi wajib sebelum memfinalisasi pendaftaran.'));
+        }
 
         if ($prog1Id && $prog2Id && $prog1Id == $prog2Id) {
-            return $response->redirect('/pendaftaran?error=Pilihan+program+studi+1+dan+program+studi+2+tidak+boleh+sama');
+            return $response->redirect('/pendaftaran?error=' . urlencode('Pilihan program studi 1 dan program studi 2 tidak boleh sama.'));
         }
 
-        if ($ayId && $waveId && $pathId && $classId && $prog1Id) {
-            $this->registrations->updateById($regId, [
-                'academic_year_id' => $ayId,
-                'wave_id' => $waveId,
-                'admission_path_id' => $pathId,
-                'class_id' => $classId
-            ]);
-
-            $progData = [
-                'registration_id' => $regId,
-                'program1_id' => $prog1Id,
-                'program2_id' => $prog2Id
-            ];
-
-            $existingProg = $this->programs->findByRegistrationId($regId);
-            if ($existingProg) {
-                $this->programs->updateById($existingProg['id'], $progData);
-            } else {
-                $this->programs->insert($progData);
-            }
-        }
-
-        $this->registrations->updateById($registration['id'], [
+        $this->registrations->updateById($regId, [
+            'academic_year_id' => $ayId,
+            'wave_id' => $waveId,
+            'admission_path_id' => $pathId,
+            'class_id' => $classId,
             'status' => 'Submitted'
         ]);
+
+        $progData = [
+            'registration_id' => $regId,
+            'program1_id' => $prog1Id,
+            'program2_id' => $prog2Id
+        ];
+
+        if ($existingProg) {
+            $this->programs->updateById($existingProg['id'], $progData);
+        } else {
+            $this->programs->insert($progData);
+        }
 
         return $response->redirect('/dashboard?success=Pendaftaran+berhasil+dikunci.+Panitia+akan+segera+memverifikasi+berkas+Anda.');
     }

@@ -285,6 +285,8 @@
 </div>
 
 <script>
+  const allProgramsList = <?= json_encode($programs) ?>;
+
   function switchTab(tab) {
     const scoringContent = document.getElementById('tab-content-scoring');
     const quotaContent = document.getElementById('tab-content-quota');
@@ -312,8 +314,44 @@
     document.getElementById('interview_score').value = c.interview_score !== null ? c.interview_score : '';
     document.getElementById('interview_notes').value = c.interview_notes !== null ? c.interview_notes : '';
     document.getElementById('status').value = c.selection_status !== null ? c.selection_status : 'Pending';
-    document.getElementById('passed_program_id').value = c.passed_program_id !== null ? c.passed_program_id : '';
     document.getElementById('notes').value = c.selection_notes !== null ? c.selection_notes : '';
+
+    const passedSelect = document.getElementById('passed_program_id');
+    passedSelect.innerHTML = '<option value="">-- Pilih Prodi --</option>';
+
+    const chosenIds = [];
+
+    if (c.program1_id && c.program1_name) {
+      chosenIds.push(parseInt(c.program1_id));
+      const opt1 = document.createElement('option');
+      opt1.value = c.program1_id;
+      opt1.textContent = `Pilihan 1: ${c.program1_name}`;
+      passedSelect.appendChild(opt1);
+    }
+
+    if (c.program2_id && c.program2_name) {
+      chosenIds.push(parseInt(c.program2_id));
+      const opt2 = document.createElement('option');
+      opt2.value = c.program2_id;
+      opt2.textContent = `Pilihan 2: ${c.program2_name}`;
+      passedSelect.appendChild(opt2);
+    }
+
+    const otherProdis = allProgramsList.filter(p => !chosenIds.includes(parseInt(p.id)));
+    if (otherProdis.length > 0) {
+      const group = document.createElement('optgroup');
+      group.label = 'Program Studi Lainnya';
+      otherProdis.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        group.appendChild(opt);
+      });
+      passedSelect.appendChild(group);
+    }
+
+    const selectedPassedId = c.passed_program_id !== null ? c.passed_program_id : '';
+    passedSelect.value = selectedPassedId;
 
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
