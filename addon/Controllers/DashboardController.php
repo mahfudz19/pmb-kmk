@@ -136,6 +136,10 @@ class DashboardController
         $userId = $this->session->get('auth.user_id');
         $registration = $this->registrations->findByUserId($userId);
 
+        if ($registration && $registration['status'] === 'Draft') {
+            return $response->redirect('/pendaftaran');
+        }
+
         $state = $this->session->get('registration_state') ?? 'belum_daftar';
 
         $uploadedDocs = [];
@@ -147,6 +151,7 @@ class DashboardController
         $activePaymentAccount = null;
         $examResults = [];
         $regProgram = null;
+        $requiredDocs = [];
 
         if ($registration) {
             $db = $this->registrations->getDb();
@@ -154,14 +159,62 @@ class DashboardController
             $stmt->execute(['id' => $registration['id']]);
             $regProgram = $stmt->fetch() ?: null;
 
-            if ($regProgram && $registration['wave_id']) {
-                $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
-                $stmt->execute([
-                    'wave_id' => $registration['wave_id'],
-                    'prodi_id' => $regProgram['program1_id']
-                ]);
-                $waveStudyProgram = $stmt->fetch() ?: null;
-            }
+             $waveStudyPrograms = [];
+             if ($regProgram && $registration['wave_id']) {
+                 $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+                 $stmt->execute([
+                     'wave_id' => $registration['wave_id'],
+                     'prodi_id' => $regProgram['program1_id']
+                 ]);
+                 $waveStudyProgram = $stmt->fetch() ?: null;
+
+                 $prodiIds = [];
+                 if (!empty($regProgram['program1_id'])) $prodiIds[] = (int)$regProgram['program1_id'];
+                 if (!empty($regProgram['program2_id'])) $prodiIds[] = (int)$regProgram['program2_id'];
+                 if (!empty($regProgram['program3_id'])) $prodiIds[] = (int)$regProgram['program3_id'];
+                 $prodiIds = array_unique(array_filter($prodiIds));
+
+                 if (!empty($prodiIds)) {
+                     $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
+                     $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
+                     $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
+                     $waveStudyPrograms = $stmt->fetchAll() ?: [];
+                 }
+
+                  $prodiNamesMap = [];
+                  if (!empty($prodiIds)) {
+                      $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
+                      $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
+                      $stmtProdis->execute($prodiIds);
+                      foreach ($stmtProdis->fetchAll() as $p) {
+                          $prodiNamesMap[$p['id']] = $p['name'];
+                      }
+                  }
+
+                  foreach ($waveStudyPrograms as &$wsp) {
+                      $wsp['study_program_name'] = $prodiNamesMap[$wsp['study_program_id']] ?? '';
+                  }
+                  unset($wsp);
+
+                  $requiredDocs = [];
+                  foreach ($waveStudyPrograms as $wsp) {
+                      $prodiId = (int)$wsp['study_program_id'];
+                      $prodiName = $prodiNamesMap[$prodiId] ?? '';
+                      $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
+                      foreach ($reqDocs as $rd) {
+                          if (isset($rd['document_type_id'])) {
+                              $dtId = (int)$rd['document_type_id'];
+                              $requiredDocs[] = [
+                                  'document_type_id' => $dtId,
+                                  'study_program_id' => $prodiId,
+                                  'study_program_name' => $prodiName,
+                                  'name' => $rd['name'] . ' (Prodi: ' . $prodiName . ')',
+                                  'description' => $rd['description'] ?? ''
+                              ];
+                          }
+                      }
+                  }
+             }
 
             $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
             $stmt->execute(['reg_id' => $registration['id']]);
@@ -174,7 +227,8 @@ class DashboardController
             $documentTypesList = $this->documentTypes->all();
             $docs = $this->documents->findByRegistrationId($registration['id']);
             foreach ($docs as $d) {
-                $uploadedDocs[$d['document_type_id']] = $d;
+                $key = $d['document_type_id'] . '_' . ($d['study_program_id'] ?? 'global');
+                $uploadedDocs[$key] = $d;
             }
 
             $payment = $this->payments->findByRegistrationId($registration['id']);
@@ -198,18 +252,20 @@ class DashboardController
                     $allRequiredUploaded = true;
                     $allRequiredApproved = true;
 
-                    $requiredDocIds = [];
-                    if ($waveStudyProgram) {
-                        $reqDocs = json_decode($waveStudyProgram['required_documents'] ?? '[]', true) ?: [];
+                    $requiredDocKeys = [];
+                    foreach ($waveStudyPrograms as $wsp) {
+                        $prodiId = (int)$wsp['study_program_id'];
+                        $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
                         foreach ($reqDocs as $rd) {
                             if (isset($rd['document_type_id'])) {
-                                $requiredDocIds[] = (int)$rd['document_type_id'];
+                                $requiredDocKeys[] = (int)$rd['document_type_id'] . '_' . $prodiId;
                             }
                         }
                     }
+                    $requiredDocKeys = array_unique($requiredDocKeys);
 
-                    foreach ($requiredDocIds as $docTypeId) {
-                        $doc = $uploadedDocs[$docTypeId] ?? null;
+                    foreach ($requiredDocKeys as $key) {
+                        $doc = $uploadedDocs[$key] ?? null;
                         if (!$doc) {
                             $allRequiredUploaded = false;
                             $allRequiredApproved = false;
@@ -256,6 +312,8 @@ class DashboardController
             'active_announcement' => $activeAnnouncement,
             're_registration' => $reReg,
             'wave_study_program' => $waveStudyProgram,
+            'wave_study_programs' => $waveStudyPrograms ?? [],
+            'required_docs' => $requiredDocs,
             'active_payment_account' => $activePaymentAccount,
             'exam_results' => $examResults
         ], [

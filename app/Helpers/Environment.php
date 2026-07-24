@@ -57,6 +57,10 @@ if (!function_exists('loadEnvironmentConfig')) {
         }
       }
     }
+    if (!defined('MAZU_PUBLIC_PATH')) {
+      $envRoot = defined('MAZU_ENV_PATH') ? constant('MAZU_ENV_PATH') : __DIR__ . '/../../';
+      define('MAZU_PUBLIC_PATH', rtrim($envRoot, '/') . '/public/');
+    }
     $loaded = true;
   }
 }

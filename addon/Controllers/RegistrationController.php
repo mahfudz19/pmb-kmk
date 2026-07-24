@@ -86,10 +86,7 @@ class RegistrationController
             'education' => $regId ? $this->educations->findByRegistrationId($regId) : null,
             'program' => $regId ? $this->programs->findByRegistrationId($regId) : null,
             
-            'academic_years' => $this->academicYears->all(),
             'waves' => $this->waves->all(),
-            'admission_paths' => $this->admissionPaths->all(),
-            'classes' => $this->classes->all(),
             'study_programs' => $this->studyPrograms->all(),
         ];
 
@@ -118,6 +115,60 @@ class RegistrationController
         $regId = $registration ? $registration['id'] : null;
 
         if ($step === 1) {
+            $waveId = $request->input('wave_id');
+            $prog1Id = $request->input('program1_id');
+            $prog2Id = $request->input('program2_id') ?: null;
+            $prog3Id = $request->input('program3_id') ?: null;
+
+            if (!$waveId || !$prog1Id) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Harap lengkapi semua pilihan PMB wajib']);
+            }
+
+            $prodiIds = array_filter([$prog1Id, $prog2Id, $prog3Id]);
+            if (count($prodiIds) !== count(array_unique($prodiIds))) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Pilihan program studi tidak boleh ada yang sama']);
+            }
+
+            $regData = [
+                'user_id' => $userId,
+                'wave_id' => $waveId,
+                'status' => 'Draft'
+            ];
+
+            if ($regId) {
+                $this->registrations->updateById($regId, $regData);
+            } else {
+                $regData['full_name'] = '';
+                $regData['birth_place'] = '';
+                $regData['birth_date'] = '1970-01-01';
+                $regData['gender'] = 'Laki-laki';
+                $regData['religion'] = '';
+                $regId = $this->registrations->insert($regData);
+            }
+
+            $progData = [
+                'registration_id' => $regId,
+                'program1_id' => $prog1Id,
+                'program2_id' => $prog2Id,
+                'program3_id' => $prog3Id
+            ];
+
+            $existingProg = $this->programs->findByRegistrationId($regId);
+            if ($existingProg) {
+                $this->programs->updateById($existingProg['id'], $progData);
+            } else {
+                $this->programs->insert($progData);
+            }
+        }
+
+        if ($step === 2) {
+            if (!$regId) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Selesaikan data pilihan program studi terlebih dahulu']);
+            }
+
             $fullName = $request->input('full_name');
             $birthPlace = $request->input('birth_place');
             $birthDate = $request->input('birth_date');
@@ -131,8 +182,30 @@ class RegistrationController
                 return $response->json(['success' => false, 'message' => 'Harap isi semua kolom wajib pada data pribadi']);
             }
 
+            $photoPath = $registration['photo_path'] ?? null;
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['photo'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                    $response->setStatusCode(400);
+                    return $response->json(['success' => false, 'message' => 'Format foto harus berupa JPG, JPEG, atau PNG']);
+                }
+                $uploadDir = MAZU_PUBLIC_PATH . 'uploads/photos/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $filename = 'photo_' . $regId . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+                    $photoPath = '/uploads/photos/' . $filename;
+                }
+            }
+
+            if (!$photoPath) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Foto resmi 3x4 wajib diunggah']);
+            }
+
             $regData = [
-                'user_id' => $userId,
                 'full_name' => $fullName,
                 'birth_place' => $birthPlace,
                 'birth_date' => $this->convertDateToDb($birthDate),
@@ -140,17 +213,13 @@ class RegistrationController
                 'religion' => $religion,
                 'mother_name' => $motherName,
                 'info_source' => $infoSource,
-                'status' => 'Draft'
+                'photo_path' => $photoPath
             ];
 
-            if ($regId) {
-                $this->registrations->updateById($regId, $regData);
-            } else {
-                $regId = $this->registrations->insert($regData);
-            }
+            $this->registrations->updateById($regId, $regData);
         }
 
-        if ($step === 2) {
+        if ($step === 3) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan data pribadi terlebih dahulu']);
@@ -170,6 +239,7 @@ class RegistrationController
             $postalCode = $request->input('postal_code') ?: null;
             $email = $request->input('email');
             $kps_receiver = $request->input('kps_receiver');
+            $kps_number = $request->input('kps_number') ?: null;
             $kecamatan = $request->input('district');
             $transportation = $request->input('transportation') ?: null;
             $living_type = $request->input('living_type') ?: null;
@@ -180,6 +250,11 @@ class RegistrationController
             if (!$citizenship || !$nik || !$nisn || !$hp || !$kelurahan || !$email || !$kps_receiver || !$kecamatan) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Harap isi semua kolom wajib pada alamat']);
+            }
+
+            if ($kps_receiver === 'ya' && !$kps_number) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Nomor KPS wajib diisi']);
             }
 
             if (!is_numeric($nik) || strlen($nik) !== 16) {
@@ -225,6 +300,7 @@ class RegistrationController
                 'rw' => $rw,
                 'subdistrict' => $kelurahan,
                 'kps_receiver' => $kps_receiver,
+                'kps_number' => $kps_receiver === 'ya' ? $kps_number : null,
                 'district' => $kecamatan,
                 'transportation' => $transportation,
                 'living_type' => $living_type,
@@ -242,7 +318,7 @@ class RegistrationController
             }
         }
 
-        if ($step === 3) {
+        if ($step === 4) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
@@ -317,7 +393,7 @@ class RegistrationController
             }
         }
 
-        if ($step === 4) {
+        if ($step === 5) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
@@ -351,7 +427,7 @@ class RegistrationController
             }
         }
 
-        if ($step === 5) {
+        if ($step === 6) {
             if (!$regId) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
@@ -395,48 +471,10 @@ class RegistrationController
             }
         }
 
-        if ($step === 6) {
-            if (!$regId) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Selesaikan langkah sebelumnya terlebih dahulu']);
-            }
-
-            $ayId = $request->input('academic_year_id');
-            $waveId = $request->input('wave_id');
-            $pathId = $request->input('admission_path_id');
-            $classId = $request->input('class_id');
-            $prog1Id = $request->input('program1_id');
-            $prog2Id = $request->input('program2_id') ?: null;
-
-            if (!$ayId || !$waveId || !$pathId || !$classId || !$prog1Id) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Harap lengkapi semua pilihan PMB wajib']);
-            }
-
-            if ($prog1Id == $prog2Id) {
-                $response->setStatusCode(400);
-                return $response->json(['success' => false, 'message' => 'Pilihan program studi 1 dan program studi 2 tidak boleh sama']);
-            }
-
-            $this->registrations->updateById($regId, [
-                'academic_year_id' => $ayId,
-                'wave_id' => $waveId,
-                'admission_path_id' => $pathId,
-                'class_id' => $classId
-            ]);
-
-            $progData = [
-                'registration_id' => $regId,
-                'program1_id' => $prog1Id,
-                'program2_id' => $prog2Id
-            ];
-
-            $existingProg = $this->programs->findByRegistrationId($regId);
-            if ($existingProg) {
-                $this->programs->updateById($existingProg['id'], $progData);
-            } else {
-                $this->programs->insert($progData);
-            }
+        if ($regId) {
+            $targetStep = $request->input('current_step');
+            $stepToPersist = $targetStep ? (int)$targetStep : $step;
+            $this->registrations->updateById($regId, ['current_step' => $stepToPersist]);
         }
 
         return $response->json(['success' => true, 'message' => 'Draft berhasil disimpan', 'registration_id' => $regId]);
@@ -459,33 +497,30 @@ class RegistrationController
 
         $existingProg = $this->programs->findByRegistrationId($regId);
 
-        $ayId = $request->input('academic_year_id') ?: ($registration['academic_year_id'] ?? null);
         $waveId = $request->input('wave_id') ?: ($registration['wave_id'] ?? null);
-        $pathId = $request->input('admission_path_id') ?: ($registration['admission_path_id'] ?? null);
-        $classId = $request->input('class_id') ?: ($registration['class_id'] ?? null);
         $prog1Id = $request->input('program1_id') ?: ($existingProg['program1_id'] ?? null);
         $prog2Id = $request->input('program2_id') ?: ($existingProg['program2_id'] ?? null);
+        $prog3Id = $request->input('program3_id') ?: ($existingProg['program3_id'] ?? null);
 
-        if (!$ayId || !$waveId || !$pathId || !$classId || !$prog1Id) {
+        if (!$waveId || !$prog1Id) {
             return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi semua pilihan PMB dan program studi wajib sebelum memfinalisasi pendaftaran.'));
         }
 
-        if ($prog1Id && $prog2Id && $prog1Id == $prog2Id) {
-            return $response->redirect('/pendaftaran?error=' . urlencode('Pilihan program studi 1 dan program studi 2 tidak boleh sama.'));
+        $prodiIds = array_filter([$prog1Id, $prog2Id, $prog3Id]);
+        if (count($prodiIds) !== count(array_unique($prodiIds))) {
+            return $response->redirect('/pendaftaran?error=' . urlencode('Pilihan program studi tidak boleh ada yang sama.'));
         }
 
         $this->registrations->updateById($regId, [
-            'academic_year_id' => $ayId,
             'wave_id' => $waveId,
-            'admission_path_id' => $pathId,
-            'class_id' => $classId,
             'status' => 'Submitted'
         ]);
 
         $progData = [
             'registration_id' => $regId,
             'program1_id' => $prog1Id,
-            'program2_id' => $prog2Id
+            'program2_id' => $prog2Id,
+            'program3_id' => $prog3Id
         ];
 
         if ($existingProg) {
@@ -495,5 +530,34 @@ class RegistrationController
         }
 
         return $response->redirect('/dashboard?success=Pendaftaran+berhasil+dikunci.+Panitia+akan+segera+memverifikasi+berkas+Anda.');
+    }
+
+    public function updateActiveStep(Request $request, Response $response): Response
+    {
+        $userId = $_SESSION['auth.user_id'] ?? null;
+        if (!$userId) {
+            $response->setStatusCode(401);
+            return $response->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $currentStep = (int) $request->input('current_step');
+
+        if ($currentStep < 1 || $currentStep > 6) {
+            $response->setStatusCode(400);
+            return $response->json(['success' => false, 'message' => 'Langkah tidak valid']);
+        }
+
+        $registration = $this->registrations->findByUserId($userId);
+        if ($registration) {
+            if (in_array($registration['status'], ['Verified', 'Released'])) {
+                $response->setStatusCode(403);
+                return $response->json(['success' => false, 'message' => 'Pendaftaran sudah diverifikasi']);
+            }
+            $this->registrations->updateById($registration['id'], [
+                'current_step' => $currentStep
+            ]);
+        }
+
+        return $response->json(['success' => true]);
     }
 }

@@ -26,10 +26,9 @@ class RegistrationModel extends Model
         'info_source' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
         'nim' => ['type' => 'varchar', 'length' => 30, 'nullable' => true],
         'status' => ['type' => 'enum', 'values' => ['Draft', 'Submitted', 'Verified', 'Rejected', 'Released'], 'nullable' => false, 'default' => 'Draft'],
-        'academic_year_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'academic_years.id', 'nullable' => true],
         'wave_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'waves.id', 'nullable' => true],
-        'admission_path_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'admission_paths.id', 'nullable' => true],
-        'class_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'classes.id', 'nullable' => true]
+        'photo_path' => ['type' => 'varchar', 'length' => 255, 'nullable' => true],
+        'current_step' => ['type' => 'int', 'nullable' => true, 'default' => 1]
     ];
 
     protected array $seed = [];

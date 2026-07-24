@@ -275,6 +275,7 @@ class ReRegistrationController
         $reRegId = (int) $request->input('id');
         $status = $request->input('status');
         $reason = $request->input('rejection_reason');
+        $nim = trim((string)$request->input('nim'));
 
         if (!$reRegId || !in_array($status, ['Approved', 'Rejected'])) {
             return $response->redirect('/admin/re-registrations?error=Data+verifikasi+tidak+valid');
@@ -283,6 +284,21 @@ class ReRegistrationController
         $reReg = $this->reRegistrations->find($reRegId);
         if (!$reReg) {
             return $response->redirect('/admin/re-registrations?error=Data+verifikasi+tidak+ditemukan');
+        }
+
+        $registration = $this->registrations->find($reReg['registration_id']);
+        if (!$registration) {
+            return $response->redirect('/admin/re-registrations?error=Data+pendaftar+tidak+ditemukan');
+        }
+
+        $db = $this->registrations->getDb();
+
+        if (!empty($nim)) {
+            $stmt = $db->prepare("SELECT id FROM registrations WHERE nim = :nim AND id != :id LIMIT 1");
+            $stmt->execute(['nim' => $nim, 'id' => $registration['id']]);
+            if ($stmt->fetch()) {
+                return $response->redirect('/admin/re-registrations/detail?registration_id=' . $registration['id'] . '&error=NIM+sudah+terdaftar+untuk+pendaftar+lain');
+            }
         }
 
         $adminId = $this->session->get('auth.user_id');
@@ -294,29 +310,47 @@ class ReRegistrationController
             'verified_at' => date('Y-m-d H:i:s')
         ]);
 
-        $registration = $this->registrations->find($reReg['registration_id']);
-        if ($registration) {
-            $userId = $registration['user_id'];
-            if ($status === 'Approved') {
-                $db = $this->registrations->getDb();
-                $selection = $this->selectionResults->findByRegistrationId($registration['id']);
-                
-                if (empty($registration['nim'])) {
-                    $nim = $this->generateNim($registration, $selection, $db);
-                    $this->registrations->updateById($registration['id'], [
-                        'nim' => $nim
-                    ]);
-                }
+        $this->registrations->updateById($registration['id'], [
+            'nim' => !empty($nim) ? $nim : null
+        ]);
 
-                send_system_notification($userId, 'Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui. Anda resmi terdaftar sebagai mahasiswa baru.', 'success');
-                send_email_notification($userId, $registration['email'], 'Verifikasi Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui oleh panitia PMB Kampus Mandiri Kencana. Anda resmi terdaftar sebagai mahasiswa baru.');
-            } else {
-                send_system_notification($userId, 'Daftar Ulang Perlu Revisi', 'Verifikasi berkas daftar ulang Anda ditolak/perlu direvisi. Alasan: ' . ($reason ?? '-'), 'warning');
-                send_email_notification($userId, $registration['email'], 'Daftar Ulang Perlu Revisi', 'Verifikasi berkas daftar ulang Anda ditolak/perlu direvisi oleh panitia PMB Kampus Mandiri Kencana. Alasan: ' . ($reason ?? '-'));
-            }
+        $userId = $registration['user_id'];
+        if ($status === 'Approved') {
+            send_system_notification($userId, 'Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui. Anda resmi terdaftar sebagai mahasiswa baru.', 'success');
+            send_email_notification($userId, $registration['email'], 'Verifikasi Daftar Ulang Disetujui', 'Selamat! Berkas dan pembayaran daftar ulang Anda telah disetujui oleh panitia PMB Kampus Mandiri Kencana. Anda resmi terdaftar sebagai mahasiswa baru.');
+        } else {
+            send_system_notification($userId, 'Daftar Ulang Perlu Revisi', 'Verifikasi berkas daftar ulang Anda ditolak/perlu direvisi. Alasan: ' . ($reason ?? '-'), 'warning');
+            send_email_notification($userId, $registration['email'], 'Daftar Ulang Perlu Revisi', 'Verifikasi berkas daftar ulang Anda ditolak/perlu direvisi oleh panitia PMB Kampus Mandiri Kencana. Alasan: ' . ($reason ?? '-'));
         }
 
         return $response->redirect('/admin/re-registrations?success=Verifikasi+daftar+ulang+berhasil+disimpan.');
+    }
+
+    public function apiGenerateNim(Request $request, Response $response)
+    {
+        if (!has_permission('verify_payment') && !has_permission('manage_selection')) {
+            return $response->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $regId = (int) $request->input('registration_id');
+        if (!$regId) {
+            return $response->json(['error' => 'Registration ID is required'], 400);
+        }
+
+        $registration = $this->registrations->find($regId);
+        if (!$registration) {
+            return $response->json(['error' => 'Registration not found'], 404);
+        }
+
+        $selection = $this->selectionResults->findByRegistrationId($regId);
+        if (!$selection) {
+            return $response->json(['error' => 'Selection result not found'], 404);
+        }
+
+        $db = $this->registrations->getDb();
+        $nim = $this->generateNim($registration, $selection, $db);
+
+        return $response->json(['nim' => $nim]);
     }
 
     public function viewFile(Request $request, Response $response)
@@ -396,12 +430,14 @@ class ReRegistrationController
         $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR}{PRODI_CODE}{SEQ}';
 
         $yearStr = '2026';
-        if ($registration['academic_year_id']) {
-            $stmt = $db->prepare("SELECT year FROM academic_years WHERE id = :id LIMIT 1");
-            $stmt->execute(['id' => $registration['academic_year_id']]);
-            $ay = $stmt->fetch();
-            if ($ay) {
-                $yearStr = substr($ay['year'], 0, 4);
+        $academicYear = '2026/2027';
+        if (!empty($registration['wave_id'])) {
+            $stmt = $db->prepare("SELECT academic_year FROM waves WHERE id = :id LIMIT 1");
+            $stmt->execute(['id' => $registration['wave_id']]);
+            $wave = $stmt->fetch();
+            if ($wave && !empty($wave['academic_year'])) {
+                $academicYear = $wave['academic_year'];
+                $yearStr = substr($wave['academic_year'], 0, 4);
             }
         }
 
@@ -420,12 +456,13 @@ class ReRegistrationController
             SELECT COUNT(*) as count 
             FROM registrations r
             JOIN selection_results sr ON r.id = sr.registration_id
-            WHERE r.academic_year_id = :ay_id 
+            JOIN waves w ON r.wave_id = w.id
+            WHERE w.academic_year = :academic_year 
               AND sr.passed_program_id = :prodi_id
               AND r.nim IS NOT NULL
         ");
         $stmt->execute([
-            'ay_id' => $registration['academic_year_id'],
+            'academic_year' => $academicYear,
             'prodi_id' => $passedProgramId
         ]);
         $count = (int) ($stmt->fetch()['count'] ?? 0);
@@ -433,8 +470,8 @@ class ReRegistrationController
         $seqStr = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
 
         $nim = str_replace(
-            ['{YEAR}', '{PRODI_CODE}', '{DATE}', '{SEQ}'],
-            [$yearStr, $prodiCode, date('dmy'), $seqStr],
+            ['{YEAR}', '{PRODI_CODE}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
+            [$yearStr, $prodiCode, date('dmy'), substr((string)time(), -6), $seqStr],
             $pattern
         );
 

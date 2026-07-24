@@ -29,6 +29,8 @@ class SettingModel extends Model
         ['key' => 'smtp_password', 'value' => 'smtp_password'],
         ['key' => 'smtp_encryption', 'value' => 'tls'],
         ['key' => 'smtp_from_address', 'value' => 'noreply@pmb.com'],
-        ['key' => 'smtp_from_name', 'value' => 'PMB KMK']
+        ['key' => 'smtp_from_name', 'value' => 'PMB KMK'],
+        ['key' => 'registration_fee_total', 'value' => '100000'],
+        ['key' => 'registration_fee_archive', 'value' => '']
     ];
 }

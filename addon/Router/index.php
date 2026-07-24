@@ -58,6 +58,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     $router->get('/pendaftaran', [RegistrationController::class, 'showForm']);
     $router->post('/pendaftaran/save', [RegistrationController::class, 'saveDraft']);
     $router->post('/pendaftaran/submit', [RegistrationController::class, 'submit']);
+    $router->post('/pendaftaran/step', [RegistrationController::class, 'updateActiveStep']);
 
     // Document Upload & View
     $router->get('/pendaftaran/dokumen', [DocumentController::class, 'showUploadPage']);
@@ -114,6 +115,7 @@ $router->group(['middleware' => ['auth', 'permission:verify_payment']], function
     $router->get('/admin/re-registrations', [ReRegistrationController::class, 'listReRegistrations']);
     $router->get('/admin/re-registrations/detail', [ReRegistrationController::class, 'showDetail']);
     $router->post('/admin/re-registrations/verify', [ReRegistrationController::class, 'verifyReRegistration']);
+    $router->get('/admin/re-registrations/generate-nim', [ReRegistrationController::class, 'apiGenerateNim']);
 });
 
 // Admin document verification (require login & verify_document permission)
@@ -145,6 +147,7 @@ $router->group(['middleware' => ['auth', 'permission:manage_settings']], functio
     $router->post('/admin/master/delete', [MasterController::class, 'delete']);
     $router->get('/admin/master/wave-detail', [MasterController::class, 'waveDetail']);
     $router->post('/admin/master/wave-detail/save', [MasterController::class, 'saveWaveDetail']);
+    $router->post('/admin/master/registration-fee/save', [MasterController::class, 'saveRegistrationFee']);
 
     // System Settings
     $router->get('/admin/settings', [\Addon\Controllers\Admin\SettingController::class, 'index']);

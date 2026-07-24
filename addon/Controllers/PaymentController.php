@@ -213,11 +213,11 @@ class PaymentController
         if ($registration) {
             $userId = $registration['user_id'];
             if ($status === 'Approved') {
-                send_system_notification($userId, 'Pembayaran Pendaftaran Disetujui', 'Pembayaran biaya pendaftaran Anda sebesar Rp 250.000 telah disetujui. Silakan unggah berkas dokumen persyaratan akademik.', 'success');
-                send_email_notification($userId, $registration['email'], 'Pembayaran Pendaftaran Disetujui', 'Pembayaran biaya pendaftaran Anda sebesar Rp 250.000 telah disetujui. Silakan unggah berkas dokumen persyaratan akademik.');
+                send_system_notification($userId, 'Pembayaran Formulir Disetujui', 'Pembayaran biaya formulir Anda sebesar Rp 250.000 telah disetujui. Silakan unggah berkas dokumen persyaratan akademik.', 'success');
+                send_email_notification($userId, $registration['email'], 'Pembayaran Formulir Disetujui', 'Pembayaran biaya formulir Anda sebesar Rp 250.000 telah disetujui. Silakan unggah berkas dokumen persyaratan akademik.');
             } else {
-                send_system_notification($userId, 'Pembayaran Pendaftaran Ditolak', 'Pembayaran biaya pendaftaran Anda ditolak. Alasan: ' . ($reason ?? '-'), 'danger');
-                send_email_notification($userId, $registration['email'], 'Pembayaran Pendaftaran Ditolak', 'Pembayaran biaya pendaftaran Anda ditolak. Alasan: ' . ($reason ?? '-'));
+                send_system_notification($userId, 'Pembayaran Formulir Ditolak', 'Pembayaran biaya formulir Anda ditolak. Alasan: ' . ($reason ?? '-'), 'danger');
+                send_email_notification($userId, $registration['email'], 'Pembayaran Formulir Ditolak', 'Pembayaran biaya formulir Anda ditolak. Alasan: ' . ($reason ?? '-'));
             }
         }
 

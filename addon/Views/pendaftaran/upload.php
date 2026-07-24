@@ -21,97 +21,113 @@
     <div class="divide-y divide-slate-150">
       <?php if (empty($document_types)): ?>
         <div class="p-8 text-center text-sm text-slate-400 italic">Belum ada tipe dokumen persyaratan yang dikonfigurasi.</div>
-      <?php else: foreach ($document_types as $dt): ?>
-        <?php 
-          $uploaded = $uploaded_docs[$dt['id']] ?? null;
-        ?>
-        <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:bg-slate-50/30 transition-colors">
-          <!-- Left: Doc Type Info -->
-          <div class="space-y-2 max-w-md">
-            <div class="flex items-center gap-3">
-              <h4 class="text-sm font-bold text-slate-800"><?= htmlspecialchars($dt['name']) ?></h4>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold <?= $dt['is_required'] ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-600' ?>">
-                <?= $dt['is_required'] ? 'WAJIB' : 'OPSIONAL' ?>
-              </span>
-            </div>
-            <p class="text-[11px] text-slate-400 leading-normal">Unggah berkas dalam format PDF, JPG, atau PNG. Maksimal ukuran file 2MB.</p>
-          </div>
-
-          <!-- Middle: Status Badge -->
-          <div class="flex items-center gap-2">
-            <?php if ($uploaded): ?>
-              <?php if ($uploaded['status'] === 'Pending'): ?>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-300 text-amber-800">
-                  <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                  Menunggu Verifikasi
-                </span>
-              <?php elseif ($uploaded['status'] === 'Approved'): ?>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 border border-emerald-300 text-emerald-800">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  Disetujui
-                </span>
-              <?php elseif ($uploaded['status'] === 'Rejected'): ?>
-                <div class="space-y-1">
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 border border-red-300 text-red-800">
-                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                    Ditolak
+      <?php else: 
+        $groupedTypes = [];
+        foreach ($document_types as $dt) {
+            $prodiName = $dt['study_program_name'] ?: 'Umum';
+            $groupedTypes[$prodiName][] = $dt;
+        }
+        foreach ($groupedTypes as $prodiName => $types):
+      ?>
+        <div class="bg-indigo-50/60 px-8 py-3 text-xs font-bold text-indigo-900 border-t border-b border-indigo-100/50 uppercase tracking-wider">
+          Program Studi: <?= htmlspecialchars($prodiName) ?>
+        </div>
+        <div class="divide-y divide-slate-150 bg-white">
+          <?php foreach ($types as $dt): ?>
+            <?php 
+              $prodiId = $dt['study_program_id'] ?? 'global';
+              $uploaded = $uploaded_docs[$dt['document_type_id'] . '_' . $prodiId] ?? null;
+              $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $dt['name']);
+            ?>
+            <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:bg-slate-50/30 transition-colors">
+              <!-- Left: Doc Type Info -->
+              <div class="space-y-2 max-w-md">
+                <div class="flex items-center gap-3">
+                  <h4 class="text-sm font-bold text-slate-800"><?= htmlspecialchars($docDisplayName) ?></h4>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-800">
+                    WAJIB
                   </span>
-                  <?php if (!empty($uploaded['rejection_reason'])): ?>
-                    <p class="text-[10px] text-red-650 font-bold">Catatan: <?= htmlspecialchars($uploaded['rejection_reason']) ?></p>
-                  <?php endif; ?>
                 </div>
-              <?php endif; ?>
-            <?php else: ?>
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 border border-slate-350 text-slate-600">
-                <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-                Belum Diunggah
-              </span>
-            <?php endif; ?>
-          </div>
+                <p class="text-[11px] text-slate-400 leading-normal">Unggah berkas dalam format PDF, JPG, atau PNG. Maksimal ukuran file 2MB.</p>
+              </div>
 
-          <!-- Right: Upload Form / Actions -->
-          <div class="flex items-center gap-3 w-full md:w-auto">
-            <?php if ($uploaded): ?>
-              <!-- Actions for uploaded file -->
-              <button 
-                type="button" 
-                onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
-                class="flex-grow md:flex-grow-0 px-4 py-2 border border-slate-200 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                👁️ Preview
-              </button>
+              <!-- Middle: Status Badge -->
+              <div class="flex items-center gap-2">
+                <?php if ($uploaded): ?>
+                  <?php if ($uploaded['status'] === 'Pending'): ?>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-300 text-amber-800">
+                      <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                      Menunggu Verifikasi
+                    </span>
+                  <?php elseif ($uploaded['status'] === 'Approved'): ?>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 border border-emerald-300 text-emerald-800">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                      Disetujui
+                    </span>
+                  <?php elseif ($uploaded['status'] === 'Rejected'): ?>
+                    <div class="space-y-1">
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 border border-red-300 text-red-800">
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                        Ditolak
+                      </span>
+                      <?php if (!empty($uploaded['rejection_reason'])): ?>
+                        <p class="text-[10px] text-red-650 font-bold">Catatan: <?= htmlspecialchars($uploaded['rejection_reason']) ?></p>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
+                <?php else: ?>
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 border border-slate-350 text-slate-600">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    Belum Diunggah
+                  </span>
+                <?php endif; ?>
+              </div>
 
-              <?php if ($uploaded['status'] !== 'Approved'): ?>
-                <!-- Can change file if not approved yet -->
-                <button 
-                  type="button" 
-                  onclick="triggerFileUpload(<?= $dt['id'] ?>)" 
-                  class="flex-grow md:flex-grow-0 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full transition-colors cursor-pointer"
-                >
-                  🔄 Ganti Berkas
-                </button>
-              <?php else: ?>
-                <!-- Locked -->
-                <button 
-                  type="button" 
-                  disabled 
-                  class="flex-grow md:flex-grow-0 px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-full cursor-not-allowed"
-                >
-                  🔒 Terkunci
-                </button>
-              <?php endif; ?>
+              <!-- Right: Upload Form / Actions -->
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <?php if ($uploaded): ?>
+                  <!-- Actions for uploaded file -->
+                  <button 
+                    type="button" 
+                    onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
+                    class="flex-grow md:flex-grow-0 px-4 py-2 border border-slate-200 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    👁️ Preview
+                  </button>
 
-            <?php else: ?>
-              <!-- Action for not uploaded file -->
-              <button 
-                type="button" 
-                onclick="triggerFileUpload(<?= $dt['id'] ?>)" 
-                class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors shadow-sm cursor-pointer"
-              >
-                📤 Unggah Berkas
-              </button>
-            <?php endif; ?>
-          </div>
+                  <?php if ($uploaded['status'] !== 'Approved'): ?>
+                    <!-- Can change file if not approved yet -->
+                    <button 
+                      type="button" 
+                      onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, <?= $dt['study_program_id'] ?? 'null' ?>)" 
+                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full transition-colors cursor-pointer"
+                    >
+                      🔄 Ganti Berkas
+                    </button>
+                  <?php else: ?>
+                    <!-- Locked -->
+                    <button 
+                      type="button" 
+                      disabled 
+                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-full cursor-not-allowed"
+                    >
+                      🔒 Terkunci
+                    </button>
+                  <?php endif; ?>
+
+                <?php else: ?>
+                  <!-- Action for not uploaded file -->
+                  <button 
+                    type="button" 
+                    onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, <?= $dt['study_program_id'] ?? 'null' ?>)" 
+                    class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors shadow-sm cursor-pointer"
+                  >
+                    📤 Unggah Berkas
+                  </button>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
         </div>
       <?php endforeach; endif; ?>
     </div>
@@ -122,6 +138,7 @@
 <form id="hidden-upload-form" method="POST" class="hidden">
   <input type="file" id="hidden-file-input" name="document" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileSelected(event)">
   <input type="hidden" id="hidden-doc-type-id" name="document_type_id">
+  <input type="hidden" id="hidden-study-program-id" name="study_program_id">
 </form>
 
 <!-- Uploading Overlay Spinner -->
@@ -153,10 +170,13 @@
 
 <script>
   let activeDocTypeId = null;
+  let activeStudyProgramId = null;
 
-  function triggerFileUpload(docTypeId) {
+  function triggerFileUpload(docTypeId, studyProgramId) {
     activeDocTypeId = docTypeId;
+    activeStudyProgramId = studyProgramId;
     document.getElementById('hidden-doc-type-id').value = docTypeId;
+    document.getElementById('hidden-study-program-id').value = studyProgramId || '';
     document.getElementById('hidden-file-input').click();
   }
 

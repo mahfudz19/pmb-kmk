@@ -43,7 +43,7 @@ class RegistrantController
         return null;
     }
 
-    private function getFilteredRegistrants(Request $request, int $limit, int $offset): array
+    private function getFilteredRegistrants(Request $request, int $limit = -1, int $offset = 0): array
     {
         $db = $this->registrations->getDb();
         $search = $request->input('search');
@@ -51,11 +51,12 @@ class RegistrantController
         $status = $request->input('status');
 
         $query = "
-            SELECT r.*, sp1.name as program1_name, sp2.name as program2_name 
+            SELECT r.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 
             FROM registrations r 
             LEFT JOIN registration_programs rp ON r.id = rp.registration_id 
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id 
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             WHERE 1=1
         ";
         $params = [];
@@ -66,7 +67,7 @@ class RegistrantController
         }
 
         if (!empty($programId)) {
-            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id)";
+            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id OR rp.program3_id = :program_id)";
             $params['program_id'] = (int) $programId;
         }
 
@@ -76,7 +77,9 @@ class RegistrantController
         }
 
         $query .= " ORDER BY r.created_at DESC";
-        $query .= " LIMIT " . $limit . " OFFSET " . $offset;
+        if ($limit > 0) {
+            $query .= " LIMIT " . $limit . " OFFSET " . $offset;
+        }
 
         $stmt = $db->prepare($query);
         $stmt->execute($params);
@@ -104,7 +107,7 @@ class RegistrantController
         }
 
         if (!empty($programId)) {
-            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id)";
+            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id OR rp.program3_id = :program_id)";
             $params['program_id'] = (int) $programId;
         }
 
@@ -177,10 +180,11 @@ class RegistrantController
         $db = $this->registrations->getDb();
         
         $stmt = $db->prepare("
-            SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name 
+            SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 
             FROM registration_programs rp
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             WHERE rp.registration_id = :reg_id LIMIT 1
         ");
         $stmt->execute(['reg_id' => $regId]);
@@ -211,14 +215,33 @@ class RegistrantController
         $stmt->execute(['reg_id' => $regId]);
         $selection = $stmt->fetch();
 
-        $waveStudyProgram = null;
-        if ($registration['wave_id'] && $prog && $prog['program1_id']) {
-            $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
-            $stmt->execute([
-                'wave_id' => $registration['wave_id'],
-                'prodi_id' => $prog['program1_id']
-            ]);
-            $waveStudyProgram = $stmt->fetch() ?: null;
+        $waveStudyPrograms = [];
+        if ($registration['wave_id'] && $prog) {
+            $prodiIds = [];
+            if (!empty($prog['program1_id'])) $prodiIds[] = (int)$prog['program1_id'];
+            if (!empty($prog['program2_id'])) $prodiIds[] = (int)$prog['program2_id'];
+            if (!empty($prog['program3_id'])) $prodiIds[] = (int)$prog['program3_id'];
+            $prodiIds = array_unique(array_filter($prodiIds));
+
+            if (!empty($prodiIds)) {
+                $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
+                $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
+                $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
+                $waveStudyPrograms = $stmt->fetchAll() ?: [];
+
+                // Fetch study program names for display
+                $prodiNamesMap = [];
+                $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
+                $stmtProdis->execute($prodiIds);
+                foreach ($stmtProdis->fetchAll() as $p) {
+                    $prodiNamesMap[$p['id']] = $p['name'];
+                }
+
+                foreach ($waveStudyPrograms as &$wsp) {
+                    $wsp['study_program_name'] = $prodiNamesMap[$wsp['study_program_id']] ?? '';
+                }
+                unset($wsp);
+            }
         }
 
         $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
@@ -233,7 +256,8 @@ class RegistrantController
             'parent' => $parent,
             'documents' => $docs,
             'selection' => $selection,
-            'wave_study_program' => $waveStudyProgram,
+            'wave_study_program' => $waveStudyPrograms[0] ?? null,
+            'wave_study_programs' => $waveStudyPrograms,
             'exam_results' => $examResults
         ], [
             'path' => '/admin/registrants/detail',
@@ -247,6 +271,7 @@ class RegistrantController
 
         $regId = (int)$request->input('registration_id');
         $stageNumber = (int)$request->input('stage_number');
+        $prodiId = $request->input('study_program_id') ? (int)$request->input('study_program_id') : null;
         $status = $request->input('status');
 
         if (!$regId || !$stageNumber || !in_array($status, ['Lulus', 'Tidak Lulus', 'Pending'])) {
@@ -254,22 +279,29 @@ class RegistrantController
         }
 
         $db = $this->registrations->getDb();
-        $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id AND stage_index = :stage_index LIMIT 1");
-        $stmt->execute(['reg_id' => $regId, 'stage_index' => $stageNumber]);
+        $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id AND stage_index = :stage_index AND (study_program_id = :prodi_id OR (:prodi_id_is_null = 1 AND study_program_id IS NULL)) LIMIT 1");
+        $stmt->execute([
+            'reg_id' => $regId,
+            'stage_index' => $stageNumber,
+            'prodi_id' => $prodiId,
+            'prodi_id_is_null' => ($prodiId === null) ? 1 : 0
+        ]);
         $existing = $stmt->fetch();
 
         if ($existing) {
-            $stmt = $db->prepare("UPDATE registration_exam_results SET status = :status, updated_at = :now WHERE id = :id");
+            $stmt = $db->prepare("UPDATE registration_exam_results SET status = :status, study_program_id = :prodi_id, updated_at = :now WHERE id = :id");
             $stmt->execute([
                 'status' => $status,
+                'prodi_id' => $prodiId,
                 'now' => date('Y-m-d H:i:s'),
                 'id' => $existing['id']
             ]);
         } else {
-            $stmt = $db->prepare("INSERT INTO registration_exam_results (registration_id, stage_index, status, created_at, updated_at) VALUES (:reg_id, :stage_index, :status, :created_at, :updated_at)");
+            $stmt = $db->prepare("INSERT INTO registration_exam_results (registration_id, stage_index, study_program_id, status, created_at, updated_at) VALUES (:reg_id, :stage_index, :prodi_id, :status, :created_at, :updated_at)");
             $stmt->execute([
                 'reg_id' => $regId,
                 'stage_index' => $stageNumber,
+                'prodi_id' => $prodiId,
                 'status' => $status,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -316,21 +348,9 @@ class RegistrantController
         $stmt->execute();
         $programsList = $stmt->fetchAll();
 
-        $stmt = $db->prepare("SELECT * FROM academic_years ORDER BY year DESC");
-        $stmt->execute();
-        $academicYears = $stmt->fetchAll();
-
         $stmt = $db->prepare("SELECT * FROM waves ORDER BY name ASC");
         $stmt->execute();
         $waves = $stmt->fetchAll();
-
-        $stmt = $db->prepare("SELECT * FROM admission_paths ORDER BY name ASC");
-        $stmt->execute();
-        $admissionPaths = $stmt->fetchAll();
-
-        $stmt = $db->prepare("SELECT * FROM classes ORDER BY name ASC");
-        $stmt->execute();
-        $classes = $stmt->fetchAll();
 
         $stmt = $db->prepare("SELECT wave_id, study_program_id FROM wave_study_programs");
         $stmt->execute();
@@ -347,10 +367,7 @@ class RegistrantController
             'education' => $education,
             'parent' => $parent,
             'study_programs' => $programsList,
-            'academic_years' => $academicYears,
             'waves' => $waves,
-            'admission_paths' => $admissionPaths,
-            'classes' => $classes,
             'wave_prodis' => $waveProdis
         ], [
             'path' => '/admin/registrants/edit',
@@ -366,19 +383,27 @@ class RegistrantController
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+valid');
         }
 
-        $ayId = $request->input('academic_year_id');
         $waveId = $request->input('wave_id');
-        $pathId = $request->input('admission_path_id');
-        $classId = $request->input('class_id');
         $prog1Id = $request->input('program1_id');
         $prog2Id = $request->input('program2_id') ?: null;
+        $prog3Id = $request->input('program3_id') ?: null;
 
-        if (!$ayId || !$waveId || !$pathId || !$classId || !$prog1Id) {
+        if (!$waveId || !$prog1Id) {
             return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Harap lengkapi semua pilihan PMB wajib'));
         }
 
-        if ($prog1Id == $prog2Id) {
-            return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Pilihan program studi 1 dan program studi 2 tidak boleh sama'));
+        $prodis = [$prog1Id];
+        if ($prog2Id) {
+            if (in_array($prog2Id, $prodis)) {
+                return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Pilihan program studi tidak boleh ada yang sama'));
+            }
+            $prodis[] = $prog2Id;
+        }
+        if ($prog3Id) {
+            if (in_array($prog3Id, $prodis)) {
+                return $response->redirect('/admin/registrants/edit?id=' . $regId . '&error=' . urlencode('Pilihan program studi tidak boleh ada yang sama'));
+            }
+            $prodis[] = $prog3Id;
         }
 
         $db = $this->registrations->getDb();
@@ -397,16 +422,14 @@ class RegistrantController
                 'phone' => $request->input('phone'),
                 'mother_name' => $request->input('mother_name'),
                 'info_source' => $request->input('info_source'),
-                'academic_year_id' => (int)$request->input('academic_year_id'),
-                'wave_id' => (int)$request->input('wave_id'),
-                'admission_path_id' => (int)$request->input('admission_path_id'),
-                'class_id' => (int)$request->input('class_id')
+                'wave_id' => (int)$request->input('wave_id')
             ]);
 
-            $stmt = $db->prepare("UPDATE registration_programs SET program1_id = :p1, program2_id = :p2 WHERE registration_id = :reg_id");
+            $stmt = $db->prepare("UPDATE registration_programs SET program1_id = :p1, program2_id = :p2, program3_id = :p3 WHERE registration_id = :reg_id");
             $stmt->execute([
                 'p1' => (int)$request->input('program1_id'),
                 'p2' => $request->input('program2_id') ? (int)$request->input('program2_id') : null,
+                'p3' => $request->input('program3_id') ? (int)$request->input('program3_id') : null,
                 'reg_id' => $regId
             ]);
 
@@ -419,6 +442,7 @@ class RegistrantController
                     postal_code = :postal_code,
                     address = :address,
                     kps_receiver = :kps_receiver,
+                    kps_number = :kps_number,
                     transportation = :transportation,
                     living_type = :living_type,
                     citizenship = :citizenship,
@@ -430,12 +454,15 @@ class RegistrantController
                     rw = :rw
                 WHERE registration_id = :reg_id
             ");
+            $kps_receiver = $request->input('kps_receiver');
+            $kps_number = $kps_receiver === 'ya' ? $request->input('kps_number') : null;
             $stmt->execute([
                 'district' => $request->input('district'),
                 'subdistrict' => $request->input('subdistrict'),
                 'postal_code' => $request->input('postal_code'),
                 'address' => $request->input('address'),
-                'kps_receiver' => $request->input('kps_receiver'),
+                'kps_receiver' => $kps_receiver,
+                'kps_number' => $kps_number,
                 'transportation' => $request->input('transportation') ?: null,
                 'living_type' => $request->input('living_type') ?: null,
                 'citizenship' => $request->input('citizenship') ?: null,
@@ -558,13 +585,14 @@ class RegistrantController
                         <th>Email</th>
                         <th>Program Studi Pilihan 1</th>
                         <th>Program Studi Pilihan 2</th>
+                        <th>Program Studi Pilihan 3</th>
                         <th style="width: 80px; text-align: center;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($registrants)): ?>
                         <tr>
-                            <td colspan="6" style="text-align: center;">Tidak ada data pendaftar.</td>
+                            <td colspan="7" style="text-align: center;">Tidak ada data pendaftar.</td>
                         </tr>
                     <?php else: ?>
                         <?php $no = 1; foreach ($registrants as $r): ?>
@@ -574,6 +602,7 @@ class RegistrantController
                                 <td><?= htmlspecialchars($r['email']) ?></td>
                                 <td><?= htmlspecialchars($r['program1_name'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($r['program2_name'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($r['program3_name'] ?? '-') ?></td>
                                 <td style="text-align: center;" class="status-badge"><?= htmlspecialchars($r['status']) ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -605,7 +634,7 @@ class RegistrantController
         $output = fopen('php://output', 'w');
 
         // Column headers
-        fputcsv($output, ['No', 'Nama Lengkap', 'Email', 'NIK', 'NISN', 'Jenis Kelamin', 'Agama', 'No Telepon', 'Pilihan Prodi 1', 'Pilihan Prodi 2', 'Status']);
+        fputcsv($output, ['No', 'Nama Lengkap', 'Email', 'NIK', 'NISN', 'Jenis Kelamin', 'Agama', 'No Telepon', 'Pilihan Prodi 1', 'Pilihan Prodi 2', 'Pilihan Prodi 3', 'Status']);
 
         $no = 1;
         foreach ($registrants as $r) {
@@ -620,6 +649,7 @@ class RegistrantController
                 $r['phone'],
                 $r['program1_name'] ?? '-',
                 $r['program2_name'] ?? '-',
+                $r['program3_name'] ?? '-',
                 $r['status']
             ]);
         }
@@ -628,19 +658,57 @@ class RegistrantController
         exit;
     }
 
-    private function generateExamCardPdf(array $registration)
+    private function generateExamCardPdf(array $registration, ?int $studyProgramId, Response $response): Response
     {
         $db = $this->registrations->getDb();
         $regId = $registration['id'];
         
         $stmt = $db->prepare("
-            SELECT rp.*, sp1.name as program1_name 
+            SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name
             FROM registration_programs rp
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id
+            LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             WHERE rp.registration_id = :reg_id LIMIT 1
         ");
         $stmt->execute(['reg_id' => $regId]);
         $prog = $stmt->fetch();
+
+        if (!$studyProgramId) {
+            $studyProgramId = $prog ? (int)$prog['program1_id'] : 0;
+        }
+
+        $selectedProgramName = '-';
+        if ($prog) {
+            if ((int)$prog['program1_id'] === $studyProgramId) {
+                $selectedProgramName = $prog['program1_name'];
+            } elseif ((int)$prog['program2_id'] === $studyProgramId) {
+                $selectedProgramName = $prog['program2_name'];
+            } elseif ((int)$prog['program3_id'] === $studyProgramId) {
+                $selectedProgramName = $prog['program3_name'];
+            }
+        }
+
+        $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+        $stmt->execute([
+            'wave_id' => $registration['wave_id'],
+            'prodi_id' => $studyProgramId
+        ]);
+        $waveStudyProgram = $stmt->fetch() ?: null;
+        $stages = $waveStudyProgram ? (json_decode($waveStudyProgram['exam_stages'] ?? '[]', true) ?: []) : [];
+
+        $photoSrc = null;
+        if (!empty($registration['photo_path'])) {
+            $fullPhotoPath = MAZU_PUBLIC_PATH . ltrim($registration['photo_path'], '/');
+            if (file_exists($fullPhotoPath)) {
+                $ext = strtolower(pathinfo($fullPhotoPath, PATHINFO_EXTENSION));
+                if ($ext !== 'png' || extension_loaded('gd')) {
+                    $imgData = base64_encode(file_get_contents($fullPhotoPath));
+                    $mimeType = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : (($ext === 'gif') ? 'image/gif' : 'image/png');
+                    $photoSrc = 'data:' . $mimeType . ';base64,' . $imgData;
+                }
+            }
+        }
 
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -659,7 +727,7 @@ class RegistrantController
                 .header h3 { margin: 0; font-size: 14px; color: #1e1b4b; }
                 .header p { margin: 3px 0 0 0; font-size: 10px; color: #4f46e5; font-weight: bold; }
                 .title { text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; color: #333; }
-                .photo-box { width: 90px; height: 120px; border: 1px solid #ccc; text-align: center; line-height: 120px; font-size: 9px; color: #999; float: left; background-color: #fff; margin-right: 20px; }
+                .photo-box { width: 90px; height: 120px; border: 1px solid #ccc; text-align: center; line-height: 120px; font-size: 9px; color: #999; float: left; background-color: #fff; margin-right: 20px; overflow: hidden; }
                 .info-table { float: left; width: 330px; font-size: 11px; border-collapse: collapse; }
                 .info-table td { padding: 4px 0; vertical-align: top; }
                 .info-table .label { width: 110px; color: #666; }
@@ -680,7 +748,13 @@ class RegistrantController
                 </div>
                 <div class="title">KARTU PESERTA UJIAN SELEKSI</div>
                 
-                <div class="photo-box">Foto 3x4</div>
+                <div class="photo-box" style="<?= $photoSrc ? 'line-height: normal;' : '' ?>">
+                    <?php if ($photoSrc): ?>
+                        <img src="<?= $photoSrc ?>" style="width: 90px; height: 120px; object-fit: cover; display: block;">
+                    <?php else: ?>
+                        Foto 3x4
+                    <?php endif; ?>
+                </div>
                 
                 <table class="info-table">
                     <tr>
@@ -701,16 +775,24 @@ class RegistrantController
                     <tr>
                         <td class="label">Program Studi Pilihan</td>
                         <td class="colon">:</td>
-                        <td><?= htmlspecialchars($prog['program1_name'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($selectedProgramName) ?></td>
                     </tr>
                 </table>
                 <div class="clearfix"></div>
 
                 <div class="schedule-box">
                     <strong>JADWAL & LOKASI UJIAN:</strong>
-                    Metode Ujian: Computer Based Test (CBT) secara Online / Mandiri<br>
-                    Ruangan: Virtual Room CBT (dapat diakses melalui dashboard)<br>
-                    Tanggal Pelaksanaan: Sesuai petunjuk pada menu Ujian Seleksi
+                    <?php if (empty($stages)): ?>
+                        Metode Ujian: Computer Based Test (CBT) secara Online / Mandiri<br>
+                        Ruangan: Virtual Room CBT (dapat diakses melalui dashboard)<br>
+                        Tanggal Pelaksanaan: Sesuai petunjuk pada menu Ujian Seleksi
+                    <?php else: 
+                        foreach ($stages as $stg): ?>
+                            Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?><br>
+                            Tanggal: <?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time']) ?>)<br>
+                            Tempat: <?= htmlspecialchars($stg['place']) ?> (<?= strtoupper($stg['type']) ?>)<br><br>
+                        <?php endforeach; 
+                    endif; ?>
                 </div>
 
                 <div class="footer">
@@ -736,24 +818,43 @@ class RegistrantController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream('Kartu_Ujian_' . str_replace(' ', '_', $registration['full_name']) . '.pdf', ['Attachment' => true]);
-        exit;
+        $pdfOutput = $dompdf->output();
+
+        $response->setHeader('Content-Type', 'application/pdf');
+        $response->setHeader('Content-Disposition', 'attachment; filename="Kartu_Ujian_' . str_replace(' ', '_', $registration['full_name']) . '.pdf"');
+        $response->setHeader('Content-Length', (string)strlen($pdfOutput));
+        $response->setContent($pdfOutput);
+        return $response;
     }
 
-    private function generateRegistrationFormPdf(array $registration)
+    private function generateRegistrationFormPdf(array $registration, Response $response): Response
     {
         $db = $this->registrations->getDb();
         $regId = $registration['id'];
 
         $stmt = $db->prepare("
-            SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name 
+            SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 
             FROM registration_programs rp
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             WHERE rp.registration_id = :reg_id LIMIT 1
         ");
         $stmt->execute(['reg_id' => $regId]);
         $prog = $stmt->fetch();
+
+        $photoSrc = null;
+        if (!empty($registration['photo_path'])) {
+            $fullPhotoPath = MAZU_PUBLIC_PATH . ltrim($registration['photo_path'], '/');
+            if (file_exists($fullPhotoPath)) {
+                $ext = strtolower(pathinfo($fullPhotoPath, PATHINFO_EXTENSION));
+                if ($ext !== 'png' || extension_loaded('gd')) {
+                    $imgData = base64_encode(file_get_contents($fullPhotoPath));
+                    $mimeType = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : (($ext === 'gif') ? 'image/gif' : 'image/png');
+                    $photoSrc = 'data:' . $mimeType . ';base64,' . $imgData;
+                }
+            }
+        }
 
         $stmt = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :reg_id LIMIT 1");
         $stmt->execute(['reg_id' => $regId]);
@@ -797,9 +898,16 @@ class RegistrantController
                 <h2><?= strtoupper(htmlspecialchars(get_setting('campus_name', 'KAMPUS MANDIRI KENCANA'))) ?></h2>
                 <h3>PANITIA PENERIMAAN MAHASISWA BARU (PMB) TAHUN AKADEMIK <?= date('Y') ?>/<?= date('Y') + 1 ?></h3>
             </div>
+            
+            <?php if ($photoSrc): ?>
+                <div style="float: right; width: 90px; height: 120px; border: 1px solid #ccc; overflow: hidden; margin-left: 20px; margin-bottom: 20px; text-align: center; background: #fff;">
+                    <img src="<?= $photoSrc ?>" style="width: 90px; height: 120px; object-fit: cover; display: block;">
+                </div>
+            <?php endif; ?>
+
             <div class="title">FORMULIR PENDAFTARAN MAHASISWA BARU</div>
 
-            <div class="section-title">1. Data Pendaftaran</div>
+            <div class="section-title" style="clear: left;">1. Data Pendaftaran</div>
             <table>
                 <tr>
                     <td class="label">ID Registrasi</td>
@@ -821,6 +929,13 @@ class RegistrantController
                         <td class="label">Program Studi Pilihan 2</td>
                         <td class="colon">:</td>
                         <td><?= htmlspecialchars($prog['program2_name']) ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($prog && !empty($prog['program3_name'])): ?>
+                    <tr>
+                        <td class="label">Program Studi Pilihan 3</td>
+                        <td class="colon">:</td>
+                        <td><?= htmlspecialchars($prog['program3_name']) ?></td>
                     </tr>
                 <?php endif; ?>
             </table>
@@ -966,8 +1081,13 @@ class RegistrantController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream('Formulir_Pendaftaran_' . str_replace(' ', '_', $registration['full_name']) . '.pdf', ['Attachment' => true]);
-        exit;
+        $pdfOutput = $dompdf->output();
+
+        $response->setHeader('Content-Type', 'application/pdf');
+        $response->setHeader('Content-Disposition', 'attachment; filename="Formulir_Pendaftaran_' . str_replace(' ', '_', $registration['full_name']) . '.pdf"');
+        $response->setHeader('Content-Length', (string)strlen($pdfOutput));
+        $response->setContent($pdfOutput);
+        return $response;
     }
 
     public function downloadExamCard(Request $request, Response $response)
@@ -980,7 +1100,8 @@ class RegistrantController
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');
         }
-        return $this->generateExamCardPdf($registration);
+        $prodiId = $request->input('study_program_id') ? (int)$request->input('study_program_id') : null;
+        return $this->generateExamCardPdf($registration, $prodiId, $response);
     }
 
     public function downloadRegistrationForm(Request $request, Response $response)
@@ -993,7 +1114,7 @@ class RegistrantController
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');
         }
-        return $this->generateRegistrationFormPdf($registration);
+        return $this->generateRegistrationFormPdf($registration, $response);
     }
 
     public function downloadExamCardAdmin(Request $request, Response $response)
@@ -1004,7 +1125,8 @@ class RegistrantController
         if (!$registration) {
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+ditemukan');
         }
-        return $this->generateExamCardPdf($registration);
+        $prodiId = $request->input('study_program_id') ? (int)$request->input('study_program_id') : null;
+        return $this->generateExamCardPdf($registration, $prodiId, $response);
     }
 
     public function downloadRegistrationFormAdmin(Request $request, Response $response)
@@ -1015,6 +1137,6 @@ class RegistrantController
         if (!$registration) {
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+ditemukan');
         }
-        return $this->generateRegistrationFormPdf($registration);
+        return $this->generateRegistrationFormPdf($registration, $response);
     }
 }

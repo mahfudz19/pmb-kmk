@@ -7,11 +7,12 @@
 
   <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 space-y-2">
     <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">⚙️ Pengaturan Gelombang & Program Studi</h2>
-    <p class="text-xs text-slate-500">Konfigurasikan program studi aktif, biaya pendaftaran, berkas syarat tambahan, serta tahapan ujian seleksi untuk gelombang: <strong><?= htmlspecialchars($wave['name']) ?></strong>.</p>
+    <p class="text-xs text-slate-500">Konfigurasikan program studi aktif, biaya formulir, berkas syarat tambahan, serta tahapan ujian seleksi untuk gelombang: <strong><?= htmlspecialchars($wave['name']) ?></strong>.</p>
   </div>
 
   <form id="wave-detail-form" method="POST" action="/admin/master/wave-detail/save" enctype="multipart/form-data" class="space-y-6">
     <input type="hidden" name="wave_id" value="<?= htmlspecialchars($wave['id']) ?>">
+
 
     <div class="grid grid-cols-1 gap-6">
       <?php foreach ($study_programs as $sp): 
@@ -38,45 +39,22 @@
           <!-- Configuration Inputs Panel -->
           <div id="config-panel-<?= $sp['id'] ?>" class="<?= $isConfigured ? '' : 'hidden' ?> p-6 space-y-6">
             
-            <!-- Fee Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Registration Fee (Fee 1) -->
-              <div class="bg-slate-50/30 p-5 rounded-2xl border border-slate-150 space-y-4">
-                <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">💵 Biaya Pendaftaran (Biaya Tahap 1)</h4>
-                <div class="space-y-3">
-                  <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Total Nominal (Rp)</label>
-                    <input type="number" name="registration_fee_total_<?= $sp['id'] ?>" value="<?= htmlspecialchars($config['registration_fee_total'] ?? 0) ?>" class="appearance-none block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm text-xs bg-white font-medium" placeholder="Contoh: 250000">
-                  </div>
-                  <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Upload PDF Rincian / Brosur</label>
-                    <input type="file" accept="application/pdf" name="registration_fee_archive_<?= $sp['id'] ?>" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer">
-                    <?php if (!empty($config['registration_fee_archive'])): ?>
-                      <p class="text-[10px] text-indigo-650 font-semibold mt-1">
-                        <a href="<?= htmlspecialchars($config['registration_fee_archive']) ?>" target="_blank" class="hover:underline">📄 Lihat PDF Rincian Saat Ini</a>
-                      </p>
-                    <?php endif; ?>
-                  </div>
+            <!-- Re-Registration Fee (Fee 2) -->
+            <div class="bg-slate-50/30 p-5 rounded-2xl border border-slate-150 space-y-4 max-w-xl">
+              <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-sans">💳 Biaya Daftar Ulang (Biaya Tahap 2)</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Total Nominal (Rp)</label>
+                  <input type="number" name="reregistration_fee_total_<?= $sp['id'] ?>" value="<?= htmlspecialchars($config['reregistration_fee_total'] ?? 0) ?>" class="appearance-none block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm text-xs bg-white font-medium" placeholder="Contoh: 1500000">
                 </div>
-              </div>
-
-              <!-- Re-Registration Fee (Fee 2) -->
-              <div class="bg-slate-50/30 p-5 rounded-2xl border border-slate-150 space-y-4">
-                <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-sans">💳 Biaya Daftar Ulang (Biaya Tahap 2)</h4>
-                <div class="space-y-3">
-                  <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Total Nominal (Rp)</label>
-                    <input type="number" name="reregistration_fee_total_<?= $sp['id'] ?>" value="<?= htmlspecialchars($config['reregistration_fee_total'] ?? 0) ?>" class="appearance-none block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm text-xs bg-white font-medium" placeholder="Contoh: 1500000">
-                  </div>
-                  <div class="space-y-1">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Upload PDF Panduan Daftar Ulang</label>
-                    <input type="file" accept="application/pdf" name="reregistration_fee_archive_<?= $sp['id'] ?>" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer">
-                    <?php if (!empty($config['reregistration_fee_archive'])): ?>
-                      <p class="text-[10px] text-indigo-650 font-semibold mt-1">
-                        <a href="<?= htmlspecialchars($config['reregistration_fee_archive']) ?>" target="_blank" class="hover:underline">📄 Lihat PDF Rincian Saat Ini</a>
-                      </p>
-                    <?php endif; ?>
-                  </div>
+                <div class="space-y-1">
+                  <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">Upload PDF Panduan Daftar Ulang</label>
+                  <input type="file" accept="application/pdf" name="reregistration_fee_archive_<?= $sp['id'] ?>" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer">
+                  <?php if (!empty($config['reregistration_fee_archive'])): ?>
+                    <p class="text-[10px] text-indigo-650 font-semibold mt-1">
+                      <a href="<?= htmlspecialchars($config['reregistration_fee_archive']) ?>" target="_blank" class="hover:underline">📄 Lihat PDF Rincian Saat Ini</a>
+                    </p>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -91,8 +69,8 @@
                 <!-- Header labels -->
                 <div class="grid grid-cols-12 gap-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider pl-1">
                   <div class="col-span-5">Nama Berkas Wajib</div>
-                  <div class="col-span-6">Keterangan / Panduan</div>
-                  <div class="col-span-1"></div>
+                  <div class="col-span-5">Keterangan / Panduan</div>
+                  <div class="col-span-2 text-right">Aksi</div>
                 </div>
                 
                 <?php 
@@ -110,11 +88,13 @@
                         <?php endforeach; ?>
                       </select>
                     </div>
-                    <div class="col-span-6">
+                    <div class="col-span-5">
                       <input type="text" name="doc_descriptions_<?= $sp['id'] ?>[]" value="<?= htmlspecialchars($doc['description'] ?? '') ?>" class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium" placeholder="Pilih jenis dokumen untuk memuat deskripsi default">
                     </div>
-                    <div class="col-span-1 text-center">
-                      <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold font-mono cursor-pointer">&times;</button>
+                    <div class="col-span-2 text-right">
+                      <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1 transition-colors">
+                        &times; Hapus Syarat
+                      </button>
                     </div>
                   </div>
                 <?php endforeach; endif; ?>
@@ -247,11 +227,13 @@
           ${optionsHtml}
         </select>
       </div>
-      <div class="col-span-6">
+      <div class="col-span-5">
         <input type="text" name="doc_descriptions_${prodiId}[]" class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium" placeholder="Pilih jenis dokumen untuk memuat deskripsi default">
       </div>
-      <div class="col-span-1 text-center">
-        <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold font-mono cursor-pointer">&times;</button>
+      <div class="col-span-2 text-right">
+        <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1 transition-colors">
+          &times; Hapus Syarat
+        </button>
       </div>
     `;
     container.appendChild(row);

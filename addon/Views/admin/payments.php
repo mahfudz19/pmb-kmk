@@ -3,7 +3,7 @@
   <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Verifikasi Pembayaran PMB</h2>
-      <p class="mt-1 text-xs text-slate-500">Kelola dan verifikasi transaksi bukti pembayaran biaya pendaftaran calon mahasiswa baru.</p>
+      <p class="mt-1 text-xs text-slate-500">Kelola dan verifikasi transaksi bukti pembayaran biaya formulir calon mahasiswa baru.</p>
     </div>
   </div>
 

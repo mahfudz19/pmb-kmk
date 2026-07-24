@@ -22,6 +22,26 @@
     </div>
   </div>
 
+  <?php if (isset($_GET['success'])): ?>
+    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex gap-3 text-emerald-800 text-xs">
+      <span class="text-lg">✅</span>
+      <div>
+        <p class="font-bold">Berhasil!</p>
+        <p class="mt-0.5"><?= htmlspecialchars($_GET['success']) ?></p>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <?php if (isset($_GET['error'])): ?>
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl flex gap-3 text-red-800 text-xs">
+      <span class="text-lg">⚠️</span>
+      <div>
+        <p class="font-bold">Gagal!</p>
+        <p class="mt-0.5"><?= htmlspecialchars($_GET['error']) ?></p>
+      </div>
+    </div>
+  <?php endif; ?>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Panel: Applicant & Payment info -->
     <div class="lg:col-span-1 space-y-6">
@@ -134,6 +154,25 @@
               ><?= htmlspecialchars($re_registration['rejection_reason'] ?? '') ?></textarea>
             </div>
 
+            <!-- NIM Input Section -->
+            <div class="space-y-2 border-t border-slate-100 pt-4">
+              <label for="nim" class="block text-xs font-bold text-slate-700">Nomor Induk Mahasiswa (NIM) <span class="text-slate-400 font-medium">(Opsional)</span></label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  name="nim"
+                  id="nim"
+                  class="block flex-1 px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
+                  placeholder="Masukkan NIM manual atau klik generate..."
+                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
+                />
+                <!-- <button type="button" onclick="autoGenerateNim()" class="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1">
+                  🔄 Generate
+                </button> -->
+              </div>
+              <p class="text-[10px] text-slate-400">Kosongkan jika NIM belum ditentukan (di dashboard mahasiswa akan berstatus PENDING).</p>
+            </div>
+
             <div class="pt-3 flex justify-end">
               <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full shadow-md text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 cursor-pointer">
                 💾 Simpan Hasil Verifikasi
@@ -156,6 +195,27 @@
     } else {
       box.classList.add('hidden');
       textarea.removeAttribute('required');
+    }
+  }
+
+  async function autoGenerateNim() {
+    const button = document.querySelector('button[onclick="autoGenerateNim()"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '⌛ Generating...';
+    try {
+      const response = await fetch('/admin/re-registrations/generate-nim?registration_id=<?= $registration['id'] ?>');
+      const data = await response.json();
+      if (data.nim) {
+        document.getElementById('nim').value = data.nim;
+      } else {
+        alert('Gagal membuat NIM: ' + (data.error || 'Terjadi kesalahan'));
+      }
+    } catch (e) {
+      alert('Gagal terhubung ke server');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = originalText;
     }
   }
 </script>

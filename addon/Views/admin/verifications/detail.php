@@ -112,6 +112,7 @@
             <h4 class="font-bold text-indigo-750">🛤️ Pilihan Program Studi</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Pilihan 1:</strong> <?= htmlspecialchars($program['prodi1_name'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Pilihan 2:</strong> <?= htmlspecialchars($program['prodi2_name'] ?? 'Tidak Memilih') ?></p>
+            <p class="text-slate-500"><strong class="text-slate-700">Pilihan 3:</strong> <?= htmlspecialchars($program['prodi3_name'] ?? 'Tidak Memilih') ?></p>
           </div>
         </div>
       </div>
@@ -124,71 +125,90 @@
           <span>📎</span> Berkas Dokumen Persyaratan
         </h3>
         
-        <div class="space-y-4">
-          <?php foreach ($document_types as $dt): ?>
-            <?php 
-              $uploaded = $uploaded_docs[$dt['id']] ?? null;
-            ?>
-            <div class="p-4 bg-slate-50/50 rounded-2xl border border-slate-150 space-y-3">
-              <div class="flex justify-between items-start gap-2">
-                <div>
-                  <h4 class="text-xs font-bold text-slate-800"><?= htmlspecialchars($dt['name']) ?></h4>
-                  <span class="text-[9px] text-slate-400 font-semibold block"><?= $dt['is_required'] ? 'Wajib' : 'Opsional' ?></span>
-                </div>
-                <div>
+        <div class="space-y-6">
+          <?php if (empty($document_types)): ?>
+            <div class="p-8 text-center text-xs text-slate-400 italic">Belum ada tipe dokumen persyaratan yang dikonfigurasi.</div>
+          <?php else:
+            $groupedTypes = [];
+            foreach ($document_types as $dt) {
+                $prodiName = $dt['study_program_name'] ?: 'Umum';
+                $groupedTypes[$prodiName][] = $dt;
+            }
+            foreach ($groupedTypes as $prodiName => $types):
+          ?>
+            <div class="bg-indigo-50/50 px-4 py-2 rounded-xl text-xs font-bold text-indigo-900 border border-indigo-100/50 uppercase tracking-wider">
+              Program Studi: <?= htmlspecialchars($prodiName) ?>
+            </div>
+            
+            <div class="space-y-3 pl-2">
+              <?php foreach ($types as $dt): ?>
+                <?php 
+                  $prodiId = $dt['study_program_id'] ?? 'global';
+                  $uploaded = $uploaded_docs[$dt['document_type_id'] . '_' . $prodiId] ?? null;
+                  $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $dt['name']);
+                ?>
+                <div class="p-4 bg-slate-50/30 rounded-2xl border border-slate-150 space-y-3">
+                  <div class="flex justify-between items-start gap-3">
+                    <div class="flex-1 min-w-0">
+                      <h4 class="text-xs font-bold text-slate-800 break-words"><?= htmlspecialchars($docDisplayName) ?></h4>
+                      <span class="text-[9px] text-slate-400 font-semibold block">Wajib</span>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <?php if ($uploaded): ?>
+                        <?php if ($uploaded['status'] === 'Pending'): ?>
+                          <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 border border-amber-300 text-amber-700 animate-pulse">Pending</span>
+                        <?php elseif ($uploaded['status'] === 'Approved'): ?>
+                          <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Approved</span>
+                        <?php elseif ($uploaded['status'] === 'Rejected'): ?>
+                          <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 border border-red-300 text-red-700">Rejected</span>
+                        <?php endif; ?>
+                      <?php else: ?>
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Belum Ada</span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+
                   <?php if ($uploaded): ?>
-                    <?php if ($uploaded['status'] === 'Pending'): ?>
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 border border-amber-300 text-amber-700 animate-pulse">Pending</span>
-                    <?php elseif ($uploaded['status'] === 'Approved'): ?>
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Approved</span>
-                    <?php elseif ($uploaded['status'] === 'Rejected'): ?>
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 border border-red-300 text-red-700">Rejected</span>
-                    <?php endif; ?>
-                  <?php else: ?>
-                    <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Belum Ada</span>
-                  <?php endif; ?>
-                </div>
-              </div>
-
-              <?php if ($uploaded): ?>
-                <?php if ($uploaded['status'] === 'Rejected' && !empty($uploaded['rejection_reason'])): ?>
-                  <p class="text-[9px] text-red-650 font-bold bg-red-50 p-2 rounded-lg border border-red-100">Catatan: <?= htmlspecialchars($uploaded['rejection_reason']) ?></p>
-                <?php endif; ?>
-
-                <div class="flex gap-2">
-                  <button 
-                    type="button" 
-                    onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
-                    class="flex-1 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-full transition-colors cursor-pointer text-center"
-                  >
-                    👁️ Preview Berkas
-                  </button>
-
-                  <div class="flex gap-1.5">
-                    <?php if ($uploaded['status'] !== 'Approved'): ?>
-                      <form action="/admin/verifications/verify-document" method="POST" onsubmit="return confirmAction(event, 'Setujui Dokumen', 'Apakah Anda yakin ingin menyetujui dokumen ini?')">
-                        <input type="hidden" name="document_id" value="<?= $uploaded['id'] ?>">
-                        <input type="hidden" name="status" value="Approved">
-                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm">
-                          Setujui
-                        </button>
-                      </form>
+                    <?php if ($uploaded['status'] === 'Rejected' && !empty($uploaded['rejection_reason'])): ?>
+                      <p class="text-[9px] text-red-650 font-bold bg-red-50 p-2 rounded-lg border border-red-100">Catatan: <?= htmlspecialchars($uploaded['rejection_reason']) ?></p>
                     <?php endif; ?>
 
-                    <?php if ($uploaded['status'] !== 'Rejected'): ?>
+                    <div class="flex gap-2">
                       <button 
                         type="button" 
-                        onclick="openRejectModal(<?= $uploaded['id'] ?>)"
-                        class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm"
+                        onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
+                        class="flex-1 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-full transition-colors cursor-pointer text-center"
                       >
-                        Tolak
+                        👁️ Preview Berkas
                       </button>
-                    <?php endif; ?>
-                  </div>
+
+                      <div class="flex gap-1.5">
+                        <?php if ($uploaded['status'] !== 'Approved'): ?>
+                          <form action="/admin/verifications/verify-document" method="POST" onsubmit="return confirmAction(event, 'Setujui Dokumen', 'Apakah Anda yakin ingin menyetujui dokumen ini?')">
+                            <input type="hidden" name="document_id" value="<?= $uploaded['id'] ?>">
+                            <input type="hidden" name="status" value="Approved">
+                            <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm">
+                              Setujui
+                            </button>
+                          </form>
+                        <?php endif; ?>
+
+                        <?php if ($uploaded['status'] !== 'Rejected'): ?>
+                          <button 
+                            type="button" 
+                            onclick="openRejectModal(<?= $uploaded['id'] ?>)"
+                            class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm"
+                          >
+                            Tolak
+                          </button>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  <?php endif; ?>
                 </div>
-              <?php endif; ?>
+              <?php endforeach; ?>
             </div>
-          <?php endforeach; ?>
+          <?php endforeach; endif; ?>
         </div>
       </div>
     </div>

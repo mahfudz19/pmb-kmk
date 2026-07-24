@@ -57,49 +57,55 @@ foreach ($waveProdiList as $wp) {
   <!-- Top Stepper Header -->
   <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80">
     <h2 class="text-xl font-extrabold text-slate-900 tracking-tight text-center sm:text-left">Formulir Pendaftaran Mahasiswa Baru</h2>
-    <p class="mt-1 text-xs text-slate-500 text-center sm:text-left">Lengkapi formulir pendaftaran 6 langkah di bawah untuk mendaftar kuliah.</p>
+    <p class="mt-1 text-xs text-slate-500 text-center sm:text-left">Lengkapi formulir pendaftaran 7 langkah di bawah untuk mendaftar kuliah.</p>
     
     <!-- Stepper Navigation -->
-    <div class="relative flex items-center justify-between gap-2 mt-8 max-w-2xl mx-auto">
+    <div class="relative flex items-center justify-between gap-2 mt-8 max-w-3xl mx-auto">
       <div class="absolute top-[18px] left-[5%] right-[5%] h-0.5 bg-slate-100 -z-1" id="stepper-line"></div>
       
       <!-- Step 1 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-1">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-sm border-4 border-indigo-150 transition-all cursor-default">1</div>
-        <span class="text-[10px] md:text-[11px] font-bold text-indigo-600 step-label">Data Pribadi</span>
+        <span class="text-[10px] md:text-[11px] font-bold text-indigo-600 step-label">Pilihan PMB</span>
       </div>
 
       <!-- Step 2 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-2">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">2</div>
-        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Alamat</span>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Data Pribadi</span>
       </div>
 
       <!-- Step 3 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-3">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">3</div>
-        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Orang Tua & Wali</span>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Alamat</span>
       </div>
 
       <!-- Step 4 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-4">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">4</div>
-        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Kebutuhan Khusus</span>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Orang Tua</span>
       </div>
 
       <!-- Step 5 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-5">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">5</div>
-        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Pendidikan</span>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Kebutuhan</span>
       </div>
 
       <!-- Step 6 Indicator -->
       <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-6">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">6</div>
-        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Pilihan & Submit</span>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Pendidikan</span>
+      </div>
+
+      <!-- Step 7 Indicator -->
+      <div class="flex flex-col items-center text-center space-y-1.5 z-10 w-16" id="step-ind-7">
+        <div class="flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-400 font-bold text-sm border-4 border-transparent transition-all cursor-default">7</div>
+        <span class="text-[10px] md:text-[11px] font-semibold text-slate-400 step-label">Konfirmasi</span>
       </div>
     </div>
-    <div class="block sm:hidden text-center text-xs font-extrabold text-indigo-600 mt-4" id="mobile-step-title">Langkah 1: Data Pribadi</div>
+    <div class="block sm:hidden text-center text-xs font-extrabold text-indigo-600 mt-4" id="mobile-step-title">Langkah 1: Pilihan PMB</div>
   </div>
 
   <!-- Alert Container for errors -->
@@ -112,8 +118,67 @@ foreach ($waveProdiList as $wp) {
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden p-6 md:p-8">
     <form id="wizard-form" method="POST" action="/pendaftaran/submit" class="space-y-6">
       
-      <!-- STEP 1: DATA PRIBADI -->
+      <!-- STEP 1: PILIHAN GELOMBANG & PROGRAM STUDI -->
       <div id="step-content-1" class="step-pane space-y-6">
+        <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+          <span>🛤️</span> Gelombang & Program Studi Pilihan
+        </h3>
+        
+        <div class="grid grid-cols-1 gap-6">
+          <div class="space-y-1">
+            <label for="wave_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Gelombang Pendaftaran <span class="text-red-550">*</span></label>
+            <select id="wave_id" name="wave_id" onchange="onWaveChange(this, true)" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
+              <option value="" disabled <?= empty($registration['wave_id']) ? 'selected' : '' ?>>Pilih Gelombang</option>
+              <?php foreach ($waves as $w): ?>
+                <?php if ($w['is_active']): ?>
+                  <option value="<?= $w['id'] ?>" data-year="<?= htmlspecialchars($w['academic_year'] ?? '') ?>" data-description="<?= htmlspecialchars($w['description'] ?? '') ?>" data-start="<?= date('d M Y', strtotime($w['start_date'])) ?>" data-end="<?= date('d M Y', strtotime($w['end_date'])) ?>" <?= ($registration['wave_id'] ?? '') == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?> (Tahun Akademik: <?= htmlspecialchars($w['academic_year'] ?? '-') ?>) — Periode: <?= date('d M Y', strtotime($w['start_date'])) ?> s/d <?= date('d M Y', strtotime($w['end_date'])) ?></option>
+                <?php endif; ?>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div id="wave-info-box" class="hidden bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 text-xs text-indigo-900 space-y-1.5">
+            <p><strong>Tahun Akademik:</strong> <span id="wave-info-year">-</span></p>
+            <p><strong>Periode Pendaftaran:</strong> <span id="wave-info-dates">-</span></p>
+            <p id="wave-info-desc" class="text-slate-600 mt-1"></p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="space-y-1">
+              <label for="program1_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilihan Program Studi 1 <span class="text-red-550">*</span></label>
+              <select id="program1_id" name="program1_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
+                <option value="" <?= empty($program['program1_id']) ? 'selected' : '' ?>>Pilih Program Studi 1</option>
+                <?php foreach ($study_programs as $sp): ?>
+                  <option value="<?= $sp['id'] ?>" <?= ($program['program1_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label for="program2_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilihan Program Studi 2 (Opsional)</label>
+              <select id="program2_id" name="program2_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
+                <option value="" <?= empty($program['program2_id']) ? 'selected' : '' ?>>Pilih Program Studi 2</option>
+                <?php foreach ($study_programs as $sp): ?>
+                  <option value="<?= $sp['id'] ?>" <?= ($program['program2_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label for="program3_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilihan Program Studi 3 (Opsional)</label>
+              <select id="program3_id" name="program3_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
+                <option value="" <?= empty($program['program3_id']) ? 'selected' : '' ?>>Pilih Program Studi 3</option>
+                <?php foreach ($study_programs as $sp): ?>
+                  <option value="<?= $sp['id'] ?>" <?= ($program['program3_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: DATA PRIBADI -->
+      <div id="step-content-2" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>👤</span> Data Pribadi Calon Mahasiswa
         </h3>
@@ -166,11 +231,23 @@ foreach ($waveProdiList as $wp) {
               <option value="sosialisasi" <?= ($registration['info_source'] ?? '') === 'sosialisasi' ? 'selected' : '' ?>>Sosialisasi</option>
             </select>
           </div>
+
+          <div class="space-y-1 md:col-span-2">
+            <label for="photo" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Unggah Foto Resmi 3x4 <span class="text-red-550">*</span></label>
+            <input type="file" accept="image/jpeg,image/png" id="photo" name="photo" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer">
+            <span class="text-[10px] text-slate-400 font-medium block mt-1">💡 Disarankan menggunakan format <strong>JPG / JPEG</strong>.</span>
+            <?php if (!empty($registration['photo_path'])): ?>
+              <div class="mt-2 flex items-center gap-2">
+                <img src="<?= htmlspecialchars($registration['photo_path']) ?>" class="w-16 h-20 object-cover rounded-lg border border-slate-200 shadow-sm" alt="Foto 3x4">
+                <span class="text-[10px] text-slate-500 font-semibold">Foto saat ini</span>
+              </div>
+            <?php endif; ?>
+          </div>
         </div>
       </div>
 
-      <!-- STEP 2: ALAMAT -->
-      <div id="step-content-2" class="step-pane space-y-6 hidden">
+      <!-- STEP 3: ALAMAT -->
+      <div id="step-content-3" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>📍</span> Data Alamat Lengkap & Kontak
         </h3>
@@ -272,6 +349,11 @@ foreach ($waveProdiList as $wp) {
             </select>
           </div>
 
+          <div class="space-y-1 <?= ($address['kps_receiver'] ?? '') === 'ya' ? '' : 'hidden' ?>" id="kps_number_wrapper">
+            <label for="kps_number" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Nomor KPS <span class="text-red-550">*</span></label>
+            <input type="text" id="kps_number" name="kps_number" value="<?= htmlspecialchars($address['kps_number'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium" placeholder="Masukkan Nomor KPS">
+          </div>
+
           <div class="space-y-1">
             <label for="transportation" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Alat Transportasi</label>
             <select id="transportation" name="transportation" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
@@ -299,8 +381,8 @@ foreach ($waveProdiList as $wp) {
         </div>
       </div>
 
-      <!-- STEP 3: ORANG TUA & WALI -->
-      <div id="step-content-3" class="step-pane space-y-6 hidden">
+      <!-- STEP 4: ORANG TUA & WALI -->
+      <div id="step-content-4" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>👨‍👩‍👦</span> Data Orang Tua & Wali
         </h3>
@@ -469,8 +551,8 @@ foreach ($waveProdiList as $wp) {
         </div>
       </div>
 
-      <!-- STEP 4: KEBUTUHAN KHUSUS -->
-      <div id="step-content-4" class="step-pane space-y-6 hidden">
+      <!-- STEP 5: KEBUTUHAN KHUSUS -->
+      <div id="step-content-5" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>♿</span> Kebutuhan Khusus
         </h3>
@@ -552,8 +634,8 @@ foreach ($waveProdiList as $wp) {
         </div>
       </div>
 
-      <!-- STEP 5: RIWAYAT PENDIDIKAN -->
-      <div id="step-content-5" class="step-pane space-y-6 hidden">
+      <!-- STEP 6: RIWAYAT PENDIDIKAN -->
+      <div id="step-content-6" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>🏫</span> Asal Sekolah & Pendidikan Terakhir
         </h3>
@@ -586,84 +668,18 @@ foreach ($waveProdiList as $wp) {
         </div>
       </div>
 
-      <!-- STEP 6: PILIHAN PROGRAM STUDI & SUBMIT -->
-      <div id="step-content-6" class="step-pane space-y-6 hidden">
+      <!-- STEP 7: KONFIRMASI & FINALISASI -->
+      <div id="step-content-7" class="step-pane space-y-6 hidden">
         <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
-          <span>🛤️</span> Jalur & Program Studi Pilihan
+          <span>🔍</span> Konfirmasi & Finalisasi Pendaftaran
         </h3>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-1">
-            <label for="academic_year_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Tahun Akademik <span class="text-red-550">*</span></label>
-            <select id="academic_year_id" name="academic_year_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" disabled <?= empty($registration['academic_year_id']) ? 'selected' : '' ?>>Pilih Tahun Akademik</option>
-              <?php foreach ($academic_years as $ay): ?>
-                <?php if ($ay['is_active']): ?>
-                  <option value="<?= $ay['id'] ?>" <?= ($registration['academic_year_id'] ?? '') == $ay['id'] ? 'selected' : '' ?>><?= htmlspecialchars($ay['year']) ?> (Aktif)</option>
-                <?php endif; ?>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="space-y-1">
-            <label for="wave_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Gelombang <span class="text-red-550">*</span></label>
-            <select id="wave_id" name="wave_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" disabled <?= empty($registration['wave_id']) ? 'selected' : '' ?>>Pilih Gelombang</option>
-              <?php foreach ($waves as $w): ?>
-                <?php if ($w['is_active']): ?>
-                  <option value="<?= $w['id'] ?>" <?= ($registration['wave_id'] ?? '') == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?> (<?= htmlspecialchars($w['start_date']) ?> s.d <?= htmlspecialchars($w['end_date']) ?>)</option>
-                <?php endif; ?>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="space-y-1">
-            <label for="admission_path_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Jalur Masuk <span class="text-red-550">*</span></label>
-            <select id="admission_path_id" name="admission_path_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" disabled <?= empty($registration['admission_path_id']) ? 'selected' : '' ?>>Pilih Jalur</option>
-              <?php foreach ($admission_paths as $ap): ?>
-                <option value="<?= $ap['id'] ?>" <?= ($registration['admission_path_id'] ?? '') == $ap['id'] ? 'selected' : '' ?>><?= htmlspecialchars($ap['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="space-y-1">
-            <label for="class_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Jenis Kelas <span class="text-red-550">*</span></label>
-            <select id="class_id" name="class_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" disabled <?= empty($registration['class_id']) ? 'selected' : '' ?>>Pilih Kelas</option>
-              <?php foreach ($classes as $c): ?>
-                <option value="<?= $c['id'] ?>" <?= ($registration['class_id'] ?? '') == $c['id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="space-y-1">
-            <label for="program1_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilihan Program Studi 1 <span class="text-red-550">*</span></label>
-            <select id="program1_id" name="program1_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" <?= empty($program['program1_id']) ? 'selected' : '' ?>>Pilih Program Studi 1</option>
-              <?php foreach ($study_programs as $sp): ?>
-                <option value="<?= $sp['id'] ?>" <?= ($program['program1_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="space-y-1">
-            <label for="program2_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilihan Program Studi 2 (Opsional)</label>
-            <select id="program2_id" name="program2_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium">
-              <option value="" <?= empty($program['program2_id']) ? 'selected' : '' ?>>Pilih Program Studi 2 (Kosongkan jika tidak memilih)</option>
-              <?php foreach ($study_programs as $sp): ?>
-                <option value="<?= $sp['id'] ?>" <?= ($program['program2_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-        </div>
-
         <!-- REVIEW SUMMARY SECTION -->
-        <div class="bg-indigo-50/40 p-6 rounded-2xl border border-indigo-100 space-y-4 mt-8">
-          <h4 class="text-sm font-bold text-indigo-850">🔍 Review Ringkasan Formulir</h4>
+        <div class="bg-indigo-50/40 p-6 rounded-2xl border border-indigo-100 space-y-4">
+          <h4 class="text-sm font-bold text-indigo-850">Review Ringkasan Formulir</h4>
           <p class="text-[11px] text-slate-500 leading-normal">Silakan periksa kembali semua data yang telah Anda isi sebelum mengirim pendaftaran secara permanen.</p>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
             <div class="space-y-1.5">
               <p class="text-slate-500"><strong class="text-slate-700">Nama Lengkap:</strong> <span id="rev-name">-</span></p>
               <p class="text-slate-500"><strong class="text-slate-700">NIK / NISN:</strong> <span id="rev-nik-nisn">-</span></p>
@@ -677,6 +693,7 @@ foreach ($waveProdiList as $wp) {
               <p class="text-slate-500"><strong class="text-slate-700">Nilai Rata-Rata:</strong> <span id="rev-score">-</span></p>
               <p class="text-slate-500"><strong class="text-slate-700">Pilihan Prodi 1:</strong> <span id="rev-prodi1">-</span></p>
               <p class="text-slate-500"><strong class="text-slate-700">Pilihan Prodi 2:</strong> <span id="rev-prodi2">-</span></p>
+              <p class="text-slate-500"><strong class="text-slate-700">Pilihan Prodi 3:</strong> <span id="rev-prodi3">-</span></p>
             </div>
           </div>
         </div>
@@ -696,37 +713,37 @@ foreach ($waveProdiList as $wp) {
           Sebelumnya
         </button>
 
-        <button type="button" id="btn-draft" onclick="saveActiveStepDraft()" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-all focus:outline-none">
-          Simpan Draft
-        </button>
+        <div class="ml-auto">
+          <button type="button" id="btn-next" onclick="navigateStep(1)" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
+            Selanjutnya
+          </button>
 
-        <button type="button" id="btn-next" onclick="navigateStep(1)" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
-          Selanjutnya
-        </button>
-
-        <button type="submit" id="btn-submit" class="hidden px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
-          Kunci & Finalisasi Pendaftaran
-        </button>
+          <button type="submit" id="btn-submit" class="hidden px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
+            Kunci & Finalisasi Pendaftaran
+          </button>
+        </div>
       </div>
     </form>
   </div>
 </div>
 
 <script>
-  let currentStep = 1;
-  const maxSteps = 6;
+  let currentStep = <?= (int)($registration['current_step'] ?? 1) ?>;
+  let isFirstLoad = true;
+  const maxSteps = 7;
 
   function showStep(step) {
     document.querySelectorAll('.step-pane').forEach(pane => pane.classList.add('hidden'));
     document.getElementById(`step-content-${step}`).classList.remove('hidden');
 
     const stepTitles = [
+      'Pilihan PMB',
       'Data Pribadi',
       'Alamat Lengkap',
       'Orang Tua & Wali',
       'Kebutuhan Khusus',
       'Riwayat Pendidikan',
-      'Pilihan & Konfirmasi'
+      'Konfirmasi & Submit'
     ];
     const mobileTitle = document.getElementById('mobile-step-title');
     if (mobileTitle) {
@@ -778,12 +795,34 @@ foreach ($waveProdiList as $wp) {
     // Hide error alert
     document.getElementById('step-error-alert').classList.add('hidden');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateActiveStepOnServer(step);
   }
 
-  async function saveActiveStepDraft() {
+  async function updateActiveStepOnServer(stepNum) {
+    if (isFirstLoad) {
+      isFirstLoad = false;
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('current_step', stepNum);
+      await fetch('/pendaftaran/step', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      });
+    } catch (e) {}
+  }
+
+  async function saveActiveStepDraft(targetStep = null) {
     const form = document.getElementById('wizard-form');
     const formData = new FormData(form);
     formData.append('step', currentStep);
+    if (targetStep !== null) {
+      formData.append('current_step', targetStep);
+    }
 
     try {
       const response = await fetch('/pendaftaran/save', {
@@ -804,7 +843,7 @@ foreach ($waveProdiList as $wp) {
         return false;
       }
     } catch (e) {
-      showErrorAlert('Gagal tersambung ke server');
+      showErrorAlert('Gagal tersambung ke server: ' + e.message);
       return false;
     }
   }
@@ -816,6 +855,26 @@ foreach ($waveProdiList as $wp) {
     });
 
     if (step === 1) {
+      const wave = document.getElementById('wave_id');
+      const prog1 = document.getElementById('program1_id');
+      const prog2 = document.getElementById('program2_id');
+      const prog3 = document.getElementById('program3_id');
+
+      if (!wave.value) return markError(wave, 'Gelombang Pendaftaran wajib dipilih');
+      if (!prog1.value) return markError(prog1, 'Pilihan Program Studi 1 wajib dipilih');
+      
+      const prodis = [prog1.value];
+      if (prog2.value) {
+        if (prodis.includes(prog2.value)) return markError(prog2, 'Pilihan program studi 1 dan program studi 2 tidak boleh sama');
+        prodis.push(prog2.value);
+      }
+      if (prog3.value) {
+        if (prodis.includes(prog3.value)) return markError(prog3, 'Pilihan program studi tidak boleh ada yang sama');
+        prodis.push(prog3.value);
+      }
+    }
+
+    if (step === 2) {
       const fullName = document.getElementById('full_name');
       const birthPlace = document.getElementById('birth_place');
       const birthDate = document.getElementById('birth_date');
@@ -823,6 +882,8 @@ foreach ($waveProdiList as $wp) {
       const religion = document.getElementById('religion');
       const motherName = document.getElementById('mother_name');
       const infoSource = document.getElementById('info_source');
+      const photo = document.getElementById('photo');
+      const hasExistingPhoto = <?= !empty($registration['photo_path']) ? 'true' : 'false' ?>;
 
       if (!fullName.value.trim()) return markError(fullName, 'Nama Lengkap wajib diisi');
       if (!birthPlace.value.trim()) return markError(birthPlace, 'Tempat Lahir wajib diisi');
@@ -832,9 +893,13 @@ foreach ($waveProdiList as $wp) {
       if (!religion.value) return markError(religion, 'Agama wajib dipilih');
       if (!motherName.value.trim()) return markError(motherName, 'Nama Ibu Kandung wajib diisi');
       if (!infoSource.value) return markError(infoSource, 'Info kampus wajib dipilih');
+      
+      if (!hasExistingPhoto && !photo.value) {
+        return markError(photo, 'Foto resmi 3x4 wajib diunggah');
+      }
     }
 
-    if (step === 2) {
+    if (step === 3) {
       const citizenship = document.getElementById('citizenship');
       const nik = document.getElementById('nik');
       const nisn = document.getElementById('nisn');
@@ -858,11 +923,15 @@ foreach ($waveProdiList as $wp) {
       if (!email.value.trim()) return markError(email, 'Email wajib diisi');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) return markError(email, 'Format email tidak valid');
       if (!kpsReceiver.value) return markError(kpsReceiver, 'Penerima KPS wajib dipilih');
+      if (kpsReceiver.value === 'ya') {
+        const kpsNumber = document.getElementById('kps_number');
+        if (!kpsNumber.value.trim()) return markError(kpsNumber, 'Nomor KPS wajib diisi');
+      }
       if (!district.value) return markError(district, 'Kecamatan wajib dipilih');
       if (postalCode.value.trim() && !/^\d{5}$/.test(postalCode.value.trim())) return markError(postalCode, 'Kode Pos harus berupa 5 digit angka');
     }
 
-    if (step === 3) {
+    if (step === 4) {
       const fatherName = document.getElementById('father_name');
       const fatherNik = document.getElementById('father_nik');
       const fatherBirthDate = document.getElementById('father_birth_date');
@@ -913,12 +982,12 @@ foreach ($waveProdiList as $wp) {
       }
     }
 
-    if (step === 4) {
+    if (step === 5) {
       const hasSpecialNeeds = document.getElementById('has_special_needs');
       if (!hasSpecialNeeds.value) return markError(hasSpecialNeeds, 'Pilihan Kebutuhan Khusus wajib dipilih');
     }
 
-    if (step === 5) {
+    if (step === 6) {
       const schoolName = document.getElementById('school_name');
       const schoolMajor = document.getElementById('school_major');
       const graduationYear = document.getElementById('graduation_year');
@@ -935,24 +1004,6 @@ foreach ($waveProdiList as $wp) {
       if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) return markError(averageScore, 'Rata-rata Nilai harus berupa angka antara 0 s/d 100');
     }
 
-    if (step === 6) {
-      const ay = document.getElementById('academic_year_id');
-      const wave = document.getElementById('wave_id');
-      const path = document.getElementById('admission_path_id');
-      const clazz = document.getElementById('class_id');
-      const prog1 = document.getElementById('program1_id');
-      const prog2 = document.getElementById('program2_id');
-
-      if (!ay.value) return markError(ay, 'Tahun Akademik wajib dipilih');
-      if (!wave.value) return markError(wave, 'Gelombang Pendaftaran wajib dipilih');
-      if (!path.value) return markError(path, 'Jalur Masuk wajib dipilih');
-      if (!clazz.value) return markError(clazz, 'Pilihan Kelas wajib dipilih');
-      if (!prog1.value) return markError(prog1, 'Pilihan Program Studi 1 wajib dipilih');
-      if (prog1.value && prog2.value && prog1.value === prog2.value) {
-        return markError(prog2, 'Pilihan program studi 1 dan program studi 2 tidak boleh sama');
-      }
-    }
-
     return true;
   }
 
@@ -965,16 +1016,17 @@ foreach ($waveProdiList as $wp) {
   }
 
   async function navigateStep(direction) {
+    let nextStep = currentStep + direction;
+    if (nextStep < 1) nextStep = 1;
+    if (nextStep > maxSteps) nextStep = maxSteps;
+
     if (direction === 1) {
       if (!validateStep(currentStep)) return;
-      const isSaved = await saveActiveStepDraft();
+      const isSaved = await saveActiveStepDraft(nextStep);
       if (!isSaved) return;
     }
 
-    currentStep += direction;
-    if (currentStep < 1) currentStep = 1;
-    if (currentStep > maxSteps) currentStep = maxSteps;
-
+    currentStep = nextStep;
     showStep(currentStep);
   }
 
@@ -1084,6 +1136,9 @@ foreach ($waveProdiList as $wp) {
 
     const p2 = document.getElementById('program2_id');
     document.getElementById('rev-prodi2').textContent = p2.options[p2.selectedIndex]?.value ? p2.options[p2.selectedIndex].text : 'Tidak Memilih';
+
+    const p3 = document.getElementById('program3_id');
+    document.getElementById('rev-prodi3').textContent = p3.options[p3.selectedIndex]?.value ? p3.options[p3.selectedIndex].text : 'Tidak Memilih';
   }
 
   const waveStudyPrograms = <?= json_encode($waveProdis) ?>;
@@ -1091,6 +1146,7 @@ foreach ($waveProdiList as $wp) {
   const waveSelect = document.getElementById('wave_id');
   const p1Select = document.getElementById('program1_id');
   const p2Select = document.getElementById('program2_id');
+  const p3Select = document.getElementById('program3_id');
 
   function updateStudyPrograms() {
     const selectedWaveId = waveSelect.value;
@@ -1098,9 +1154,11 @@ foreach ($waveProdiList as $wp) {
 
     const currentP1 = p1Select.value;
     const currentP2 = p2Select.value;
+    const currentP3 = p3Select.value;
 
     p1Select.innerHTML = '<option value="">Pilih Program Studi 1</option>';
-    p2Select.innerHTML = '<option value="">Pilih Program Studi 2 (Kosongkan jika tidak memilih)</option>';
+    p2Select.innerHTML = '<option value="">Pilih Program Studi 2</option>';
+    p3Select.innerHTML = '<option value="">Pilih Program Studi 3</option>';
 
     allStudyPrograms.forEach(sp => {
       if (allowedProdiIds.includes(parseInt(sp.id))) {
@@ -1117,27 +1175,80 @@ foreach ($waveProdiList as $wp) {
           if (sp.id == currentP2) opt2.selected = true;
           p2Select.appendChild(opt2);
         }
+
+        if (sp.id != currentP1 && sp.id != currentP2) {
+          const opt3 = document.createElement('option');
+          opt3.value = sp.id;
+          opt3.textContent = sp.name;
+          if (sp.id == currentP3) opt3.selected = true;
+          p3Select.appendChild(opt3);
+        }
       }
     });
 
     if (p1Select.value && !allowedProdiIds.includes(parseInt(p1Select.value))) {
       p1Select.value = "";
     }
-    if (p2Select.value && !allowedProdiIds.includes(parseInt(p2Select.value))) {
+    if (p2Select.value && (!allowedProdiIds.includes(parseInt(p2Select.value)) || p2Select.value == p1Select.value)) {
       p2Select.value = "";
+    }
+    if (p3Select.value && (!allowedProdiIds.includes(parseInt(p3Select.value)) || p3Select.value == p1Select.value || p3Select.value == p2Select.value)) {
+      p3Select.value = "";
     }
   }
 
-  waveSelect.addEventListener('change', () => {
+  function onWaveChange(selectEl, isUserChange = false) {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    const year = opt.getAttribute('data-year') || '';
+    const desc = opt.getAttribute('data-description') || '';
+    const start = opt.getAttribute('data-start') || '';
+    const end = opt.getAttribute('data-end') || '';
+    const box = document.getElementById('wave-info-box');
+    const yearSpan = document.getElementById('wave-info-year');
+    const datesSpan = document.getElementById('wave-info-dates');
+    const descP = document.getElementById('wave-info-desc');
+
+    if (selectEl.value && (year || desc || start || end)) {
+      box.classList.remove('hidden');
+      yearSpan.textContent = year || '-';
+      datesSpan.textContent = (start && end) ? `${start} s/d ${end}` : '-';
+      descP.textContent = desc || '';
+    } else {
+      box.classList.add('hidden');
+    }
+    
+    if (isUserChange) {
+      p1Select.value = "";
+      p2Select.value = "";
+      p3Select.value = "";
+      updateStudyPrograms();
+
+      const allowedProdiIds = waveStudyPrograms[selectEl.value] || [];
+      if (allowedProdiIds.length > 0) {
+        p1Select.value = allowedProdiIds[0];
+      }
+    }
+    
     updateStudyPrograms();
     buildReviewSummary();
-  });
+  }
+
   p1Select.addEventListener('change', () => {
     updateStudyPrograms();
     buildReviewSummary();
   });
-  p2Select.addEventListener('change', buildReviewSummary);
-  updateStudyPrograms();
+  p2Select.addEventListener('change', () => {
+    updateStudyPrograms();
+    buildReviewSummary();
+  });
+  p3Select.addEventListener('change', buildReviewSummary);
+
+  // Initialize wave info box if already filled
+  if (waveSelect.value) {
+    onWaveChange(waveSelect);
+  } else {
+    updateStudyPrograms();
+  }
 
   const allWilayahData = <?= json_encode($wilayahList) ?>;
   const initialDistrictVal = <?= json_encode($address['district'] ?? '') ?>;
@@ -1166,9 +1277,11 @@ foreach ($waveProdiList as $wp) {
   }
 
   document.getElementById('wizard-form').addEventListener('submit', function(e) {
-    if (!validateStep(6)) {
-      e.preventDefault();
-      return false;
+    for (let i = 1; i <= 6; i++) {
+      if (!validateStep(i)) {
+        e.preventDefault();
+        return false;
+      }
     }
     const decl = document.getElementById('declaration');
     if (decl && !decl.checked) {
@@ -1177,6 +1290,29 @@ foreach ($waveProdiList as $wp) {
       return false;
     }
   });
+
+  // Prevent native submit on pressing Enter in input fields
+  document.getElementById('wizard-form').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  const kpsSelect = document.getElementById('kps_receiver');
+  const kpsNumberWrapper = document.getElementById('kps_number_wrapper');
+  const kpsNumberInput = document.getElementById('kps_number');
+
+  if (kpsSelect) {
+    kpsSelect.addEventListener('change', function() {
+      if (this.value === 'ya') {
+        kpsNumberWrapper.classList.remove('hidden');
+      } else {
+        kpsNumberWrapper.classList.add('hidden');
+        kpsNumberInput.value = '';
+      }
+    });
+  }
 
   // Trigger initial UI state
   toggleSpecialNeedsList(document.getElementById('has_special_needs').value);

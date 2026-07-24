@@ -14,8 +14,6 @@ class WaveStudyProgramModel extends Model
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
         'wave_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'waves.id', 'nullable' => false],
         'study_program_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => false],
-        'registration_fee_total' => ['type' => 'decimal', 'precision' => 12, 'scale' => 2, 'nullable' => true],
-        'registration_fee_archive' => ['type' => 'varchar', 'length' => 255, 'nullable' => true],
         'reregistration_fee_total' => ['type' => 'decimal', 'precision' => 12, 'scale' => 2, 'nullable' => true],
         'reregistration_fee_archive' => ['type' => 'varchar', 'length' => 255, 'nullable' => true],
         'required_documents' => ['type' => 'text', 'nullable' => true],

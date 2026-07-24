@@ -58,9 +58,13 @@
             <span class="text-sm font-extrabold text-indigo-650">Rp <?= number_format($tuition_fee, 0, ',', '.') ?></span>
           </div>
         </div>
-        <?php if ($wave_study_program && !empty($wave_study_program['reregistration_fee_archive'])): ?>
+        <?php 
+          $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
+          $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
+          if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)): 
+        ?>
           <div class="pt-2 border-t border-slate-100">
-            <a href="<?= htmlspecialchars($wave_study_program['reregistration_fee_archive']) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
+            <a href="<?= htmlspecialchars($archivePath) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
               📄 Unduh Brosur / Panduan UKT (PDF)
             </a>
           </div>
@@ -94,9 +98,10 @@
       </div>
     </div>
 
-    <!-- Right Column: Re-registration Upload Form -->
-    <form action="/pendaftaran/daftar-ulang/submit" method="POST" enctype="multipart/form-data" class="lg:col-span-2" style="margin: 0; padding: 0;">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <!-- Right Column: Re-registration Upload Form & PDF Guide Preview -->
+    <div class="lg:col-span-2 space-y-6">
+      <form action="/pendaftaran/daftar-ulang/submit" method="POST" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <h2 class="text-sm font-bold text-slate-850">Upload Dokumen & Bukti Bayar</h2>
             <?php if ($re_registration): ?>
@@ -174,5 +179,23 @@
           <?php endif; ?>
         </div>
       </form>
+
+      <?php 
+        $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
+        $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
+        if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)): 
+          $archiveExt = strtolower(pathinfo($archivePath, PATHINFO_EXTENSION));
+          if ($archiveExt === 'pdf'):
+      ?>
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-3">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Brosur & Panduan UKT (PDF)</h3>
+          <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
+            <object data="<?= htmlspecialchars($archivePath) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
+              <iframe src="<?= htmlspecialchars($archivePath) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
+            </object>
+          </div>
+        </div>
+      <?php endif; endif; ?>
+    </div>
   </div>
 </div>

@@ -65,8 +65,7 @@
         <thead>
           <tr class="border-b border-slate-150 text-[10px] font-bold text-slate-450 uppercase tracking-wider bg-slate-50/30">
             <th class="px-6 py-4">Calon Mahasiswa</th>
-            <th class="px-6 py-4 text-center">Nilai Ujian</th>
-            <th class="px-6 py-4 text-center">Nilai Wawancara</th>
+            <th class="px-6 py-4">Program Pilihan</th>
             <th class="px-6 py-4 text-center">Keputusan</th>
             <th class="px-6 py-4 text-center">Publikasi</th>
             <th class="px-6 py-4">Prodi Penerimaan</th>
@@ -76,7 +75,7 @@
         <tbody class="divide-y divide-slate-150 text-xs text-slate-650">
           <?php if (empty($candidates)): ?>
             <tr>
-              <td colspan="7" class="text-center py-12">
+              <td colspan="6" class="text-center py-12">
                 <div class="flex flex-col items-center justify-center space-y-3">
                   <div class="text-slate-300 text-5xl">🎓</div>
                   <h3 class="text-sm font-bold text-slate-700">Data Pendaftar Kosong</h3>
@@ -99,11 +98,14 @@
                 <div class="font-bold text-slate-800"><?= htmlspecialchars($c['full_name']) ?></div>
                 <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($c['email']) ?></div>
               </td>
-              <td class="px-6 py-4 text-center font-bold text-slate-900">
-                <?= $c['test_score'] !== null ? number_format($c['test_score'], 2) : '<span class="text-slate-400 font-normal italic">Belum Ujian</span>' ?>
-              </td>
-              <td class="px-6 py-4 text-center font-bold text-slate-900">
-                <?= $c['interview_score'] !== null ? number_format($c['interview_score'], 2) : '<span class="text-slate-400 font-normal italic">Belum Wawancara</span>' ?>
+              <td class="px-6 py-4 space-y-1">
+                <div class="text-[10px] text-slate-600 font-semibold">1. <?= htmlspecialchars($c['program1_name'] ?? '-') ?></div>
+                <?php if (!empty($c['program2_name'])): ?>
+                  <div class="text-[10px] text-slate-500 font-medium">2. <?= htmlspecialchars($c['program2_name']) ?></div>
+                <?php endif; ?>
+                <?php if (!empty($c['program3_name'])): ?>
+                  <div class="text-[10px] text-slate-500 font-medium">3. <?= htmlspecialchars($c['program3_name']) ?></div>
+                <?php endif; ?>
               </td>
               <td class="px-6 py-4 text-center">
                 <?php if ($c['selection_status'] === 'Lulus'): ?>
@@ -234,25 +236,9 @@
     <form action="/admin/selection/save" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="score-registration-id" name="registration_id">
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4 pt-3">
         <div class="space-y-1">
-          <label for="test_score" class="block font-bold text-slate-600">Nilai Ujian Tertulis / CBT</label>
-          <input type="number" id="test_score" name="test_score" min="0" max="100" step="0.01" class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 font-bold" placeholder="0.00 - 100.00">
-        </div>
-        <div class="space-y-1">
-          <label for="interview_score" class="block font-bold text-slate-600">Nilai Wawancara</label>
-          <input type="number" id="interview_score" name="interview_score" min="0" max="100" step="0.01" class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 font-bold" placeholder="0.00 - 100.00">
-        </div>
-      </div>
-
-      <div class="space-y-1">
-        <label for="interview_notes" class="block font-bold text-slate-600">Catatan Wawancara</label>
-        <textarea id="interview_notes" name="interview_notes" rows="2" class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50" placeholder="Catatan hasil wawancara, komitmen, dll..."></textarea>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
-        <div class="space-y-1">
-          <label for="status" class="block font-bold text-slate-600">Keputusan Seleksi</label>
+          <label for="status" class="block font-bold text-slate-600">Keputusan Seleksi <span class="text-red-550">*</span></label>
           <select id="status" name="status" required class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 font-bold">
             <option value="Pending">Pending</option>
             <option value="Lulus">Lulus</option>
@@ -272,8 +258,8 @@
       </div>
 
       <div class="space-y-1">
-        <label for="notes" class="block font-bold text-slate-600">Catatan Kelulusan</label>
-        <textarea id="notes" name="notes" rows="2" class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50" placeholder="Catatan kelulusan untuk mahasiswa..."></textarea>
+        <label for="notes" class="block font-bold text-slate-600">Catatan Kelulusan (Opsional)</label>
+        <textarea id="notes" name="notes" rows="3" class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50" placeholder="Catatan kelulusan untuk mahasiswa..."></textarea>
       </div>
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
@@ -310,9 +296,6 @@
     document.getElementById('score-registration-id').value = c.id;
     document.getElementById('scoring-modal-title').innerText = `Penilaian: ${c.full_name}`;
 
-    document.getElementById('test_score').value = c.test_score !== null ? c.test_score : '';
-    document.getElementById('interview_score').value = c.interview_score !== null ? c.interview_score : '';
-    document.getElementById('interview_notes').value = c.interview_notes !== null ? c.interview_notes : '';
     document.getElementById('status').value = c.selection_status !== null ? c.selection_status : 'Pending';
     document.getElementById('notes').value = c.selection_notes !== null ? c.selection_notes : '';
 
@@ -335,6 +318,14 @@
       opt2.value = c.program2_id;
       opt2.textContent = `Pilihan 2: ${c.program2_name}`;
       passedSelect.appendChild(opt2);
+    }
+
+    if (c.program3_id && c.program3_name) {
+      chosenIds.push(parseInt(c.program3_id));
+      const opt3 = document.createElement('option');
+      opt3.value = c.program3_id;
+      opt3.textContent = `Pilihan 3: ${c.program3_name}`;
+      passedSelect.appendChild(opt3);
     }
 
     const otherProdis = allProgramsList.filter(p => !chosenIds.includes(parseInt(p.id)));

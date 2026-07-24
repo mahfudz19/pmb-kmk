@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 define('MAZU_ENV_PATH', __DIR__ . '/../');
+define('MAZU_PUBLIC_PATH', __DIR__ . '/');
 
 // composer autoload (recommended)
 require_once __DIR__ . '/../vendor/autoload.php';

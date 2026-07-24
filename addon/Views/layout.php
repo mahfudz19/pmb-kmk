@@ -348,9 +348,6 @@ if ($userId) {
                 </button>
 
                 <div id="accordion-master-sublinks" class="accordion-content pl-4 border-l border-slate-100 ml-5 mt-1 space-y-0.5 sidebar-collapsed-hide">
-                  <a data-spa data-sidebar-sublink="academic-year" href="/admin/master?tab=academic-year" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Tahun Akademik
-                  </a>
                   <a data-spa data-sidebar-sublink="wave" href="/admin/master?tab=wave" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="waves" class="w-3.5 h-3.5"></i> Gelombang
                   </a>
@@ -360,17 +357,14 @@ if ($userId) {
                   <a data-spa data-sidebar-sublink="study-program" href="/admin/master?tab=study-program" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Program Studi
                   </a>
-                  <a data-spa data-sidebar-sublink="admission-path" href="/admin/master?tab=admission-path" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="git-branch" class="w-3.5 h-3.5"></i> Jalur Masuk
-                  </a>
-                  <a data-spa data-sidebar-sublink="class" href="/admin/master?tab=class" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="school" class="w-3.5 h-3.5"></i> Kelas
-                  </a>
                   <a data-spa data-sidebar-sublink="document-type" href="/admin/master?tab=document-type" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Jenis Dokumen
                   </a>
                   <a data-spa data-sidebar-sublink="payment-account" href="/admin/master?tab=payment-account" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Rekening Penerimaan
+                  </a>
+                  <a data-spa data-sidebar-sublink="registration-fee" href="/admin/master?tab=registration-fee" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                    <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Biaya Formulir
                   </a>
                   <a data-spa data-sidebar-sublink="nim-format" href="/admin/master?tab=nim-format" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="binary" class="w-3.5 h-3.5"></i> Format NIM

@@ -20,14 +20,12 @@
           <div>
             <?php 
               $titles = [
-                'academic-year' => ['Tahun Akademik', 'Kelola tahun kalender akademik pendaftaran PMB yang aktif.'],
                 'wave' => ['Gelombang Pendaftaran', 'Kelola periode buka-tutup gelombang ujian seleksi mahasiswa.'],
                 'faculty' => ['Fakultas Kampus', 'Kelola daftar fakultas akademik yang tersedia di universitas.'],
                 'study-program' => ['Program Studi (Jurusan)', 'Kelola daftar jurusan perkuliahan serta alokasi fakultasnya.'],
-                'admission-path' => ['Jalur Masuk Pendaftaran', 'Kelola opsi jalur penerimaan (Prestasi, Mandiri, dll.).'],
-                'class' => ['Pilihan Kelas Kuliah', 'Kelola opsi waktu kuliah (Reguler Pagi, Sore, Karyawan).'],
                 'document-type' => ['Jenis Dokumen Persyaratan', 'Kelola scan berkas wajib yang harus di-upload pendaftar.'],
-                'payment-account' => ['Rekening Penerimaan', 'Kelola nomor rekening bank institusi untuk pembayaran biaya pendaftaran & daftar ulang.'],
+                'payment-account' => ['Rekening Penerimaan', 'Kelola nomor rekening bank institusi untuk pembayaran biaya formulir & daftar ulang.'],
+                'registration-fee' => ['Biaya Formulir PMB', 'Kelola nominal biaya formulir pendaftaran global beserta brosur rincian biaya.'],
                 'nim-format' => ['Format Custom NIM', 'Definisikan format generate Nomor Induk Mahasiswa otomatis setelah pembayaran disetujui.']
               ];
               $activeTitle = $titles[$tab] ?? ['Data Master', 'Kelola setelan sistem.'];
@@ -36,6 +34,7 @@
             <p class="mt-1 text-xs text-slate-500"><?= htmlspecialchars($activeTitle[1]) ?></p>
           </div>
 
+          <?php if ($tab !== 'registration-fee'): ?>
           <div>
             <button
               type="button"
@@ -45,42 +44,12 @@
               + Tambah Data
             </button>
           </div>
+          <?php endif; ?>
         </div>
 
         <!-- Panel Table -->
         <div class="overflow-x-auto">
-          <?php if ($tab === 'academic-year'): ?>
-            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
-              <thead class="bg-slate-50/50">
-                <tr>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Tahun Akademik</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <?php if (empty($academic_years)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">📅</div><h3 class="text-xs font-bold text-slate-700">Tahun Akademik Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada tahun akademik yang terdaftar.</p></div></td></tr>
-                <?php else: foreach ($academic_years as $ay): ?>
-                  <tr class="hover:bg-slate-50/30 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($ay['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($ay['year']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $ay['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' ?>">
-                        <?= $ay['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button type="button" onclick="openEditModal('academic-year', <?= htmlspecialchars(json_encode($ay)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
-                      <button type="button" onclick="openDeleteModal('academic-year', <?= htmlspecialchars($ay['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
-                    </td>
-                  </tr>
-                <?php endforeach; endif; ?>
-              </tbody>
-            </table>
-
-          <?php elseif ($tab === 'wave'): ?>
+          <?php if ($tab === 'wave'): ?>
             <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
               <thead class="bg-slate-50/50">
                 <tr>
@@ -98,7 +67,12 @@
                 <?php else: foreach ($waves as $w): ?>
                   <tr class="hover:bg-slate-50/30 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($w['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($w['name']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
+                      <?= htmlspecialchars($w['name']) ?>
+                      <?php if (!empty($w['academic_year'])): ?>
+                        <span class="text-[10px] text-indigo-650 font-bold ml-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full"><?= htmlspecialchars($w['academic_year']) ?></span>
+                      <?php endif; ?>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"><?= htmlspecialchars($w['start_date']) ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"><?= htmlspecialchars($w['end_date']) ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -128,15 +102,15 @@
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <?php if (empty($faculties)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🏛️</div><h3 class="text-xs font-bold text-slate-700">Fakultas Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada fakultas yang terdaftar.</p></div></td></tr>
-                <?php else: foreach ($faculties as $f): ?>
+                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🏛️</div><h3 class="text-xs font-bold text-slate-700">Fakultas Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada data fakultas yang terdaftar.</p></div></td></tr>
+                <?php else: foreach ($faculties as $fc): ?>
                   <tr class="hover:bg-slate-50/30 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($f['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800 tracking-wider"><?= htmlspecialchars($f['code']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700"><?= htmlspecialchars($f['name']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($fc['id']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><code><?= htmlspecialchars($fc['code']) ?></code></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650"><?= htmlspecialchars($fc['name']) ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button type="button" onclick="openEditModal('faculty', <?= htmlspecialchars(json_encode($f)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
-                      <button type="button" onclick="openDeleteModal('faculty', <?= htmlspecialchars($f['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
+                      <button type="button" onclick="openEditModal('faculty', <?= htmlspecialchars(json_encode($fc)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
+                      <button type="button" onclick="openDeleteModal('faculty', <?= htmlspecialchars($fc['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
                     </td>
                   </tr>
                 <?php endforeach; endif; ?>
@@ -160,12 +134,18 @@
                 <?php else: foreach ($study_programs as $sp): ?>
                   <tr class="hover:bg-slate-50/30 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($sp['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800 tracking-wider"><?= htmlspecialchars($sp['code']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700"><?= htmlspecialchars($sp['name']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><code><?= htmlspecialchars($sp['code']) ?></code></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650"><?= htmlspecialchars($sp['name']) ?></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-650">
                       <?php 
-                        $fac = array_values(array_filter($faculties, fn($fc) => $fc['id'] == $sp['faculty_id']));
-                        echo htmlspecialchars($fac[0]['name'] ?? 'Fakultas Tidak Ditemukan');
+                        $facName = '-';
+                        foreach ($faculties as $fc) {
+                          if ($fc['id'] == $sp['faculty_id']) {
+                            $facName = $fc['name'];
+                            break;
+                          }
+                        }
+                        echo htmlspecialchars($facName);
                       ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
@@ -177,92 +157,30 @@
               </tbody>
             </table>
 
-          <?php elseif ($tab === 'admission-path'): ?>
-            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
-              <thead class="bg-slate-50/50">
-                <tr>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Jalur</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <?php if (empty($admission_paths)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🛤️</div><h3 class="text-xs font-bold text-slate-700">Jalur Masuk Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada jalur masuk pendaftaran yang terdaftar.</p></div></td></tr>
-                <?php else: foreach ($admission_paths as $ap): ?>
-                  <tr class="hover:bg-slate-50/30 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($ap['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($ap['name']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $ap['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' ?>">
-                        <?= $ap['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button type="button" onclick="openEditModal('admission-path', <?= htmlspecialchars(json_encode($ap)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
-                      <button type="button" onclick="openDeleteModal('admission-path', <?= htmlspecialchars($ap['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
-                    </td>
-                  </tr>
-                <?php endforeach; endif; ?>
-              </tbody>
-            </table>
-
-          <?php elseif ($tab === 'class'): ?>
-            <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
-              <thead class="bg-slate-50/50">
-                <tr>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Kelas</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <?php if (empty($classes)): ?>
-                  <tr><td colspan="4" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">🏫</div><h3 class="text-xs font-bold text-slate-700">Pilihan Kelas Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada pilihan kelas kuliah yang terdaftar.</p></div></td></tr>
-                <?php else: foreach ($classes as $c): ?>
-                  <tr class="hover:bg-slate-50/30 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($c['id']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($c['name']) ?></td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $c['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' ?>">
-                        <?= $c['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button type="button" onclick="openEditModal('class', <?= htmlspecialchars(json_encode($c)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
-                      <button type="button" onclick="openDeleteModal('class', <?= htmlspecialchars($c['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
-                    </td>
-                  </tr>
-                <?php endforeach; endif; ?>
-              </tbody>
-            </table>
-
           <?php elseif ($tab === 'document-type'): ?>
             <table data-paginate="10" class="min-w-full divide-y divide-slate-100">
               <thead class="bg-slate-50/50">
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Dokumen Syarat</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Dokumen</th>
+                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Sifat</th>
                   <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Deskripsi</th>
-                  <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Sifat Berkas</th>
                   <th class="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 bg-white">
                 <?php if (empty($document_types)): ?>
-                  <tr><td colspan="5" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">📁</div><h3 class="text-xs font-bold text-slate-700">Jenis Dokumen Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada jenis berkas wajib yang terdaftar.</p></div></td></tr>
+                  <tr><td colspan="5" class="text-center py-12 empty-row-placeholder"><div class="flex flex-col items-center justify-center space-y-3"><div class="text-slate-350 text-4xl">📄</div><h3 class="text-xs font-bold text-slate-700">Jenis Dokumen Kosong</h3><p class="text-[11px] text-slate-400 max-w-xs mx-auto">Belum ada jenis dokumen yang terdaftar.</p></div></td></tr>
                 <?php else: foreach ($document_types as $dt): ?>
                   <tr class="hover:bg-slate-50/30 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-500">#<?= htmlspecialchars($dt['id']) ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800"><?= htmlspecialchars($dt['name']) ?></td>
-                    <td class="px-6 py-4 text-xs font-medium text-slate-550 max-w-xs truncate" title="<?= htmlspecialchars($dt['description'] ?? '') ?>"><?= htmlspecialchars($dt['description'] ?? '-') ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $dt['is_required'] ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-650' ?>">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $dt['is_required'] ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-650' ?>">
                         <?= $dt['is_required'] ? 'WAJIB' : 'OPSIONAL' ?>
                       </span>
                     </td>
+                    <td class="px-6 py-4 text-sm text-slate-500 max-w-xs truncate" title="<?= htmlspecialchars($dt['description'] ?? '') ?>"><?= htmlspecialchars($dt['description'] ?? '-') ?></td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                       <button type="button" onclick="openEditModal('document-type', <?= htmlspecialchars(json_encode($dt)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
                       <button type="button" onclick="openDeleteModal('document-type', <?= htmlspecialchars($dt['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
@@ -339,6 +257,35 @@
                 <?php endforeach; endif; ?>
               </tbody>
             </table>
+          <?php elseif ($tab === 'registration-fee'): ?>
+            <form action="/admin/master/registration-fee/save" method="POST" enctype="multipart/form-data" class="p-8 space-y-6 max-w-2xl">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                <div class="space-y-1">
+                  <label for="registration_fee_total" class="block text-sm font-semibold text-slate-700">Nominal Biaya Formulir (Rp) <span class="text-red-550">*</span></label>
+                  <?php $feeVal = (float)get_setting('registration_fee_total', '100000'); ?>
+                  <input type="number" id="registration_fee_total" name="registration_fee_total" required value="<?= htmlspecialchars($feeVal) ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-bold" placeholder="Contoh: 100000">
+                </div>
+                
+                <div class="space-y-1">
+                  <label for="registration_fee_archive" class="block text-sm font-semibold text-slate-700">Upload PDF Brosur / Rincian Biaya (Global)</label>
+                  <input type="file" id="registration_fee_archive" accept="application/pdf" name="registration_fee_archive" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50">
+                  <?php 
+                    $archiveVal = get_setting('registration_fee_archive', '');
+                    if (!empty($archiveVal)): 
+                  ?>
+                    <p class="text-[10px] text-indigo-650 font-bold mt-1.5 flex items-center gap-1.5">
+                      <a href="<?= htmlspecialchars($archiveVal) ?>" target="_blank" class="hover:underline">📄 Lihat Brosur/Rincian Saat Ini</a>
+                    </p>
+                  <?php endif; ?>
+                </div>
+              </div>
+
+              <div class="flex justify-start">
+                <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer">
+                  Simpan Setelan Biaya
+                </button>
+              </div>
+            </form>
           <?php endif; ?>
         </div>
       </div>
@@ -358,10 +305,10 @@
       <input type="hidden" name="type" value="<?= htmlspecialchars($tab) ?>">
       <input type="hidden" name="id" id="form-id">
 
-      <!-- Dynamic Field: year (Academic Year) -->
-      <div class="space-y-1 modal-field hidden" id="field-year">
-        <label for="input-year" class="block text-sm font-semibold text-slate-700">Tahun Akademik</label>
-        <input type="text" id="input-year" name="year" placeholder="Format: 2026/2027" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+      <!-- Dynamic Field: academic_year (Wave) -->
+      <div class="space-y-1 modal-field hidden" id="field-academic-year">
+        <label for="input-academic-year" class="block text-sm font-semibold text-slate-700">Tahun Akademik</label>
+        <input type="text" id="input-academic-year" name="academic_year" placeholder="Format: 2026/2027" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
       </div>
 
       <!-- Dynamic Field: name (General name) -->
@@ -434,6 +381,7 @@
             <li><code>{YEAR}</code>: Tahun akademik masuk (Contoh: 2026)</li>
             <li><code>{PRODI_CODE}</code>: Kode program studi (Contoh: IF)</li>
             <li><code>{DATE}</code>: Tanggal generate (format dmy, Contoh: 170726)</li>
+            <li><code>{TIMESTAMP}</code>: 6 angka terakhir Unix timestamp (Contoh: <?= substr((string)time(), -6) ?>)</li>
             <li><code>{SEQ}</code>: Sequence nomor urut mahasiswa (Contoh: 001, 002)</li>
           </ul>
         </div>
@@ -494,7 +442,7 @@
     document.getElementById('form-id').value = '';
 
     // Clear inputs
-    document.getElementById('input-year').value = '';
+    if (document.getElementById('input-academic-year')) document.getElementById('input-academic-year').value = '';
     document.getElementById('input-name').value = '';
     document.getElementById('input-description').value = '';
     document.getElementById('input-start').value = '';
@@ -518,7 +466,7 @@
     document.getElementById('form-id').value = item.id;
 
     // Fill inputs
-    if (item.year) document.getElementById('input-year').value = item.year;
+    if (item.academic_year && document.getElementById('input-academic-year')) document.getElementById('input-academic-year').value = item.academic_year;
     if (item.name) document.getElementById('input-name').value = item.name;
     if (item.description) document.getElementById('input-description').value = item.description;
     if (item.start_date) document.getElementById('input-start').value = item.start_date;
@@ -553,11 +501,9 @@
     fields.forEach(f => f.classList.add('hidden'));
 
     // Show specific
-    if (tab === 'academic-year') {
-      document.getElementById('field-year').classList.remove('hidden');
-      document.getElementById('field-active').classList.remove('hidden');
-    } else if (tab === 'wave') {
+    if (tab === 'wave') {
       document.getElementById('field-name').classList.remove('hidden');
+      document.getElementById('field-academic-year').classList.remove('hidden');
       document.getElementById('field-description').classList.remove('hidden');
       document.getElementById('field-dates').classList.remove('hidden');
       document.getElementById('field-active').classList.remove('hidden');
@@ -568,9 +514,6 @@
       document.getElementById('field-faculty').classList.remove('hidden');
       document.getElementById('field-code').classList.remove('hidden');
       document.getElementById('field-name').classList.remove('hidden');
-    } else if (tab === 'admission-path' || tab === 'class') {
-      document.getElementById('field-name').classList.remove('hidden');
-      document.getElementById('field-active').classList.remove('hidden');
     } else if (tab === 'document-type') {
       document.getElementById('field-name').classList.remove('hidden');
       document.getElementById('field-description').classList.remove('hidden');

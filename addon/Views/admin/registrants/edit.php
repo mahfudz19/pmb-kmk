@@ -218,6 +218,11 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
               </select>
             </div>
 
+            <div class="<?= ($address['kps_receiver'] ?? '') === 'ya' ? '' : 'hidden' ?>" id="kps_number_wrapper">
+              <label for="kps_number" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nomor KPS</label>
+              <input type="text" name="kps_number" id="kps_number" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($address['kps_number'] ?? '') ?>">
+            </div>
+
             <div>
               <label for="transportation" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Alat Transportasi</label>
               <select name="transportation" id="transportation" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
@@ -424,48 +429,12 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           
           <div class="space-y-4 text-xs">
             <div>
-              <label for="academic_year_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tahun Akademik</label>
-              <select name="academic_year_id" id="academic_year_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" disabled <?= empty($registration['academic_year_id']) ? 'selected' : '' ?>>Pilih Tahun Akademik</option>
-                <?php foreach ($academic_years as $ay): ?>
-                  <option value="<?= $ay['id'] ?>" <?= ($registration['academic_year_id'] ?? 0) == $ay['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($ay['year']) ?> <?= $ay['is_active'] ? '(Aktif)' : '' ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div>
               <label for="wave_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gelombang PMB</label>
               <select name="wave_id" id="wave_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
                 <option value="" disabled <?= empty($registration['wave_id']) ? 'selected' : '' ?>>Pilih Gelombang</option>
                 <?php foreach ($waves as $w): ?>
                   <option value="<?= $w['id'] ?>" <?= ($registration['wave_id'] ?? 0) == $w['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($w['name']) ?> <?= $w['is_active'] ? '(Aktif)' : '' ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div>
-              <label for="admission_path_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Jalur Masuk</label>
-              <select name="admission_path_id" id="admission_path_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" disabled <?= empty($registration['admission_path_id']) ? 'selected' : '' ?>>Pilih Jalur</option>
-                <?php foreach ($admission_paths as $ap): ?>
-                  <option value="<?= $ap['id'] ?>" <?= ($registration['admission_path_id'] ?? 0) == $ap['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($ap['name']) ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-
-            <div>
-              <label for="class_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Jenis Kelas</label>
-              <select name="class_id" id="class_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" disabled <?= empty($registration['class_id']) ? 'selected' : '' ?>>Pilih Kelas</option>
-                <?php foreach ($classes as $c): ?>
-                  <option value="<?= $c['id'] ?>" <?= ($registration['class_id'] ?? 0) == $c['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($c['name']) ?>
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -489,6 +458,18 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
                 <option value="">Tidak Memilih Pilihan 2</option>
                 <?php foreach ($study_programs as $sp): ?>
                   <option value="<?= $sp['id'] ?>" <?= (int)($programs['program2_id'] ?? 0) === $sp['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($sp['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div>
+              <label for="program3_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan 3 (Cadangan)</label>
+              <select name="program3_id" id="program3_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700">
+                <option value="">Tidak Memilih Pilihan 3</option>
+                <?php foreach ($study_programs as $sp): ?>
+                  <option value="<?= $sp['id'] ?>" <?= (int)($programs['program3_id'] ?? 0) === $sp['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($sp['name']) ?>
                   </option>
                 <?php endforeach; ?>
@@ -519,6 +500,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
   const waveSelect = document.getElementById('wave_id');
   const p1Select = document.getElementById('program1_id');
   const p2Select = document.getElementById('program2_id');
+  const p3Select = document.getElementById('program3_id');
 
   function updateStudyPrograms() {
     const selectedWaveId = waveSelect.value;
@@ -526,9 +508,11 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
     const currentP1 = p1Select.value;
     const currentP2 = p2Select.value;
+    const currentP3 = p3Select.value;
 
     p1Select.innerHTML = '<option value="">Pilih Program Studi 1</option>';
     p2Select.innerHTML = '<option value="">Tidak Memilih Pilihan 2</option>';
+    p3Select.innerHTML = '<option value="">Tidak Memilih Pilihan 3</option>';
 
     allStudyPrograms.forEach(sp => {
       if (allowedProdiIds.includes(parseInt(sp.id))) {
@@ -538,13 +522,17 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
         if (sp.id == currentP1) opt1.selected = true;
         p1Select.appendChild(opt1);
 
-        if (sp.id != currentP1) {
-          const opt2 = document.createElement('option');
-          opt2.value = sp.id;
-          opt2.textContent = sp.name;
-          if (sp.id == currentP2) opt2.selected = true;
-          p2Select.appendChild(opt2);
-        }
+        const opt2 = document.createElement('option');
+        opt2.value = sp.id;
+        opt2.textContent = sp.name;
+        if (sp.id == currentP2) opt2.selected = true;
+        p2Select.appendChild(opt2);
+
+        const opt3 = document.createElement('option');
+        opt3.value = sp.id;
+        opt3.textContent = sp.name;
+        if (sp.id == currentP3) opt3.selected = true;
+        p3Select.appendChild(opt3);
       }
     });
 
@@ -553,6 +541,9 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
     }
     if (p2Select.value && !allowedProdiIds.includes(parseInt(p2Select.value))) {
       p2Select.value = "";
+    }
+    if (p3Select.value && !allowedProdiIds.includes(parseInt(p3Select.value))) {
+      p3Select.value = "";
     }
   }
 
@@ -582,6 +573,21 @@ function filterEditDistricts(query) {
         opt.selected = true;
       }
       select.appendChild(opt);
+    }
+  });
+}
+
+const kpsSelectEdit = document.getElementById('kps_receiver');
+const kpsNumberWrapperEdit = document.getElementById('kps_number_wrapper');
+const kpsNumberInputEdit = document.getElementById('kps_number');
+
+if (kpsSelectEdit) {
+  kpsSelectEdit.addEventListener('change', function() {
+    if (this.value === 'ya') {
+      kpsNumberWrapperEdit.classList.remove('hidden');
+    } else {
+      kpsNumberWrapperEdit.classList.add('hidden');
+      kpsNumberInputEdit.value = '';
     }
   });
 }

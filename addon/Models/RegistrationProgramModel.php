@@ -14,7 +14,8 @@ class RegistrationProgramModel extends Model
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
         'registration_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'registrations.id', 'unique' => true, 'nullable' => false],
         'program1_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => false],
-        'program2_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => true]
+        'program2_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => true],
+        'program3_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => true]
     ];
 
     protected array $seed = [];

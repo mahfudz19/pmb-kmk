@@ -52,8 +52,8 @@ class SelectionController
 
         $stmt = $db->prepare("
             SELECT r.*, u.email, 
-                   rp.program1_id, rp.program2_id,
-                   sp1.name as program1_name, sp2.name as program2_name,
+                   rp.program1_id, rp.program2_id, rp.program3_id,
+                   sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name,
                    sr.test_score, sr.interview_score, sr.interview_notes, 
                    sr.status as selection_status, sr.passed_program_id, sr.notes as selection_notes,
                    sr.is_published
@@ -62,6 +62,7 @@ class SelectionController
             LEFT JOIN registration_programs rp ON r.id = rp.registration_id
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             LEFT JOIN selection_results sr ON r.id = sr.registration_id
             WHERE r.status != 'Draft'
             ORDER BY r.updated_at DESC
@@ -112,9 +113,6 @@ class SelectionController
         }
 
         $regId = (int) $request->input('registration_id');
-        $testScore = $request->input('test_score') !== '' ? (float) $request->input('test_score') : null;
-        $interviewScore = $request->input('interview_score') !== '' ? (float) $request->input('interview_score') : null;
-        $interviewNotes = $request->input('interview_notes') ?: null;
         $status = $request->input('status');
         $passedProgramId = $request->input('passed_program_id') !== '' ? (int) $request->input('passed_program_id') : null;
         $notes = $request->input('notes') ?: null;
@@ -123,13 +121,17 @@ class SelectionController
             return $response->redirect('/admin/selection?error=Masukan+penilaian+tidak+valid');
         }
 
+        if (in_array($status, ['Lulus', 'Cadangan'], true) && !$passedProgramId) {
+            return $response->redirect('/admin/selection?error=Program+Studi+Penerimaan+wajib+dipilih+jika+status+Lulus+atau+Cadangan');
+        }
+
         $existing = $this->selectionResults->findByRegistrationId($regId);
 
         $data = [
             'registration_id' => $regId,
-            'test_score' => $testScore,
-            'interview_score' => $interviewScore,
-            'interview_notes' => $interviewNotes,
+            'test_score' => null,
+            'interview_score' => null,
+            'interview_notes' => null,
             'status' => $status,
             'passed_program_id' => $passedProgramId,
             'notes' => $notes

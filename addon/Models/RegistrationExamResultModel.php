@@ -13,6 +13,7 @@ class RegistrationExamResultModel extends Model
     protected array $schema = [
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
         'registration_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'registrations.id', 'nullable' => false],
+        'study_program_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'study_programs.id', 'nullable' => true],
         'stage_index' => ['type' => 'integer', 'nullable' => false],
         'status' => ['type' => 'enum', 'values' => ['Pending', 'Lulus', 'Tidak Lulus', 'Cadangan'], 'nullable' => false, 'default' => 'Pending'],
         'score' => ['type' => 'decimal', 'precision' => 5, 'scale' => 2, 'nullable' => true],

@@ -15,7 +15,7 @@ class SessionService
     }
 
     if (session_status() === PHP_SESSION_NONE) {
-      $lifetime = 12 * 60 * 60;
+      $lifetime = 7 * 24 * 60 * 60;
       ini_set('session.gc_maxlifetime', (string)$lifetime);
       ini_set('session.cookie_lifetime', (string)$lifetime);
 
@@ -36,7 +36,7 @@ class SessionService
     $this->isStarted = true;
 
     $now = time();
-    $timeout = 15 * 60;
+    $timeout = 60 * 60;
     if (isset($_SESSION['auth.user_id'])) {
       if (isset($_SESSION['last_activity']) && ($now - $_SESSION['last_activity']) > $timeout) {
         $_SESSION = [];

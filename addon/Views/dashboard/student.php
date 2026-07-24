@@ -58,7 +58,7 @@
         </span>
         <div>
           <h4 class="text-xs font-bold text-slate-800 leading-tight">Pembayaran</h4>
-          <span class="text-[10px] text-slate-400 font-medium block">Biaya Pendaftaran</span>
+          <span class="text-[10px] text-slate-400 font-medium block">Biaya Formulir</span>
         </div>
       </div>
 
@@ -130,11 +130,6 @@
         <a href="/pendaftaran/formulir" download class="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm text-xs transition-colors">
           📄 Cetak Formulir
         </a>
-        <?php if (in_array($state, ['ujian_seleksi', 'lolos', 'tidak_lolos'])): ?>
-          <a href="/pendaftaran/kartu-ujian" download class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
-            🎟️ Cetak Kartu Ujian
-          </a>
-        <?php endif; ?>
       </div>
     </div>
   <?php endif; ?>
@@ -161,8 +156,8 @@
           <div class="flex items-start gap-4">
             <span class="text-4xl">💳</span>
             <div>
-              <h2 class="text-xl font-bold text-slate-900">Menunggu Pembayaran Biaya Pendaftaran</h2>
-              <p class="text-sm text-slate-500">Silakan lakukan transfer pembayaran biaya pendaftaran awal sebelum melanjutkan pengunggahan berkas.</p>
+              <h2 class="text-xl font-bold text-slate-900">Menunggu Pembayaran Biaya Formulir</h2>
+              <p class="text-sm text-slate-500">Silakan lakukan transfer pembayaran biaya formulir awal sebelum melanjutkan pengunggahan berkas.</p>
             </div>
           </div>
           <a data-spa href="/pendaftaran" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100 shrink-0">
@@ -195,14 +190,17 @@
               </div>
               <div class="flex justify-between items-center text-xs">
                 <span class="text-slate-500">Jumlah Nominal</span>
-                <?php $feeAmount = $wave_study_program ? (float)$wave_study_program['registration_fee_total'] : 250000; ?>
+                <?php $feeAmount = (float)get_setting('registration_fee_total', '100000'); ?>
                 <strong class="text-indigo-650 font-extrabold text-sm">Rp <?= number_format($feeAmount, 0, ',', '.') ?>,-</strong>
               </div>
             </div>
 
-            <?php if ($wave_study_program && !empty($wave_study_program['registration_fee_archive'])): ?>
+            <?php 
+              $feeArchive = get_setting('registration_fee_archive', '');
+              if (!empty($feeArchive)): 
+            ?>
               <div class="pt-2">
-                <a href="<?= htmlspecialchars($wave_study_program['registration_fee_archive']) ?>" download class="block text-center px-4 py-2.5 bg-white hover:bg-slate-50 text-indigo-700 border border-slate-200 shadow-sm font-bold rounded-xl text-xs transition-colors">
+                <a href="<?= htmlspecialchars($feeArchive) ?>" download class="block text-center px-4 py-2.5 bg-white hover:bg-slate-50 text-indigo-700 border border-slate-200 shadow-sm font-bold rounded-xl text-xs transition-colors">
                   📄 Unduh Rincian Biaya (PDF)
                 </a>
               </div>
@@ -244,6 +242,20 @@
             </div>
           </form>
         </div>
+
+        <?php 
+          $feeArchive = get_setting('registration_fee_archive', '');
+          if (!empty($feeArchive)): 
+        ?>
+          <div class="space-y-3 pt-2">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rincian Brosur & Rincian Biaya</h3>
+            <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
+              <object data="<?= htmlspecialchars($feeArchive) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
+                <iframe src="<?= htmlspecialchars($feeArchive) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
+              </object>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
 
     <?php elseif ($state === 'verifikasi_pembayaran'): ?>
@@ -251,7 +263,7 @@
         <div class="text-5xl animate-bounce">⏳</div>
         <div class="space-y-2">
           <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Bukti Pembayaran Sedang Diverifikasi</h2>
-          <p class="text-sm text-slate-500 leading-relaxed">Bukti transfer pembayaran biaya pendaftaran Anda telah kami terima dan sedang diproses oleh Tim Keuangan kami. Proses verifikasi biasanya memakan waktu maksimal 24 jam kerja.</p>
+          <p class="text-sm text-slate-500 leading-relaxed">Bukti transfer pembayaran biaya formulir Anda telah kami terima dan sedang diproses oleh Tim Keuangan kami. Proses verifikasi biasanya memakan waktu maksimal 24 jam kerja.</p>
         </div>
         <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs px-4 py-2 rounded-full font-bold">
           <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
@@ -272,38 +284,50 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div class="lg:col-span-2 space-y-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Dokumen</h3>
-            <div class="divide-y divide-slate-100 border border-slate-200/80 rounded-2xl overflow-hidden bg-white">
+            <div class="border border-slate-200/80 rounded-2xl overflow-hidden bg-white divide-y divide-slate-100">
               <?php 
-              $reqDocs = [];
-              if ($wave_study_program) {
-                  $reqDocs = json_decode($wave_study_program['required_documents'] ?? '[]', true) ?: [];
-              }
-              if (empty($reqDocs)):
+              if (empty($required_docs)):
               ?>
                 <div class="p-8 text-center text-xs text-slate-500 font-semibold">Tidak ada dokumen persyaratan yang harus diunggah untuk program studi pilihan Anda.</div>
-              <?php else: foreach ($reqDocs as $rd): ?>
-                <?php 
-                  $docTypeId = $rd['document_type_id'] ?? null;
-                  $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId] ?? null) : null;
-                ?>
-                <div class="p-4 flex justify-between items-center">
-                  <div>
-                    <span class="text-sm font-semibold text-slate-800"><?= htmlspecialchars($rd['name'] ?? '-') ?></span>
-                    <span class="text-[10px] text-slate-400 block"><?= htmlspecialchars($rd['description'] ?? '') ?></span>
-                  </div>
-                  <div>
-                    <?php if ($uploaded): ?>
-                      <?php if ($uploaded['status'] === 'Pending'): ?>
-                        <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Menunggu Verifikasi</span>
-                      <?php elseif ($uploaded['status'] === 'Approved'): ?>
-                        <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Disetujui</span>
-                      <?php elseif ($uploaded['status'] === 'Rejected'): ?>
-                        <span class="text-xs font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">Ditolak</span>
-                      <?php endif; ?>
-                    <?php else: ?>
-                      <span class="text-xs font-semibold text-red-650 bg-red-50 px-2 py-0.5 rounded border border-red-100">Belum Ada</span>
-                    <?php endif; ?>
-                  </div>
+              <?php else:
+                $groupedDocs = [];
+                foreach ($required_docs as $rd) {
+                    $prodiName = $rd['study_program_name'] ?: 'Umum';
+                    $groupedDocs[$prodiName][] = $rd;
+                }
+                foreach ($groupedDocs as $prodiName => $docs):
+              ?>
+                <div class="bg-indigo-50/40 px-4 py-2 text-xs font-bold text-indigo-900 border-t border-b border-indigo-100/50 uppercase tracking-wider">
+                  Program Studi: <?= htmlspecialchars($prodiName) ?>
+                </div>
+                <div class="divide-y divide-slate-100 bg-white">
+                  <?php foreach ($docs as $rd): ?>
+                    <?php 
+                      $docTypeId = $rd['document_type_id'] ?? null;
+                      $prodiId = $rd['study_program_id'] ?? 'global';
+                      $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_' . $prodiId] ?? null) : null;
+                      $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']);
+                    ?>
+                    <div class="p-4 flex justify-between items-center">
+                      <div>
+                        <span class="text-sm font-semibold text-slate-800"><?= htmlspecialchars($docDisplayName) ?></span>
+                        <span class="text-[10px] text-slate-400 block"><?= htmlspecialchars($rd['description'] ?? '') ?></span>
+                      </div>
+                      <div>
+                        <?php if ($uploaded): ?>
+                          <?php if ($uploaded['status'] === 'Pending'): ?>
+                            <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Menunggu Verifikasi</span>
+                          <?php elseif ($uploaded['status'] === 'Approved'): ?>
+                            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Disetujui</span>
+                          <?php elseif ($uploaded['status'] === 'Rejected'): ?>
+                            <span class="text-xs font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">Ditolak</span>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          <span class="text-xs font-semibold text-red-650 bg-red-50 px-2 py-0.5 rounded border border-red-100">Belum Ada</span>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
                 </div>
               <?php endforeach; endif; ?>
             </div>
@@ -336,7 +360,7 @@
       </div>
 
     <?php elseif ($state === 'ujian_seleksi'): ?>
-      <div class="space-y-6">
+      <div class="space-y-8">
         <div class="flex items-start gap-4 border-b border-slate-100 pb-4">
           <span class="text-4xl">📝</span>
           <div>
@@ -345,115 +369,138 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 space-y-4">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Tahapan Ujian</h3>
-            
-            <?php 
-            $stages = [];
-            if ($wave_study_program) {
-              $stages = json_decode($wave_study_program['exam_stages'] ?? '[]', true) ?: [];
-            }
-            if (empty($stages)):
-            ?>
-              <div class="p-6 bg-slate-50 border rounded-2xl text-center text-xs text-slate-550 font-semibold italic">
-                Belum ada jadwal tahapan ujian yang ditentukan untuk program studi pilihan Anda.
-              </div>
-            <?php else: foreach ($stages as $stg): 
-              $res = array_values(array_filter($exam_results, fn($r) => $r['stage_index'] == $stg['stage_number']))[0] ?? null;
-              $status = $res ? $res['status'] : 'Pending';
-            ?>
-              <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                  <span class="text-xs font-extrabold text-indigo-755">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-red-100 text-red-800' : 'bg-slate-150 text-slate-600') ?>">
-                    <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
-                  </span>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span class="text-slate-400 block text-[10px] font-bold uppercase">Tanggal & Jam</span>
-                    <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time'] ?? '') ?>)</strong>
-                  </div>
-                  <div>
-                    <span class="text-slate-400 block text-[10px] font-bold uppercase">Tipe & Tempat</span>
-                    <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['place'] ?? '') ?> (<?= strtoupper($stg['type'] ?? 'OFFLINE') ?>)</strong>
-                  </div>
-                </div>
-              </div>
-            <?php endforeach; endif; ?>
+        <?php foreach ($wave_study_programs as $wsp): 
+          $stages = json_decode($wsp['exam_stages'] ?? '[]', true) ?: [];
+        ?>
+          <div class="bg-indigo-50/30 px-5 py-2.5 rounded-2xl text-xs font-bold text-indigo-955 border border-indigo-100/50 uppercase tracking-wider">
+            Program Studi: <?= htmlspecialchars($wsp['study_program_name'] ?: 'Umum') ?>
           </div>
-
-          <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 space-y-3 flex flex-col justify-between h-fit">
-            <div>
-              <h4 class="font-bold text-indigo-900 text-sm">Cetak Kartu Ujian</h4>
-              <p class="text-xs text-indigo-700 mt-1">Kartu ujian wajib dicetak dan dibawa saat pelaksanaan tes seleksi fisik di kampus.</p>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pl-2">
+            <div class="lg:col-span-2 space-y-4">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Tahapan Ujian</h3>
+              
+              <?php if (empty($stages)): ?>
+                <div class="p-6 bg-slate-50 border rounded-2xl text-center text-xs text-slate-550 font-semibold italic">
+                  Belum ada jadwal tahapan ujian yang ditentukan untuk program studi ini.
+                </div>
+              <?php else: foreach ($stages as $stg): 
+                $res = array_values(array_filter($exam_results, fn($r) => 
+                    $r['stage_index'] == $stg['stage_number'] && 
+                    ($r['study_program_id'] == $wsp['study_program_id'] || $r['study_program_id'] === null)
+                ))[0] ?? null;
+                $status = $res ? $res['status'] : 'Pending';
+              ?>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+                  <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <span class="text-xs font-extrabold text-indigo-755">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-red-100 text-red-800' : 'bg-slate-150 text-slate-600') ?>">
+                      <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-bold uppercase">Tanggal & Jam</span>
+                      <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time'] ?? '') ?>)</strong>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 block text-[10px] font-bold uppercase">Tipe & Tempat</span>
+                      <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['place'] ?? '') ?> (<?= strtoupper($stg['type'] ?? 'OFFLINE') ?>)</strong>
+                    </div>
+                  </div>
+                </div>
+              <?php endforeach; endif; ?>
             </div>
-            <a href="/pendaftaran/kartu-ujian" class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors mt-4 text-center">
-              🖨️ Cetak Kartu CBT
-            </a>
+
+            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 space-y-3 flex flex-col justify-between h-fit">
+              <div>
+                <h4 class="font-bold text-indigo-900 text-sm">Cetak Kartu Ujian</h4>
+                <p class="text-xs text-indigo-700 mt-1">Kartu ujian wajib dicetak dan dibawa saat pelaksanaan tes seleksi fisik di kampus.</p>
+              </div>
+              <a href="/pendaftaran/kartu-ujian?study_program_id=<?= $wsp['study_program_id'] ?>" download class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors mt-4 text-center">
+                🖨️ Cetak Kartu CBT
+              </a>
+            </div>
           </div>
-        </div>
+        <?php endforeach; ?>
       </div>
 
     <?php elseif ($state === 'lolos'): ?>
-      <div class="text-center space-y-6 py-6 max-w-lg mx-auto">
-        <div class="text-6xl animate-bounce">🎉</div>
-        <div class="space-y-2">
-          <span class="bg-emerald-100 text-emerald-800 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Selamat! Anda Dinyatakan Lolos</span>
-          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Diterima Sebagai Mahasiswa</h2>
-          <p class="text-sm text-slate-500 leading-relaxed">Selamat! Anda dinyatakan lulus seleksi PMB pada Program Studi <strong><?= htmlspecialchars($passed_program['name'] ?? '-') ?></strong>.</p>
-        </div>
-
-        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100/60 text-xs space-y-3 max-w-sm mx-auto text-left">
-          <h4 class="font-bold text-slate-800 border-b border-emerald-100 pb-1.5 uppercase tracking-wider text-[10px]">Rincian Hasil Penilaian</h4>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Nilai Ujian CBT:</span>
-            <strong class="text-slate-800"><?= number_format($selection_result['test_score'], 2) ?></strong>
+      <?php if ($re_registration && $re_registration['status'] === 'Rejected'): ?>
+        <div class="text-center space-y-6 py-6 max-w-lg mx-auto">
+          <div class="text-6xl text-red-500 animate-pulse">⚠️</div>
+          <div class="space-y-2">
+            <span class="bg-red-100 text-red-800 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Perbaikan Registrasi</span>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Daftar Ulang Ditolak</h2>
+            <p class="text-sm text-slate-500 leading-relaxed">Berkas daftar ulang atau bukti transfer pembayaran Anda ditolak oleh panitia PMB. Silakan lakukan perbaikan berkas agar pendaftaran Anda dapat diverifikasi ulang.</p>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Nilai Wawancara:</span>
-            <strong class="text-slate-800"><?= number_format($selection_result['interview_score'], 2) ?></strong>
+
+          <div class="bg-red-50 border border-red-100 p-5 rounded-2xl text-left space-y-2 max-w-md mx-auto">
+            <div class="flex items-center gap-2 text-red-800 font-bold text-xs">
+              <span>❌</span>
+              <span>Alasan Penolakan:</span>
+            </div>
+            <div class="text-slate-700 font-medium text-xs leading-relaxed pl-6">
+              "<?= htmlspecialchars($re_registration['rejection_reason'] ?: 'Berkas pendaftaran atau bukti pembayaran kurang lengkap/tidak sesuai.') ?>"
+            </div>
           </div>
-          <?php if (!empty($selection_result['notes'])): ?>
-            <div class="pt-1.5 border-t border-emerald-100 text-slate-650 italic">
-              "<?= htmlspecialchars($selection_result['notes']) ?>"
-            </div>
-          <?php endif; ?>
-        </div>
-        
-        <div class="space-y-4 pt-2">
-          <?php if ($re_registration): ?>
-            <div class="max-w-sm mx-auto p-4 rounded-2xl border text-left flex items-start gap-3 <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : ($re_registration['status'] === 'Rejected' ? 'bg-red-50 border-red-100 text-red-800' : 'bg-amber-50 border-amber-100 text-amber-800') ?>">
-              <span class="text-xl"><?= $re_registration['status'] === 'Approved' ? '✅' : ($re_registration['status'] === 'Rejected' ? '❌' : '⏳') ?></span>
-              <div class="flex-1">
-                <h5 class="font-bold text-xs">Status Daftar Ulang: <?= $re_registration['status'] === 'Approved' ? 'Disetujui' : ($re_registration['status'] === 'Rejected' ? 'Ditolak' : 'Menunggu Verifikasi') ?></h5>
-                <?php if ($re_registration['status'] === 'Rejected'): ?>
-                  <p class="text-[10px] text-red-650 mt-1">Alasan: <?= htmlspecialchars($re_registration['rejection_reason']) ?></p>
-                <?php else: ?>
-                  <p class="text-[10px] <?= $re_registration['status'] === 'Approved' ? 'text-emerald-650' : 'text-amber-650' ?> mt-0.5"><?= $re_registration['status'] === 'Approved' ? 'Selamat! Anda resmi menjadi mahasiswa baru.' : 'Pembayaran Anda sedang ditinjau oleh tim akademik.' ?></p>
-                <?php endif; ?>
 
-                <?php if ($re_registration['status'] === 'Approved' && !empty($registration['nim'])): ?>
-                  <div class="mt-2.5 p-2 bg-emerald-150 rounded-xl border border-emerald-250 text-center">
-                    <span class="block text-[9px] text-emerald-800 uppercase font-bold tracking-wider">NIM Anda</span>
-                    <strong class="block text-sm text-emerald-950 font-extrabold tracking-widest select-all"><?= htmlspecialchars($registration['nim']) ?></strong>
-                  </div>
-                <?php endif; ?>
-              </div>
-            </div>
-          <?php endif; ?>
-
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <a href="/pendaftaran/kelulusan/download" download class="inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-full shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all">
               📄 Cetak Surat Kelulusan
             </a>
-            <a data-spa href="/pendaftaran/daftar-ulang" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white <?= $re_registration && $re_registration['status'] === 'Approved' ? 'bg-slate-800 hover:bg-slate-900' : 'bg-emerald-600 hover:bg-emerald-700' ?> transition-all hover:-translate-y-0.5">
-              💳 <?= $re_registration ? ($re_registration['status'] === 'Approved' ? 'Lihat Bukti Daftar Ulang' : ($re_registration['status'] === 'Rejected' ? 'Perbaiki Daftar Ulang' : 'Detail Daftar Ulang')) : 'Lanjut Daftar Ulang' ?>
+            <a data-spa href="/pendaftaran/daftar-ulang" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all hover:-translate-y-0.5 cursor-pointer">
+              ✏️ Perbaiki Daftar Ulang
             </a>
           </div>
         </div>
-      </div>
+      <?php else: ?>
+        <div class="text-center space-y-6 py-6 max-w-lg mx-auto">
+          <div class="text-6xl animate-bounce">🎉</div>
+          <div class="space-y-2">
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Selamat! Anda Dinyatakan Lolos</span>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Diterima Sebagai Mahasiswa</h2>
+            <p class="text-sm text-slate-500 leading-relaxed">Selamat! Anda dinyatakan lulus seleksi PMB pada Program Studi <strong><?= htmlspecialchars($passed_program['name'] ?? '-') ?></strong>.</p>
+          </div>
+
+          <?php if (!empty($selection_result['notes'])): ?>
+            <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100/60 text-xs space-y-2 max-w-sm mx-auto text-left">
+              <h4 class="font-bold text-slate-850 border-b border-emerald-100 pb-1.5 uppercase tracking-wider text-[10px]">Catatan Panitia</h4>
+              <div class="text-slate-650 italic">
+                "<?= htmlspecialchars($selection_result['notes']) ?>"
+              </div>
+            </div>
+          <?php endif; ?>
+          
+          <div class="space-y-4 pt-2">
+            <?php if ($re_registration): ?>
+              <div class="max-w-sm mx-auto p-4 rounded-2xl border text-left flex items-start gap-3 <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-amber-50 border-amber-100 text-amber-800' ?>">
+                <span class="text-xl"><?= $re_registration['status'] === 'Approved' ? '✅' : '⏳' ?></span>
+                <div class="flex-1">
+                  <h5 class="font-bold text-xs">Status Daftar Ulang: <?= $re_registration['status'] === 'Approved' ? 'Disetujui' : 'Menunggu Verifikasi' ?></h5>
+                  <p class="text-[10px] <?= $re_registration['status'] === 'Approved' ? 'text-emerald-650' : 'text-amber-650' ?> mt-0.5"><?= $re_registration['status'] === 'Approved' ? 'Selamat! Anda resmi menjadi mahasiswa baru.' : 'Pembayaran Anda sedang ditinjau oleh tim akademik.' ?></p>
+
+                  <?php if ($re_registration['status'] === 'Approved'): ?>
+                    <div class="mt-2.5 p-2 bg-emerald-150 rounded-xl border border-emerald-250 text-center">
+                      <span class="block text-[9px] text-emerald-800 uppercase font-bold tracking-wider">NIM Anda</span>
+                      <strong class="block text-sm text-emerald-950 font-extrabold tracking-widest select-all"><?= !empty($registration['nim']) ? htmlspecialchars($registration['nim']) : 'PENDING' ?></strong>
+                    </div>
+                  <?php endif; ?>
+                </div>
+              </div>
+            <?php endif; ?>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <a href="/pendaftaran/kelulusan/download" download class="inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-full shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all">
+                📄 Cetak Surat Kelulusan
+              </a>
+              <a data-spa href="/pendaftaran/daftar-ulang" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white <?= $re_registration && $re_registration['status'] === 'Approved' ? 'bg-slate-800 hover:bg-slate-900' : 'bg-emerald-600 hover:bg-emerald-700' ?> transition-all hover:-translate-y-0.5">
+                💳 <?= $re_registration ? ($re_registration['status'] === 'Approved' ? 'Lihat Bukti Daftar Ulang' : 'Detail Daftar Ulang') : 'Lanjut Daftar Ulang' ?>
+              </a>
+            </div>
+          </div>
+        </div>
+      <?php endif; ?>
 
     <?php elseif ($state === 'tidak_lolos'): ?>
       <div class="text-center space-y-6 py-6 max-w-lg mx-auto">

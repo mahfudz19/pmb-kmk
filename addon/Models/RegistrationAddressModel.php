@@ -27,6 +27,7 @@ class RegistrationAddressModel extends Model
         'rt' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
         'rw' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
         'kps_receiver' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
+        'kps_number' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
         'transportation' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
         'living_type' => ['type' => 'varchar', 'length' => 50, 'nullable' => true]
     ];
