@@ -46,6 +46,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     // Dashboard
     $router->get('/dashboard', [DashboardController::class, 'index']);
     $router->post('/dashboard/simulate-state', [DashboardController::class, 'simulateState']);
+    $router->post('/dashboard/init-registration', [DashboardController::class, 'initRegistration']);
     
     // Logout
     $router->post('/logout', [AuthController::class, 'logout']);
@@ -59,6 +60,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     $router->post('/pendaftaran/save', [RegistrationController::class, 'saveDraft']);
     $router->post('/pendaftaran/submit', [RegistrationController::class, 'submit']);
     $router->post('/pendaftaran/step', [RegistrationController::class, 'updateActiveStep']);
+    $router->post('/pendaftaran/reset-wave', [RegistrationController::class, 'resetWave']);
 
     // Document Upload & View
     $router->get('/pendaftaran/dokumen', [DocumentController::class, 'showUploadPage']);

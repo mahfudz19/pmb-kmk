@@ -39,8 +39,8 @@ class UserModel extends Model
 
     protected array $seed = [
         [
-            'email' => 'abdoerrahiem@gmail.com',
-            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
+            'email' => 'superadmin@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi',
             'name' => 'Super Admin',
             'avatar' => null,
             'is_active' => 1,
@@ -51,8 +51,8 @@ class UserModel extends Model
             'permissions' => '["*"]'
         ],
         [
-            'email' => 'abdoerrahiem.iphone@gmail.com',
-            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
+            'email' => 'admin@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi',
             'name' => 'Admin Terbatas',
             'avatar' => null,
             'is_active' => 1,
@@ -63,9 +63,9 @@ class UserModel extends Model
             'permissions' => '["verify_payment","verify_document","manage_selection"]'
         ],
         [
-            'email' => 'abdoerrahiem3@gmail.com',
-            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi', // password
-            'name' => 'Abdoerrahiem',
+            'email' => 'user@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi',
+            'name' => 'User',
             'avatar' => null,
             'is_active' => 1,
             'last_login_at' => null,

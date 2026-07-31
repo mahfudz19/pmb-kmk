@@ -136,8 +136,16 @@ class DashboardController
         $userId = $this->session->get('auth.user_id');
         $registration = $this->registrations->findByUserId($userId);
 
-        if ($registration && $registration['status'] === 'Draft') {
-            return $response->redirect('/pendaftaran');
+        $db = $this->registrations->getDb();
+        $stmt = $db->prepare("SELECT * FROM waves WHERE is_active = 1");
+        $stmt->execute();
+        $activeWaves = $stmt->fetchAll() ?: [];
+
+        $wave = null;
+        if ($registration && $registration['wave_id']) {
+            $stmt = $db->prepare("SELECT * FROM waves WHERE id = :wave_id LIMIT 1");
+            $stmt->execute(['wave_id' => $registration['wave_id']]);
+            $wave = $stmt->fetch() ?: null;
         }
 
         $state = $this->session->get('registration_state') ?? 'belum_daftar';
@@ -239,8 +247,10 @@ class DashboardController
                 $passedProgram = $stmt->fetch() ?: null;
             }
 
-            if ($registration['status'] === 'Draft') {
+            if (empty($registration['wave_id'])) {
                 $state = 'belum_daftar';
+            } else if ($registration['status'] === 'Draft') {
+                $state = 'draft';
             } else if ($registration['status'] === 'Submitted') {
                 if (!$payment) {
                     $state = 'belum_bayar';
@@ -315,11 +325,55 @@ class DashboardController
             'wave_study_programs' => $waveStudyPrograms ?? [],
             'required_docs' => $requiredDocs,
             'active_payment_account' => $activePaymentAccount,
-            'exam_results' => $examResults
+            'exam_results' => $examResults,
+            'active_waves' => $activeWaves,
+            'wave' => $wave
         ], [
             'path' => '/dashboard/student',
             'meta' => ['title' => 'Dashboard Pendaftaran | ' . env('APP_NAME')]
         ]);
+    }
+
+    public function initRegistration(Request $request, Response $response): RedirectResponse
+    {
+        if (!$this->session->get('is_logged_in')) {
+            return $response->redirect('/login');
+        }
+
+        $userId = $this->session->get('auth.user_id');
+        $waveId = (int)$request->input('wave_id');
+
+        if (!$waveId) {
+            return $response->redirect('/dashboard?error=Gelombang+pendaftaran+harus+dipilih');
+        }
+
+        $existing = $this->registrations->findByUserId($userId);
+        if ($existing) {
+            $this->registrations->updateById($existing['id'], [
+                'wave_id' => $waveId,
+                'status' => 'Draft',
+                'current_step' => 1
+            ]);
+            $db = $this->registrations->getDb();
+            $stmt = $db->prepare("DELETE FROM registration_programs WHERE registration_id = :id");
+            $stmt->execute(['id' => $existing['id']]);
+
+            return $response->redirect('/pendaftaran')->hard();
+        }
+
+        $this->registrations->insert([
+            'user_id' => $userId,
+            'wave_id' => $waveId,
+            'full_name' => $this->session->get('auth.user_name') ?: '',
+            'birth_place' => '',
+            'birth_date' => '',
+            'gender' => '',
+            'religion' => '',
+            'status' => 'Draft',
+            'current_step' => 1
+        ]);
+
+        return $response->redirect('/pendaftaran')->hard();
     }
 
     public function simulateState(Request $request, Response $response): RedirectResponse

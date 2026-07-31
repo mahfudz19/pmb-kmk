@@ -8,16 +8,12 @@ use App\Core\View\View;
 use App\Core\Http\RedirectResponse;
 use App\Services\SessionService;
 use Addon\Models\SettingModel;
-use Addon\Models\AcademicYearModel;
-use Addon\Models\WaveModel;
 
 class SettingController
 {
     public function __construct(
         private SessionService $session,
-        private SettingModel $settings,
-        private AcademicYearModel $academicYears,
-        private WaveModel $waves
+        private SettingModel $settings
     ) {}
 
     private function checkAccess(Response $response): ?RedirectResponse
@@ -43,13 +39,8 @@ class SettingController
             $mappedSettings[$s['key']] = $s['value'];
         }
 
-        $years = $this->academicYears->all();
-        $wavesList = $this->waves->all();
-
         return $response->renderPage([
-            'settings' => $mappedSettings,
-            'academic_years' => $years,
-            'waves' => $wavesList
+            'settings' => $mappedSettings
         ], [
             'path' => '/admin/settings/index',
             'meta' => ['title' => 'Pengaturan Sistem | ' . env('APP_NAME')]
@@ -104,43 +95,5 @@ class SettingController
 
         log_activity('UPDATE_SYSTEM_SETTINGS', "Memperbarui konfigurasi pengaturan umum sistem.");
         return $response->redirect('/admin/settings?success=Pengaturan+umum+berhasil+disimpan.');
-    }
-
-    public function updateAcademicYear(Request $request, Response $response): RedirectResponse
-    {
-        if ($redirect = $this->checkAccess($response)) {
-            return $redirect;
-        }
-
-        $activeId = (int)$request->input('active_year_id');
-        if ($activeId) {
-            $db = $this->academicYears->getDb();
-            $stmt1 = $db->prepare("UPDATE academic_years SET is_active = 0");
-            $stmt1->execute();
-            $stmt2 = $db->prepare("UPDATE academic_years SET is_active = 1 WHERE id = :id");
-            $stmt2->execute(['id' => $activeId]);
-        }
-
-        log_activity('UPDATE_ACADEMIC_YEAR', "Mengubah tahun akademik aktif ke ID {$activeId}.");
-        return $response->redirect('/admin/settings?success=Tahun+akademik+aktif+berhasil+diperbarui.');
-    }
-
-    public function updateWave(Request $request, Response $response): RedirectResponse
-    {
-        if ($redirect = $this->checkAccess($response)) {
-            return $redirect;
-        }
-
-        $activeId = (int)$request->input('active_wave_id');
-        if ($activeId) {
-            $db = $this->waves->getDb();
-            $stmt1 = $db->prepare("UPDATE waves SET is_active = 0");
-            $stmt1->execute();
-            $stmt2 = $db->prepare("UPDATE waves SET is_active = 1 WHERE id = :id");
-            $stmt2->execute(['id' => $activeId]);
-        }
-
-        log_activity('UPDATE_ACTIVE_WAVE', "Mengubah gelombang aktif ke ID {$activeId}.");
-        return $response->redirect('/admin/settings?success=Gelombang+aktif+berhasil+diperbarui.');
     }
 }

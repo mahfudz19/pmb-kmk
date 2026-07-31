@@ -17,7 +17,9 @@ class RegistrationEducationModel extends Model
         'school_major' => ['type' => 'varchar', 'length' => 50, 'nullable' => false],
         'graduation_year' => ['type' => 'varchar', 'length' => 4, 'nullable' => false],
         'diploma_number' => ['type' => 'varchar', 'length' => 50, 'nullable' => false],
-        'average_score' => ['type' => 'decimal', 'precision' => 4, 'scale' => 2, 'nullable' => false]
+        'average_score' => ['type' => 'decimal', 'precision' => 4, 'scale' => 2, 'nullable' => false],
+        'school_address' => ['type' => 'varchar', 'length' => 100, 'nullable' => true],
+        'school_address_id_wil' => ['type' => 'varchar', 'length' => 15, 'nullable' => true]
     ];
 
     protected array $seed = [];

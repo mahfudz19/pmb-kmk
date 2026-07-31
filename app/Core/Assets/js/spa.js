@@ -226,13 +226,23 @@ if (
 }
 
 async function loadContent(url, options = {}) {
-  const {
+  let {
     pushState = true,
     scroll = true,
     ignoreCache = false,
     method = "GET",
     body = null,
   } = typeof options === "boolean" ? { pushState: options } : options;
+
+  try {
+    const urlStr = typeof url === "string" ? url : url.toString();
+    const path = urlStr.startsWith("/") || urlStr.startsWith("?") || urlStr.startsWith("#")
+      ? new URL(urlStr, window.location.origin).pathname
+      : new URL(urlStr).pathname;
+    if (path.endsWith('/pendaftaran') || path.endsWith('/profile')) {
+      ignoreCache = true;
+    }
+  } catch (e) {}
 
   // --- RACE CONDITION HANDLING ---
   // Batalkan request navigasi sebelumnya yang mungkin masih berjalan

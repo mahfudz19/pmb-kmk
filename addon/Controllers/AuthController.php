@@ -6,6 +6,11 @@ use Addon\Models\UserModel;
 use Addon\Models\EmailVerificationModel;
 use Addon\Models\PasswordResetTokenModel;
 use Addon\Models\LoginNotificationModel;
+use Addon\Models\RegistrationModel;
+use Addon\Models\RegistrationAddressModel;
+use Addon\Models\RegistrationParentModel;
+use Addon\Models\RegistrationEducationModel;
+use Addon\Models\RegistrationSpecialNeedModel;
 use Addon\Services\EmailService;
 use Addon\Helpers\OtpGenerator;
 use App\Services\SessionService;
@@ -36,6 +41,11 @@ class AuthController
         private PasswordResetTokenModel $passwordResetTokens,
         private LoginNotificationModel $loginNotifications,
         private EmailService $emailService,
+        private RegistrationModel $registrations,
+        private RegistrationAddressModel $addresses,
+        private RegistrationParentModel $parents,
+        private RegistrationEducationModel $educations,
+        private RegistrationSpecialNeedModel $specialNeeds
     ) {}
 
     /**
@@ -619,6 +629,23 @@ class AuthController
         return $response->redirect('/admin/users?success=Hak+akses+pengguna+berhasil+diperbarui');
     }
 
+    private function convertDateToDb(?string $dateStr): ?string
+    {
+        if (empty($dateStr)) return null;
+        $parts = explode('/', $dateStr);
+        if (count($parts) === 3) {
+            return $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+        }
+        return $dateStr;
+    }
+
+    private function convertDateToUi(?string $dateStr): string
+    {
+        if (empty($dateStr)) return '';
+        $timestamp = strtotime($dateStr);
+        return $timestamp ? date('d/m/Y', $timestamp) : $dateStr;
+    }
+
     public function showProfile(Request $request, Response $response): View | RedirectResponse
     {
         $user = $this->user();
@@ -626,7 +653,72 @@ class AuthController
             return $response->redirect('/login');
         }
 
-        return $response->renderPage(['user' => $user], [
+        $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->setHeader('Pragma', 'no-cache');
+
+        $registration = $this->registrations->findByUserId($user['id']);
+        $regId = $registration ? $registration['id'] : null;
+
+        $parents = $regId ? $this->parents->findByRegistrationId($regId) : null;
+        if ($parents) {
+            $parents['father_birth_date'] = $this->convertDateToUi($parents['father_birth_date'] ?? '');
+            $parents['mother_birth_date'] = $this->convertDateToUi($parents['mother_birth_date'] ?? '');
+            $parents['guardian_birth_date'] = $this->convertDateToUi($parents['guardian_birth_date'] ?? '');
+        }
+
+        $address = $regId ? $this->addresses->findByRegistrationId($regId) : null;
+        $education = $regId ? $this->educations->findByRegistrationId($regId) : null;
+        $specialNeeds = $regId ? $this->specialNeeds->findByRegistrationId($regId) : null;
+
+        $jsonData = json_decode(file_get_contents(MAZU_ENV_PATH . 'data.json'), true);
+        $wilayahList = $jsonData['wilayah'][0] ?? [];
+        $agamaList = $jsonData['agama'][0] ?? [];
+        $negaraList = $jsonData['kewarganegaraan'][0] ?? [];
+        $tinggalList = $jsonData['jenis_tinggal'][0] ?? [];
+        $transportList = $jsonData['alat_transportasi'][0] ?? [];
+        $pendidikanList = $jsonData['jenjang_pendidikan'][0] ?? [];
+        usort($pendidikanList, fn($a, $b) => ((int)($a['id_jenj_didik'] ?? 0)) <=> ((int)($b['id_jenj_didik'] ?? 0)));
+        $penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], fn($item) => !empty($item['nm_penghasilan'])));
+        usort($penghasilanList, fn($a, $b) => ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0)));
+        $pekerjaanList = $jsonData['pekerjaan'][0] ?? [];
+        usort($pekerjaanList, function($a, $b) {
+            $nameA = $a['nm_pekerjaan'] ?? '';
+            $nameB = $b['nm_pekerjaan'] ?? '';
+            if ($nameA === 'Tidak bekerja') return -1;
+            if ($nameB === 'Tidak bekerja') return 1;
+            return strcasecmp($nameA, $nameB);
+        });
+        $kebutuhanKhususList = $jsonData['kebutuhan_khusus'][0] ?? [];
+        if (empty($kebutuhanKhususList)) {
+            $kebutuhanKhususList = [
+                ['nm_kebutuhan_khusus' => 'Tuna Netra'],
+                ['nm_kebutuhan_khusus' => 'Tuna Rungu'],
+                ['nm_kebutuhan_khusus' => 'Tuna Wicara'],
+                ['nm_kebutuhan_khusus' => 'Tuna Daksa'],
+                ['nm_kebutuhan_khusus' => 'Tuna Grahita'],
+                ['nm_kebutuhan_khusus' => 'Tuna Laras'],
+                ['nm_kebutuhan_khusus' => 'Autis'],
+                ['nm_kebutuhan_khusus' => 'Lainnya']
+            ];
+        }
+
+        return $response->renderPage([
+            'user' => $user,
+            'registration' => $registration,
+            'address' => $address,
+            'parents' => $parents,
+            'education' => $education,
+            'special_needs' => $specialNeeds,
+            'wilayahList' => $wilayahList,
+            'agamaList' => $agamaList,
+            'negaraList' => $negaraList,
+            'tinggalList' => $tinggalList,
+            'transportList' => $transportList,
+            'pendidikanList' => $pendidikanList,
+            'penghasilanList' => $penghasilanList,
+            'pekerjaanList' => $pekerjaanList,
+            'kebutuhanKhususList' => $kebutuhanKhususList
+        ], [
             'path' => '/profile',
             'meta' => ['title' => 'Profil Saya | ' . env('APP_NAME')]
         ]);
@@ -639,54 +731,276 @@ class AuthController
             return $response->redirect('/login');
         }
 
-        $name = $request->input('name');
-        $email = $request->input('email');
-        $currentPassword = $request->input('current_password');
-        $newPassword = $request->input('new_password');
-        $newPasswordConfirmation = $request->input('new_password_confirmation');
+        $tab = $request->input('tab') ?: 'alamat';
 
-        if (!$name || !$email) {
-            return $response->redirect('/profile?error=Nama+dan+email+tidak+boleh+kosong');
+        $registration = $this->registrations->findByUserId($user['id']);
+        $isLocked = $registration && in_array($registration['status'], ['Submitted', 'Verified', 'Released']);
+        if ($isLocked && $tab !== 'password') {
+            return $response->redirect('/profile?tab=' . urlencode($tab) . '&error=' . urlencode('Profil Anda telah dikunci karena pendaftaran telah dikirim.'));
         }
 
-        if (strtolower($email) !== strtolower($user['email'])) {
-            $existing = $this->users->findByEmail($email);
-            if ($existing) {
-                return $response->redirect('/profile?error=Email+sudah+terdaftar+oleh+pengguna+lain');
-            }
-        }
+        if ($tab === 'password') {
+            $currentPassword = $request->input('current_password');
+            $newPassword = $request->input('new_password');
+            $newPasswordConfirmation = $request->input('new_password_confirmation');
 
-        $updateData = [
-            'name' => $name,
-            'email' => $email,
-        ];
-
-        if (!empty($currentPassword) || !empty($newPassword) || !empty($newPasswordConfirmation)) {
             if (empty($currentPassword) || empty($newPassword) || empty($newPasswordConfirmation)) {
-                return $response->redirect('/profile?error=Untuk+mengganti+password,+seluruh+kolom+password+harus+diisi');
+                return $response->redirect('/profile?tab=password&error=Seluruh+kolom+password+harus+diisi');
             }
 
             if (!$this->verifyPassword($currentPassword, $user['password'])) {
-                return $response->redirect('/profile?error=Password+saat+ini+salah');
+                return $response->redirect('/profile?tab=password&error=Password+saat+ini+salah');
             }
 
             if ($newPassword !== $newPasswordConfirmation) {
-                return $response->redirect('/profile?error=Konfirmasi+password+baru+tidak+cocok');
+                return $response->redirect('/profile?tab=password&error=Konfirmasi+password+baru+tidak+cocok');
             }
 
             $validation = $this->validatePassword($newPassword);
             if (!$validation['valid']) {
-                return $response->redirect('/profile?error=' . urlencode(implode(', ', $validation['errors'])));
+                return $response->redirect('/profile?tab=password&error=' . urlencode(implode(', ', $validation['errors'])));
             }
 
-            $updateData['password'] = $this->hashPassword($newPassword);
+            $this->users->updateById($user['id'], [
+                'password' => password_hash($newPassword, PASSWORD_BCRYPT)
+            ]);
+
+            return $response->redirect('/profile?tab=password&success=Password+berhasil+diubah');
         }
 
-        $this->users->updateById($user['id'], $updateData);
+        $registration = $this->registrations->findByUserId($user['id']);
+        if (!$registration) {
+            $regId = $this->registrations->insert([
+                'user_id' => $user['id'],
+                'wave_id' => null,
+                'full_name' => $user['name'] ?: '',
+                'birth_place' => '',
+                'birth_date' => '1970-01-01',
+                'gender' => 'Laki-laki',
+                'religion' => '',
+                'status' => 'Draft',
+                'current_step' => 1
+            ]);
+            $registration = $this->registrations->find($regId);
+        }
+        $regId = $registration['id'];
 
-        $this->session->set('auth.user_name', $name);
-        $this->session->set('auth.user_email', $email);
+        if ($tab === 'alamat') {
+            $existingAddr = $this->addresses->findByRegistrationId($regId);
+            $citizenship = $request->input('citizenship') ?: ($existingAddr['citizenship'] ?? 'WNI');
+            $nik = $request->input('nik') ?: $registration['nik'];
+            $nisn = $request->input('nisn') ?: $registration['nisn'];
+            $npwp = $request->input('npwp') ?: null;
+            $street = $request->input('street') ?: null;
+            $telephone = $request->input('telephone') ?: null;
+            $dusun = $request->input('dusun') ?: null;
+            $rt = $request->input('rt') ?: null;
+            $rw = $request->input('rw') ?: null;
+            $hp = $request->input('hp') ?: $request->input('phone') ?: $registration['phone'];
+            $kelurahan = $request->input('subdistrict');
+            $postalCode = $request->input('postal_code') ?: null;
+            $email = $request->input('email');
+            $kps_receiver = $request->input('kps_receiver');
+            $kps_number = $request->input('kps_number') ?: null;
+            $kecamatan = $request->input('district');
+            $districtIdWil = $request->input('district_id_wil') ?: null;
+            $transportation = $request->input('transportation') ?: null;
+            $living_type = $request->input('living_type') ?: null;
+            $province = $request->input('province') ?: null;
+            $city = $request->input('city') ?: null;
+            $addressDetail = $request->input('address') ?: null;
 
-        return $response->redirect('/profile?success=Profil+Anda+berhasil+diperbarui');
+            if (!$email || !$kelurahan || !$kps_receiver || !$kecamatan || !$addressDetail) {
+                return $response->redirect('/profile?tab=alamat&error=Harap+isi+semua+kolom+wajib+pada+alamat');
+            }
+
+            if ($kps_receiver === 'ya' && !$kps_number) {
+                return $response->redirect('/profile?tab=alamat&error=Nomor+KPS+wajib+diisi');
+            }
+
+            $this->registrations->updateById($regId, [
+                'nik' => $nik,
+                'nisn' => $nisn,
+                'phone' => $hp,
+                'email' => $email
+            ]);
+
+            $addrData = [
+                'registration_id' => $regId,
+                'citizenship' => $citizenship,
+                'npwp' => $npwp,
+                'street' => $street,
+                'telephone' => $telephone,
+                'dusun' => $dusun,
+                'rt' => $rt,
+                'rw' => $rw,
+                'subdistrict' => $kelurahan,
+                'kps_receiver' => $kps_receiver,
+                'kps_number' => $kps_receiver === 'ya' ? $kps_number : null,
+                'district' => $kecamatan,
+                'district_id_wil' => $districtIdWil,
+                'transportation' => $transportation,
+                'living_type' => $living_type,
+                'postal_code' => $postalCode,
+                'province' => $province,
+                'city' => $city,
+                'address' => $addressDetail
+            ];
+
+            $existingAddr = $this->addresses->findByRegistrationId($regId);
+            if ($existingAddr) {
+                $this->addresses->updateById($existingAddr['id'], $addrData);
+            } else {
+                $this->addresses->insert($addrData);
+            }
+
+            $this->registrations->updateById($regId, [
+                'email' => $email,
+                'phone' => $hp
+            ]);
+
+            return $response->redirect('/profile?tab=alamat&success=Alamat+dan+kontak+berhasil+diperbarui');
+        }
+
+        if ($tab === 'ortu') {
+            $fatherName = $request->input('father_name');
+            $fatherNik = $request->input('father_nik');
+            $fatherBirthDate = $request->input('father_birth_date');
+            $fatherEducation = $request->input('father_education');
+            $fatherOccupation = $request->input('father_occupation');
+            $fatherIncome = $request->input('father_income');
+
+            $motherName = $request->input('parent_mother_name') ?: $request->input('mother_name');
+            $motherNik = $request->input('mother_nik');
+            $motherBirthDate = $request->input('mother_birth_date');
+            $motherEducation = $request->input('mother_education');
+            $motherOccupation = $request->input('mother_occupation');
+            $motherIncome = $request->input('mother_income');
+
+            $guardianName = $request->input('guardian_name');
+            $guardianBirthDate = $request->input('guardian_birth_date');
+            $guardianEducation = $request->input('guardian_education');
+            $guardianOccupation = $request->input('guardian_occupation');
+            $guardianIncome = $request->input('guardian_income');
+
+            $isParentFilled = !empty($fatherName) || !empty($motherName);
+
+            if ($isParentFilled) {
+                if (!$fatherName || !$fatherNik || !$fatherBirthDate || !$fatherEducation || !$fatherOccupation || !$fatherIncome ||
+                    !$motherName || !$motherNik || !$motherBirthDate || !$motherEducation || !$motherOccupation || !$motherIncome) {
+                    return $response->redirect('/profile?tab=ortu&error=Harap+lengkapi+semua+kolom+data+Orang+Tua+(Ayah+dan+Ibu)');
+                }
+            } else {
+                if (!$guardianName || !$guardianBirthDate || !$guardianEducation || !$guardianOccupation || !$guardianIncome) {
+                    return $response->redirect('/profile?tab=ortu&error=Jika+Orang+Tua+tidak+diisi,+maka+semua+kolom+data+Wali+wajib+diisi');
+                }
+            }
+
+            $parentData = [
+                'registration_id' => $regId,
+                'father_name' => $fatherName ?: null,
+                'father_nik' => $fatherNik ?: null,
+                'father_birth_date' => $fatherBirthDate ? $this->convertDateToDb($fatherBirthDate) : null,
+                'father_education' => $fatherEducation ?: null,
+                'father_occupation' => $fatherOccupation ?: null,
+                'father_income' => $fatherIncome ?: null,
+                'mother_name' => $motherName ?: null,
+                'mother_nik' => $motherNik ?: null,
+                'mother_birth_date' => $motherBirthDate ? $this->convertDateToDb($motherBirthDate) : null,
+                'mother_education' => $motherEducation ?: null,
+                'mother_occupation' => $motherOccupation ?: null,
+                'mother_income' => $motherIncome ?: null,
+                'guardian_name' => $guardianName ?: null,
+                'guardian_birth_date' => $guardianBirthDate ? $this->convertDateToDb($guardianBirthDate) : null,
+                'guardian_education' => $guardianEducation ?: null,
+                'guardian_occupation' => $guardianOccupation ?: null,
+                'guardian_income' => $guardianIncome ?: null
+            ];
+
+            $this->registrations->updateById($regId, ['mother_name' => $motherName]);
+
+            $existingParents = $this->parents->findByRegistrationId($regId);
+            if ($existingParents) {
+                $this->parents->updateById($existingParents['id'], $parentData);
+            } else {
+                $this->parents->insert($parentData);
+            }
+
+            return $response->redirect('/profile?tab=ortu&success=Data+orang+tua+dan+wali+berhasil+diperbarui');
+        }
+
+        if ($tab === 'kebutuhan') {
+            $hasSpecialNeeds = $request->input('has_special_needs');
+            $studentNeeds = $request->input('student_needs') ?: [];
+            $fatherNeeds = $request->input('father_needs') ?: [];
+            $motherNeeds = $request->input('mother_needs') ?: [];
+            $guardianNeeds = $request->input('guardian_needs') ?: [];
+
+            if (!$hasSpecialNeeds) {
+                return $response->redirect('/profile?tab=kebutuhan&error=Pilihan+Kebutuhan+Khusus+wajib+diisi');
+            }
+
+            $needsData = [
+                'registration_id' => $regId,
+                'has_special_needs' => $hasSpecialNeeds,
+                'student_needs' => json_encode($studentNeeds),
+                'father_needs' => json_encode($fatherNeeds),
+                'mother_needs' => json_encode($motherNeeds),
+                'guardian_needs' => json_encode($guardianNeeds)
+            ];
+
+            $existingNeeds = $this->specialNeeds->findByRegistrationId($regId);
+            if ($existingNeeds) {
+                $this->specialNeeds->updateById($existingNeeds['id'], $needsData);
+            } else {
+                $this->specialNeeds->insert($needsData);
+            }
+
+            return $response->redirect('/profile?tab=kebutuhan&success=Kebutuhan+khusus+berhasil+diperbarui');
+        }
+
+        if ($tab === 'pendidikan') {
+            $schoolName = $request->input('school_name');
+            $schoolMajor = $request->input('school_major');
+            $graduationYear = $request->input('graduation_year');
+            $diplomaNumber = $request->input('diploma_number');
+            $averageScore = $request->input('average_score');
+            $schoolAddress = $request->input('school_address');
+            $schoolAddressIdWil = $request->input('school_address_id_wil');
+
+            if (!$schoolName || !$schoolMajor || !$graduationYear || !$diplomaNumber || !$averageScore || !$schoolAddress) {
+                return $response->redirect('/profile?tab=pendidikan&error=Harap+isi+semua+kolom+riwayat+pendidikan+wajib');
+            }
+
+            if (!is_numeric($graduationYear)) {
+                return $response->redirect('/profile?tab=pendidikan&error=Tahun+lulus+harus+berupa+angka');
+            }
+
+            if (!is_numeric($averageScore) || $averageScore < 0 || $averageScore > 100) {
+                return $response->redirect('/profile?tab=pendidikan&error=Rata-rata+nilai+harus+berupa+angka+antara+0+sampai+100');
+            }
+
+            $eduData = [
+                'registration_id' => $regId,
+                'school_name' => $schoolName,
+                'school_major' => $schoolMajor,
+                'graduation_year' => $graduationYear,
+                'diploma_number' => $diplomaNumber,
+                'average_score' => $averageScore,
+                'school_address' => $schoolAddress,
+                'school_address_id_wil' => $schoolAddressIdWil ?: null
+            ];
+
+            $existingEdu = $this->educations->findByRegistrationId($regId);
+            if ($existingEdu) {
+                $this->educations->updateById($existingEdu['id'], $eduData);
+            } else {
+                $this->educations->insert($eduData);
+            }
+
+            return $response->redirect('/profile?tab=pendidikan&success=Riwayat+pendidikan+berhasil+diperbarui');
+        }
+
+        return $response->redirect('/profile?error=Aksi+tidak+valid');
     }
 }

@@ -68,10 +68,9 @@
               <div class="col-span-2">
                 <span class="text-slate-400 font-medium block">Nomor Induk Mahasiswa (NIM)</span>
                 <strong class="text-emerald-700 font-extrabold text-sm"><?= htmlspecialchars($registration['nim']) ?></strong>
-              </div>
             <?php endif; ?>
             <div>
-              <span class="text-slate-400 font-medium block">Nomor Induk Kependudukan (NIK)</span>
+              <span class="text-slate-400 font-medium block">NIK / Citizen Number</span>
               <strong class="text-slate-800 font-bold"><?= htmlspecialchars($registration['nik']) ?></strong>
             </div>
             <div>
@@ -101,7 +100,7 @@
       <!-- Riwayat Pendidikan -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Riwayat Sekolah Asal</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           <div>
             <span class="text-slate-400 font-medium block">Nama Sekolah</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($education['school_name'] ?? '-') ?></strong>
@@ -113,6 +112,10 @@
           <div>
             <span class="text-slate-400 font-medium block">Tahun Kelulusan</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($education['graduation_year'] ?? '-') ?></strong>
+          </div>
+          <div>
+            <span class="text-slate-400 font-medium block">Kecamatan Sekolah</span>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($education['school_address'] ?? '-') ?></strong>
           </div>
         </div>
       </div>

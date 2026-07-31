@@ -68,8 +68,15 @@ class ModelSchemaMigrator
     $adapter = $this->getAdapter($db);
 
     if ($adapter->tableExists($db, $table)) {
-      // Tabel sudah ada, skip tapi log informasi
       echo color("Tabel '{$table}' sudah ada, dilewati.\n", "yellow");
+      
+      $countStmt = $db->prepare("SELECT COUNT(*) FROM `{$table}`");
+      $countStmt->execute();
+      $rowCount = (int)$countStmt->fetchColumn();
+      if ($rowCount === 0) {
+        $this->seedIfNeeded($instance, $db, $table);
+        echo color("Tabel '{$table}' kosong, data seed berhasil dimasukkan.\n", "green");
+      }
       return null;
     }
 
@@ -77,7 +84,6 @@ class ModelSchemaMigrator
       $adapter->createTable($db, $table, $schema);
       echo color("Tabel '{$table}' berhasil dibuat.\n", "green");
     } catch (\RuntimeException $e) {
-      // Re-throw dengan informasi lebih detail
       throw $e;
     }
 

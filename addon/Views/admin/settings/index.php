@@ -26,9 +26,6 @@
       <button onclick="switchTab('tab-general', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-indigo-600 text-indigo-600 transition-all focus:outline-none">
         🏢 Identitas Kampus
       </button>
-      <button onclick="switchTab('tab-period', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
-        📅 Periode & Gelombang
-      </button>
       <button onclick="switchTab('tab-format', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
         🔢 Format No. Pendaftaran
       </button>
@@ -95,51 +92,7 @@
     </form>
   </div>
 
-  <div id="tab-period" class="tab-content space-y-6 hidden">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <form action="/admin/settings/academic-year" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-        <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Tahun Akademik Aktif</h3>
-        
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pilih Tahun Akademik Aktif</label>
-          <select name="active_year_id" class="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-800 cursor-pointer">
-            <?php foreach ($academic_years as $year): ?>
-              <option value="<?= $year['id'] ?>" <?= $year['is_active'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($year['year']) ?> <?= $year['is_active'] ? '(Aktif)' : '' ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
 
-        <div class="flex justify-end pt-3">
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
-            Aktifkan Tahun Akademik
-          </button>
-        </div>
-      </form>
-
-      <form action="/admin/settings/wave" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-        <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Gelombang Aktif</h3>
-        
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pilih Gelombang Aktif</label>
-          <select name="active_wave_id" class="w-full text-xs font-semibold px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-800 cursor-pointer">
-            <?php foreach ($waves as $wave): ?>
-              <option value="<?= $wave['id'] ?>" <?= $wave['is_active'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($wave['name']) ?> (<?= date('d M Y', strtotime($wave['start_date'])) ?> s/d <?= date('d M Y', strtotime($wave['end_date'])) ?>) <?= $wave['is_active'] ? '(Aktif)' : '' ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <div class="flex justify-end pt-3">
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
-            Aktifkan Gelombang
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <div id="tab-format" class="tab-content space-y-6 hidden">
     <form action="/admin/settings/general" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">

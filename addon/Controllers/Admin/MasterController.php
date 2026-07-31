@@ -59,6 +59,9 @@ class MasterController
                 $end = $request->input('end_date');
                 $is_active = $request->input('is_active') ? 1 : 0;
                 if (!$name || !$start || !$end) return $response->redirect('/admin/master?tab=wave&error=Seluruh+kolom+harus+diisi');
+                if ($is_active) {
+                    $this->waves->getDb()->query("UPDATE waves SET is_active = 0");
+                }
                 $this->waves->insert([
                     'name' => $name, 
                     'academic_year' => $academic_year,
@@ -144,6 +147,9 @@ class MasterController
                 $start = $request->input('start_date');
                 $end = $request->input('end_date');
                 $is_active = $request->input('is_active') ? 1 : 0;
+                if ($is_active) {
+                    $this->waves->getDb()->query("UPDATE waves SET is_active = 0");
+                }
                 $this->waves->updateById($id, [
                     'name' => $name, 
                     'academic_year' => $academic_year,
@@ -346,32 +352,13 @@ class MasterController
                 }
             }
 
-            $examDates = $request->input('exam_date_' . $prodiId) ?: [];
-            $examTimes = $request->input('exam_time_' . $prodiId) ?: [];
-            $examPlaces = $request->input('exam_place_' . $prodiId) ?: [];
-            $examTypes = $request->input('exam_type_' . $prodiId) ?: [];
-            $examDescs = $request->input('exam_description_' . $prodiId) ?: [];
-            $examStages = [];
-            for ($i = 0; $i < count($examDates); $i++) {
-                if (!empty($examDates[$i])) {
-                    $examStages[] = [
-                        'stage_number' => $i + 1,
-                        'date' => $examDates[$i],
-                        'time' => $examTimes[$i] ?? '',
-                        'place' => $examPlaces[$i] ?? '',
-                        'type' => $examTypes[$i] ?? 'offline',
-                        'description' => $examDescs[$i] ?? ''
-                    ];
-                }
-            }
-
             $progData = [
                 'wave_id' => $waveId,
                 'study_program_id' => $prodiId,
                 'reregistration_fee_total' => $reregFee,
                 'reregistration_fee_archive' => $reregArchive,
                 'required_documents' => json_encode($requiredDocs),
-                'exam_stages' => json_encode($examStages)
+                'exam_stages' => json_encode([])
             ];
 
             if ($existingProg) {
@@ -380,6 +367,26 @@ class MasterController
                 $this->waveStudyPrograms->insert($progData);
             }
         }
+
+        $examDates = $request->input('exam_date') ?: [];
+        $examTimes = $request->input('exam_time') ?: [];
+        $examPlaces = $request->input('exam_place') ?: [];
+        $examTypes = $request->input('exam_type') ?: [];
+        $examDescs = $request->input('exam_description') ?: [];
+        $examStages = [];
+        for ($i = 0; $i < count($examDates); $i++) {
+            if (!empty($examDates[$i])) {
+                $examStages[] = [
+                    'stage_number' => $i + 1,
+                    'date' => $examDates[$i],
+                    'time' => $examTimes[$i] ?? '',
+                    'place' => $examPlaces[$i] ?? '',
+                    'type' => $examTypes[$i] ?? 'offline',
+                    'description' => $examDescs[$i] ?? ''
+                ];
+            }
+        }
+        $this->waves->updateById($waveId, ['exam_stages' => json_encode($examStages)]);
 
         log_activity('CONFIGURE_WAVE_STUDY_PROGRAMS', "Mengkonfigurasi detail program studi dan tahapan ujian pada gelombang ID {$waveId}.");
         return $response->redirect("/admin/master?tab=wave&success=Konfigurasi+gelombang+berhasil+disimpan");

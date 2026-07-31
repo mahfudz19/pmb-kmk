@@ -20,7 +20,72 @@ class WaveStudyProgramModel extends Model
         'exam_stages' => ['type' => 'text', 'nullable' => true]
     ];
 
-    protected array $seed = [];
+    protected array $seed = [
+        [
+            'wave_id' => 1,
+            'study_program_id' => 1,
+            'reregistration_fee_total' => 7500000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-07-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 1,
+            'study_program_id' => 2,
+            'reregistration_fee_total' => 7000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-07-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 1,
+            'study_program_id' => 3,
+            'reregistration_fee_total' => 8000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-07-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 1,
+            'study_program_id' => 4,
+            'reregistration_fee_total' => 6000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-07-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 2,
+            'study_program_id' => 1,
+            'reregistration_fee_total' => 7500000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-09-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 2,
+            'study_program_id' => 2,
+            'reregistration_fee_total' => 7000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-09-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 2,
+            'study_program_id' => 3,
+            'reregistration_fee_total' => 8000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-09-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ],
+        [
+            'wave_id' => 2,
+            'study_program_id' => 4,
+            'reregistration_fee_total' => 6000000.00,
+            'reregistration_fee_archive' => null,
+            'required_documents' => '[{"document_type_id":1,"name":"Scan Rapor Kelas XII / Ijazah SMA","description":"Scan berwarna asli / legalisir"},{"document_type_id":2,"name":"Scan Kartu Keluarga (KK)","description":"Scan berwarna asli"},{"document_type_id":3,"name":"Scan KTP / Kartu Pelajar","description":"Scan KTP asli / Kartu Pelajar"},{"document_type_id":4,"name":"Pas Foto Flat Latar Merah","description":"Ukuran 3x4 formal"}]',
+            'exam_stages' => '[{"stage_number":1,"date":"2026-09-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
+        ]
+    ];
 
     public function findByWaveId(int $waveId): array
     {

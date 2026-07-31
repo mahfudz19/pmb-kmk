@@ -26,10 +26,11 @@ class RegistrationAddressModel extends Model
         'dusun' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
         'rt' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
         'rw' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
-        'kps_receiver' => ['type' => 'varchar', 'length' => 5, 'nullable' => true],
+        'kps_receiver' => ['type' => 'varchar', 'length' => 5, 'nullable' => true, 'default' => 'tidak'],
         'kps_number' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
         'transportation' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
-        'living_type' => ['type' => 'varchar', 'length' => 50, 'nullable' => true]
+        'living_type' => ['type' => 'varchar', 'length' => 50, 'nullable' => true],
+        'district_id_wil' => ['type' => 'varchar', 'length' => 15, 'nullable' => true]
     ];
 
     protected array $seed = [];

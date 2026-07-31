@@ -19,7 +19,8 @@ class WaveModel extends Model
         'end_date' => ['type' => 'date', 'nullable' => false],
         'is_active' => ['type' => 'boolean', 'nullable' => false, 'default' => 1],
         'registration_fee_total' => ['type' => 'int', 'nullable' => false, 'default' => 0],
-        'registration_fee_archive' => ['type' => 'varchar', 'length' => 255, 'nullable' => true]
+        'registration_fee_archive' => ['type' => 'varchar', 'length' => 255, 'nullable' => true],
+        'exam_stages' => ['type' => 'text', 'nullable' => true]
     ];
 
     protected array $seed = [
@@ -29,7 +30,8 @@ class WaveModel extends Model
             'description' => 'Gelombang Pendaftaran Semester Ganjil Tahap I',
             'start_date' => '2026-06-01',
             'end_date' => '2026-07-31',
-            'is_active' => 1
+            'is_active' => 1,
+            'exam_stages' => '[{"stage_number":1,"date":"2026-07-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
         ],
         [
             'name' => 'Gelombang 2',
@@ -37,7 +39,8 @@ class WaveModel extends Model
             'description' => 'Gelombang Pendaftaran Semester Ganjil Tahap II',
             'start_date' => '2026-08-01',
             'end_date' => '2026-09-30',
-            'is_active' => 1
+            'is_active' => 1,
+            'exam_stages' => '[{"stage_number":1,"date":"2026-09-20","time":"09:00 - 11:00 WIB","place":"Virtual Zoom / Aplikasi CBT","type":"online","description":"Ujian CBT Mandiri Potensi Akademik"}]'
         ]
     ];
 }

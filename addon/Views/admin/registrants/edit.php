@@ -1,16 +1,4 @@
 <?php
-/**
- * @var array $registration
- * @var array $programs
- * @var array $address
- * @var array $education
- * @var array $parent
- * @var array $study_programs
- * @var array $academic_years
- * @var array $waves
- * @var array $admission_paths
- * @var array $classes
- */
 $jsonData = json_decode(file_get_contents(MAZU_ENV_PATH . 'data.json'), true);
 $agamaList = $jsonData['agama'][0] ?? [];
 $negaraList = $jsonData['kewarganegaraan'][0] ?? [];
@@ -43,7 +31,6 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 ?>
 
 <div class="space-y-6">
-  <!-- Top Bar -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
     <div class="space-y-1">
       <div class="flex items-center gap-2">
@@ -70,9 +57,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
     <input type="hidden" name="id" value="<?= $registration['id'] ?>">
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Forms (2 col span) -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Biodata Pribadi -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">1. Biodata Pribadi</h3>
           
@@ -88,12 +73,12 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
             </div>
 
             <div>
-              <label for="nik" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NIK (Nomor Induk Kependudukan)</label>
+              <label for="nik" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NIK / Citizen Number</label>
               <input type="text" name="nik" id="nik" minlength="16" maxlength="16" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nik'] ?? '') ?>" required>
             </div>
 
             <div>
-              <label for="nisn" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NISN (Nomor Induk Siswa Nasional)</label>
+              <label for="nisn" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NISN</label>
               <input type="text" name="nisn" id="nisn" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" required>
             </div>
 
@@ -134,14 +119,17 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
               <label for="info_source" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Dapat Info Kampus Dari Mana?</label>
               <select name="info_source" id="info_source" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
                 <option value="" disabled <?= empty($registration['info_source']) ? 'selected' : '' ?>>Pilih Info Kampus</option>
-                <option value="media sosial" <?= ($registration['info_source'] ?? '') === 'media sosial' ? 'selected' : '' ?>>Media Sosial</option>
-                <option value="sosialisasi" <?= ($registration['info_source'] ?? '') === 'sosialisasi' ? 'selected' : '' ?>>Sosialisasi</option>
+                <option value="Media Sosial" <?= ($registration['info_source'] ?? '') === 'Media Sosial' ? 'selected' : '' ?>>Media Sosial</option>
+                <option value="Website Kampus" <?= ($registration['info_source'] ?? '') === 'Website Kampus' ? 'selected' : '' ?>>Website Kampus</option>
+                <option value="Brosur / Spanduk" <?= ($registration['info_source'] ?? '') === 'Brosur / Spanduk' ? 'selected' : '' ?>>Brosur / Spanduk</option>
+                <option value="Teman / Keluarga" <?= ($registration['info_source'] ?? '') === 'Teman / Keluarga' ? 'selected' : '' ?>>Teman / Keluarga</option>
+                <option value="Kunjungan Sekolah" <?= ($registration['info_source'] ?? '') === 'Kunjungan Sekolah' ? 'selected' : '' ?>>Kunjungan Sekolah</option>
+                <option value="Lainnya" <?= ($registration['info_source'] ?? '') === 'Lainnya' ? 'selected' : '' ?>>Lainnya</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Alamat -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">2. Alamat Rumah & Kontak</h3>
           
@@ -191,12 +179,14 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
               <label for="district" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kecamatan</label>
               <div class="space-y-1.5">
                 <input type="text" id="district_search" oninput="filterEditDistricts(this.value)" class="appearance-none block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-medium" placeholder="🔍 Cari nama kecamatan di sini...">
-                <select name="district" id="district" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                  <option value="" disabled <?= empty($address['district']) ? 'selected' : '' ?>>Pilih Kecamatan</option>
-                  <?php foreach ($wilayahList as $wil): ?>
-                    <option value="<?= htmlspecialchars($wil['kecamatan']) ?>" <?= ($address['district'] ?? '') === $wil['kecamatan'] ? 'selected' : '' ?>><?= htmlspecialchars($wil['kecamatan']) ?> (<?= htmlspecialchars($wil['kabupaten']) ?>)</option>
-                  <?php endforeach; ?>
+                <select name="district" id="district" onchange="onDistrictSelectChange(this)" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
+                  <?php if (!empty($address['district'])): ?>
+                    <option value="<?= htmlspecialchars($address['district']) ?>" selected><?= htmlspecialchars($address['district']) ?></option>
+                  <?php else: ?>
+                    <option value="" disabled selected>Pilih Kecamatan</option>
+                  <?php endif; ?>
                 </select>
+                <input type="hidden" id="district_id_wil" name="district_id_wil" value="<?= htmlspecialchars($address['district_id_wil'] ?? '') ?>">
               </div>
             </div>
 
@@ -249,7 +239,6 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           </div>
         </div>
 
-        <!-- Asal Sekolah -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">3. Riwayat Pendidikan Asal</h3>
           
@@ -278,141 +267,166 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
               <label for="average_score" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Rata-Rata Rapor/Ijazah</label>
               <input type="number" step="0.01" min="0" max="100" name="average_score" id="average_score" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($education['average_score'] ?? '') ?>" required>
             </div>
+
+            <div>
+              <label for="school_address" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kecamatan Sekolah</label>
+              <div class="space-y-1.5">
+                <input type="text" id="school_address_search" oninput="filterEditSchoolDistricts(this.value)" class="appearance-none block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-medium" placeholder="🔍 Cari nama kecamatan sekolah...">
+                <select name="school_address" id="school_address" onchange="onSchoolDistrictSelectChange(this)" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
+                  <?php if (!empty($education['school_address'])): ?>
+                    <option value="<?= htmlspecialchars($education['school_address']) ?>" selected><?= htmlspecialchars($education['school_address']) ?></option>
+                  <?php else: ?>
+                    <option value="" disabled selected>Pilih Kecamatan Sekolah</option>
+                  <?php endif; ?>
+                </select>
+                <input type="hidden" id="school_address_id_wil" name="school_address_id_wil" value="<?= htmlspecialchars($education['school_address_id_wil'] ?? '') ?>">
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Data Orang Tua & Wali -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">4. Data Orang Tua / Wali</h3>
           
-          <!-- Data Ayah -->
           <div class="space-y-3 pt-2">
             <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👨 Data Ayah</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               <div>
                 <label for="father_name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Ayah</label>
-                <input type="text" name="father_name" id="father_name" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= htmlspecialchars($parent['father_name'] ?? '') ?>">
+                <input type="text" name="father_name" id="father_name" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['father_name'] ?? '') ?>">
               </div>
+
               <div>
                 <label for="father_nik" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NIK Ayah</label>
-                <input type="text" name="father_nik" id="father_nik" minlength="16" maxlength="16" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= htmlspecialchars($parent['father_nik'] ?? '') ?>">
+                <input type="text" name="father_nik" id="father_nik" maxlength="16" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['father_nik'] ?? '') ?>">
               </div>
+
               <div>
-                <label for="father_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Lahir Ayah</label>
-                <input type="date" name="father_birth_date" id="father_birth_date" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= !empty($parent['father_birth_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $parent['father_birth_date']))) : '' ?>">
+                <label for="father_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tahun Lahir Ayah</label>
+                <input type="number" name="father_birth_date" id="father_birth_date" placeholder="Contoh: 1975" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['father_birth_date'] ?? '') ?>">
               </div>
+
               <div>
                 <label for="father_education" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pendidikan Ayah</label>
-                <select name="father_education" id="father_education" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="father_education" id="father_education" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pendidikan</option>
-                  <?php foreach ($pendidikanList as $pl): ?>
-                    <option value="<?= htmlspecialchars($pl['nm_jenj_didik']) ?>" <?= ($parent['father_education'] ?? '') === $pl['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pl['nm_jenj_didik']) ?></option>
+                  <?php foreach ($pendidikanList as $pen): ?>
+                    <option value="<?= htmlspecialchars($pen['nm_jenj_didik']) ?>" <?= ($parent['father_education'] ?? '') === $pen['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_jenj_didik']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="father_occupation" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pekerjaan Ayah</label>
-                <select name="father_occupation" id="father_occupation" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="father_occupation" id="father_occupation" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pekerjaan</option>
-                  <?php foreach ($pekerjaanList as $pej): ?>
-                    <option value="<?= htmlspecialchars($pej['nm_pekerjaan']) ?>" <?= ($parent['father_occupation'] ?? '') === $pej['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pej['nm_pekerjaan']) ?></option>
+                  <?php foreach ($pekerjaanList as $pek): ?>
+                    <option value="<?= htmlspecialchars($pek['nm_pekerjaan']) ?>" <?= ($parent['father_occupation'] ?? '') === $pek['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pek['nm_pekerjaan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="father_income" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Penghasilan Ayah</label>
-                <select name="father_income" id="father_income" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="father_income" id="father_income" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Penghasilan</option>
-                  <?php foreach ($penghasilanList as $pen): ?>
-                    <option value="<?= htmlspecialchars($pen['nm_penghasilan']) ?>" <?= ($parent['father_income'] ?? '') === $pen['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_penghasilan']) ?></option>
+                  <?php foreach ($penghasilanList as $pg): ?>
+                    <option value="<?= htmlspecialchars($pg['nm_penghasilan']) ?>" <?= ($parent['father_income'] ?? '') === $pg['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pg['nm_penghasilan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Data Ibu -->
-          <div class="space-y-3">
+          <div class="space-y-3 border-t border-slate-100 pt-4">
             <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👩 Data Ibu</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 text-xs">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               <div>
-                <label for="mother_name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Ibu</label>
-                <input type="text" name="mother_name" id="mother_name" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= htmlspecialchars($parent['mother_name'] ?? '') ?>">
+                <label for="mother_name_detail" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Ibu</label>
+                <input type="text" name="mother_name" id="mother_name_detail" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['mother_name'] ?? '') ?>">
               </div>
+
               <div>
                 <label for="mother_nik" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NIK Ibu</label>
-                <input type="text" name="mother_nik" id="mother_nik" minlength="16" maxlength="16" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= htmlspecialchars($parent['mother_nik'] ?? '') ?>">
+                <input type="text" name="mother_nik" id="mother_nik" maxlength="16" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['mother_nik'] ?? '') ?>">
               </div>
+
               <div>
-                <label for="mother_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Lahir Ibu</label>
-                <input type="date" name="mother_birth_date" id="mother_birth_date" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= !empty($parent['mother_birth_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $parent['mother_birth_date']))) : '' ?>">
+                <label for="mother_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tahun Lahir Ibu</label>
+                <input type="number" name="mother_birth_date" id="mother_birth_date" placeholder="Contoh: 1978" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['mother_birth_date'] ?? '') ?>">
               </div>
+
               <div>
                 <label for="mother_education" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pendidikan Ibu</label>
-                <select name="mother_education" id="mother_education" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="mother_education" id="mother_education" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pendidikan</option>
-                  <?php foreach ($pendidikanList as $pl): ?>
-                    <option value="<?= htmlspecialchars($pl['nm_jenj_didik']) ?>" <?= ($parent['mother_education'] ?? '') === $pl['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pl['nm_jenj_didik']) ?></option>
+                  <?php foreach ($pendidikanList as $pen): ?>
+                    <option value="<?= htmlspecialchars($pen['nm_jenj_didik']) ?>" <?= ($parent['mother_education'] ?? '') === $pen['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_jenj_didik']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="mother_occupation" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pekerjaan Ibu</label>
-                <select name="mother_occupation" id="mother_occupation" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="mother_occupation" id="mother_occupation" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pekerjaan</option>
-                  <?php foreach ($pekerjaanList as $pej): ?>
-                    <option value="<?= htmlspecialchars($pej['nm_pekerjaan']) ?>" <?= ($parent['mother_occupation'] ?? '') === $pej['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pej['nm_pekerjaan']) ?></option>
+                  <?php foreach ($pekerjaanList as $pek): ?>
+                    <option value="<?= htmlspecialchars($pek['nm_pekerjaan']) ?>" <?= ($parent['mother_occupation'] ?? '') === $pek['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pek['nm_pekerjaan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="mother_income" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Penghasilan Ibu</label>
-                <select name="mother_income" id="mother_income" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="mother_income" id="mother_income" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Penghasilan</option>
-                  <?php foreach ($penghasilanList as $pen): ?>
-                    <option value="<?= htmlspecialchars($pen['nm_penghasilan']) ?>" <?= ($parent['mother_income'] ?? '') === $pen['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_penghasilan']) ?></option>
+                  <?php foreach ($penghasilanList as $pg): ?>
+                    <option value="<?= htmlspecialchars($pg['nm_penghasilan']) ?>" <?= ($parent['mother_income'] ?? '') === $pg['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pg['nm_penghasilan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Data Wali -->
-          <div class="space-y-3">
-            <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👤 Data Wali (Opsional)</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 text-xs">
+          <div class="space-y-3 border-t border-slate-100 pt-4">
+            <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👵 Data Wali (Opsional)</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               <div>
                 <label for="guardian_name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Wali</label>
-                <input type="text" name="guardian_name" id="guardian_name" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= htmlspecialchars($parent['guardian_name'] ?? '') ?>">
+                <input type="text" name="guardian_name" id="guardian_name" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['guardian_name'] ?? '') ?>">
               </div>
+
               <div>
-                <label for="guardian_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tanggal Lahir Wali</label>
-                <input type="date" name="guardian_birth_date" id="guardian_birth_date" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium" value="<?= !empty($parent['guardian_birth_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $parent['guardian_birth_date']))) : '' ?>">
+                <label for="guardian_birth_date" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tahun Lahir Wali</label>
+                <input type="number" name="guardian_birth_date" id="guardian_birth_date" placeholder="Contoh: 1970" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($parent['guardian_birth_date'] ?? '') ?>">
               </div>
+
               <div>
                 <label for="guardian_education" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pendidikan Wali</label>
-                <select name="guardian_education" id="guardian_education" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="guardian_education" id="guardian_education" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pendidikan</option>
-                  <?php foreach ($pendidikanList as $pl): ?>
-                    <option value="<?= htmlspecialchars($pl['nm_jenj_didik']) ?>" <?= ($parent['guardian_education'] ?? '') === $pl['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pl['nm_jenj_didik']) ?></option>
+                  <?php foreach ($pendidikanList as $pen): ?>
+                    <option value="<?= htmlspecialchars($pen['nm_jenj_didik']) ?>" <?= ($parent['guardian_education'] ?? '') === $pen['nm_jenj_didik'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_jenj_didik']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="guardian_occupation" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pekerjaan Wali</label>
-                <select name="guardian_occupation" id="guardian_occupation" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="guardian_occupation" id="guardian_occupation" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Pekerjaan</option>
-                  <?php foreach ($pekerjaanList as $pej): ?>
-                    <option value="<?= htmlspecialchars($pej['nm_pekerjaan']) ?>" <?= ($parent['guardian_occupation'] ?? '') === $pej['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pej['nm_pekerjaan']) ?></option>
+                  <?php foreach ($pekerjaanList as $pek): ?>
+                    <option value="<?= htmlspecialchars($pek['nm_pekerjaan']) ?>" <?= ($parent['guardian_occupation'] ?? '') === $pek['nm_pekerjaan'] ? 'selected' : '' ?>><?= htmlspecialchars($pek['nm_pekerjaan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
+
               <div>
                 <label for="guardian_income" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Penghasilan Wali</label>
-                <select name="guardian_income" id="guardian_income" class="block w-full px-3 py-2 border border-slate-200 rounded-xl bg-white font-medium text-slate-700">
+                <select name="guardian_income" id="guardian_income" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                   <option value="">Pilih Penghasilan</option>
-                  <?php foreach ($penghasilanList as $pen): ?>
-                    <option value="<?= htmlspecialchars($pen['nm_penghasilan']) ?>" <?= ($parent['guardian_income'] ?? '') === $pen['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pen['nm_penghasilan']) ?></option>
+                  <?php foreach ($penghasilanList as $pg): ?>
+                    <option value="<?= htmlspecialchars($pg['nm_penghasilan']) ?>" <?= ($parent['guardian_income'] ?? '') === $pg['nm_penghasilan'] ? 'selected' : '' ?>><?= htmlspecialchars($pg['nm_penghasilan']) ?></option>
                   <?php endforeach; ?>
                 </select>
               </div>
@@ -421,72 +435,60 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
         </div>
       </div>
 
-      <!-- Right Sidebar Column (1 col span) -->
-      <div class="lg:col-span-1 space-y-6">
-        <!-- Pilihan Jalur & Program Studi -->
+      <div class="space-y-6">
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-          <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Jalur & Program Studi</h3>
+          <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">Program Studi & Jalur</h3>
           
           <div class="space-y-4 text-xs">
             <div>
-              <label for="wave_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gelombang PMB</label>
-              <select name="wave_id" id="wave_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" disabled <?= empty($registration['wave_id']) ? 'selected' : '' ?>>Pilih Gelombang</option>
+              <label for="wave_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gelombang Pendaftaran</label>
+              <select name="wave_id" id="wave_id" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
                 <?php foreach ($waves as $w): ?>
-                  <option value="<?= $w['id'] ?>" <?= ($registration['wave_id'] ?? 0) == $w['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($w['name']) ?> <?= $w['is_active'] ? '(Aktif)' : '' ?>
-                  </option>
+                  <option value="<?= $w['id'] ?>" <?= ($registration['wave_id'] ?? '') == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
 
             <div>
-              <label for="program1_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan 1 (Utama)</label>
-              <select name="program1_id" id="program1_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
-                <option value="" <?= empty($programs['program1_id']) ? 'selected' : '' ?>>Pilih Program Studi 1</option>
+              <label for="program1_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan Program Studi 1</label>
+              <select name="program1_id" id="program1_id" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700" required>
+                <option value="">Pilih Program Studi 1</option>
                 <?php foreach ($study_programs as $sp): ?>
-                  <option value="<?= $sp['id'] ?>" <?= (int)($programs['program1_id'] ?? 0) === $sp['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($sp['name']) ?>
-                  </option>
+                  <option value="<?= $sp['id'] ?>" <?= ($programs['program1_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
 
             <div>
-              <label for="program2_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan 2 (Cadangan)</label>
-              <select name="program2_id" id="program2_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700">
+              <label for="program2_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan Program Studi 2 (Opsional)</label>
+              <select name="program2_id" id="program2_id" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                 <option value="">Tidak Memilih Pilihan 2</option>
                 <?php foreach ($study_programs as $sp): ?>
-                  <option value="<?= $sp['id'] ?>" <?= (int)($programs['program2_id'] ?? 0) === $sp['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($sp['name']) ?>
-                  </option>
+                  <option value="<?= $sp['id'] ?>" <?= ($programs['program2_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
 
             <div>
-              <label for="program3_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan 3 (Cadangan)</label>
-              <select name="program3_id" id="program3_id" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-semibold text-slate-700">
+              <label for="program3_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pilihan Program Studi 3 (Opsional)</label>
+              <select name="program3_id" id="program3_id" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                 <option value="">Tidak Memilih Pilihan 3</option>
                 <?php foreach ($study_programs as $sp): ?>
-                  <option value="<?= $sp['id'] ?>" <?= (int)($programs['program3_id'] ?? 0) === $sp['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($sp['name']) ?>
-                  </option>
+                  <option value="<?= $sp['id'] ?>" <?= ($programs['program3_id'] ?? '') == $sp['id'] ? 'selected' : '' ?>><?= htmlspecialchars($sp['name']) ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Submit Panel -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-          <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Simpan Perubahan</h3>
-          <p class="text-[11px] text-slate-500 leading-relaxed">Pastikan semua data hasil koreksi yang dimasukkan sudah benar sesuai berkas fisik atau instruksi resmi calon mahasiswa.</p>
-          <div class="pt-2">
-            <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 cursor-pointer">
-              💾 Simpan Koreksi Data
-            </button>
-          </div>
+          <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-650 hover:bg-indigo-700 transition-all cursor-pointer">
+            💾 Simpan Perubahan
+          </button>
+          
+          <a data-spa href="/admin/registrants/detail?id=<?= $registration['id'] ?>" class="w-full inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all text-center">
+            Batal
+          </a>
         </div>
       </div>
     </div>
@@ -494,8 +496,18 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 </div>
 
 <script>
-(() => {
-  const waveStudyPrograms = <?= json_encode($wave_prodis) ?>;
+(function() {
+  <?php
+    $waveProdiList = [];
+    $stmt = $db->prepare("SELECT wave_id, study_program_id FROM wave_study_programs");
+    $stmt->execute();
+    $waveProdiList = $stmt->fetchAll() ?: [];
+    $waveProdis = [];
+    foreach ($waveProdiList as $wp) {
+        $waveProdis[$wp['wave_id']][] = (int)$wp['study_program_id'];
+    }
+  ?>
+  const waveStudyPrograms = <?= json_encode($waveProdis) ?>;
   const allStudyPrograms = <?= json_encode($study_programs) ?>;
   const waveSelect = document.getElementById('wave_id');
   const p1Select = document.getElementById('program1_id');
@@ -555,6 +567,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
 const allWilayahDataEdit = <?= json_encode($wilayahList) ?>;
 const initialDistrictValEdit = <?= json_encode($address['district'] ?? '') ?>;
+const initialSchoolDistrictValEdit = <?= json_encode($education['school_address'] ?? '') ?>;
 
 function filterEditDistricts(query) {
   const select = document.getElementById('district');
@@ -563,18 +576,63 @@ function filterEditDistricts(query) {
 
   select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan</option>';
 
-  allWilayahDataEdit.forEach(item => {
+  let matches = 0;
+  for (let i = 0; i < allWilayahDataEdit.length; i++) {
+    const item = allWilayahDataEdit[i];
     const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
     if (!term || fullText.includes(term)) {
       const opt = document.createElement('option');
       opt.value = item.kecamatan;
+      opt.setAttribute('data-id-wil', item.id_wil);
       opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
       if (item.kecamatan === currentVal) {
         opt.selected = true;
+        document.getElementById('district_id_wil').value = item.id_wil;
       }
       select.appendChild(opt);
+      matches++;
+      if (matches >= 50) break;
     }
-  });
+  }
+}
+
+function filterEditSchoolDistricts(query) {
+  const select = document.getElementById('school_address');
+  const term = (query || '').toLowerCase().trim();
+  const currentVal = select.value || initialSchoolDistrictValEdit;
+
+  select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan Sekolah</option>';
+
+  let matches = 0;
+  for (let i = 0; i < allWilayahDataEdit.length; i++) {
+    const item = allWilayahDataEdit[i];
+    const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
+    if (!term || fullText.includes(term)) {
+      const opt = document.createElement('option');
+      opt.value = item.kecamatan;
+      opt.setAttribute('data-id-wil', item.id_wil);
+      opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
+      if (item.kecamatan === currentVal) {
+        opt.selected = true;
+        document.getElementById('school_address_id_wil').value = item.id_wil;
+      }
+      select.appendChild(opt);
+      matches++;
+      if (matches >= 50) break;
+    }
+  }
+}
+
+function onDistrictSelectChange(selectEl) {
+  const selectedOpt = selectEl.options[selectEl.selectedIndex];
+  const idWil = selectedOpt.getAttribute('data-id-wil') || '';
+  document.getElementById('district_id_wil').value = idWil;
+}
+
+function onSchoolDistrictSelectChange(selectEl) {
+  const selectedOpt = selectEl.options[selectEl.selectedIndex];
+  const idWil = selectedOpt.getAttribute('data-id-wil') || '';
+  document.getElementById('school_address_id_wil').value = idWil;
 }
 
 const kpsSelectEdit = document.getElementById('kps_receiver');
@@ -591,4 +649,7 @@ if (kpsSelectEdit) {
     }
   });
 }
+
+filterEditDistricts('');
+filterEditSchoolDistricts('');
 </script>

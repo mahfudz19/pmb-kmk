@@ -438,6 +438,7 @@ class RegistrantController
                 SET province = '',
                     city = '',
                     district = :district,
+                    district_id_wil = :district_id_wil,
                     subdistrict = :subdistrict,
                     postal_code = :postal_code,
                     address = :address,
@@ -458,6 +459,7 @@ class RegistrantController
             $kps_number = $kps_receiver === 'ya' ? $request->input('kps_number') : null;
             $stmt->execute([
                 'district' => $request->input('district'),
+                'district_id_wil' => $request->input('district_id_wil') ?: null,
                 'subdistrict' => $request->input('subdistrict'),
                 'postal_code' => $request->input('postal_code'),
                 'address' => $request->input('address'),
@@ -481,7 +483,9 @@ class RegistrantController
                     school_major = :major,
                     graduation_year = :year,
                     diploma_number = :diploma_number,
-                    average_score = :average_score
+                    average_score = :average_score,
+                    school_address = :school_address,
+                    school_address_id_wil = :school_address_id_wil
                 WHERE registration_id = :reg_id
             ");
             $stmt->execute([
@@ -490,6 +494,8 @@ class RegistrantController
                 'year' => (int)$request->input('graduation_year'),
                 'diploma_number' => $request->input('diploma_number') ?: null,
                 'average_score' => $request->input('average_score') ? (float)$request->input('average_score') : 0.0,
+                'school_address' => $request->input('school_address'),
+                'school_address_id_wil' => $request->input('school_address_id_wil') ?: null,
                 'reg_id' => $regId
             ]);
 
@@ -674,28 +680,21 @@ class RegistrantController
         $stmt->execute(['reg_id' => $regId]);
         $prog = $stmt->fetch();
 
-        if (!$studyProgramId) {
-            $studyProgramId = $prog ? (int)$prog['program1_id'] : 0;
-        }
-
         $selectedProgramName = '-';
         if ($prog) {
-            if ((int)$prog['program1_id'] === $studyProgramId) {
-                $selectedProgramName = $prog['program1_name'];
-            } elseif ((int)$prog['program2_id'] === $studyProgramId) {
-                $selectedProgramName = $prog['program2_name'];
-            } elseif ((int)$prog['program3_id'] === $studyProgramId) {
-                $selectedProgramName = $prog['program3_name'];
+            $selectedProgramName = $prog['program1_name'];
+            if ($prog['program2_name']) {
+                $selectedProgramName .= ' / ' . $prog['program2_name'];
+            }
+            if ($prog['program3_name']) {
+                $selectedProgramName .= ' / ' . $prog['program3_name'];
             }
         }
 
-        $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
-        $stmt->execute([
-            'wave_id' => $registration['wave_id'],
-            'prodi_id' => $studyProgramId
-        ]);
-        $waveStudyProgram = $stmt->fetch() ?: null;
-        $stages = $waveStudyProgram ? (json_decode($waveStudyProgram['exam_stages'] ?? '[]', true) ?: []) : [];
+        $stmt = $db->prepare("SELECT exam_stages FROM waves WHERE id = :wave_id LIMIT 1");
+        $stmt->execute(['wave_id' => $registration['wave_id']]);
+        $wave = $stmt->fetch() ?: null;
+        $stages = $wave ? (json_decode($wave['exam_stages'] ?? '[]', true) ?: []) : [];
 
         $photoSrc = null;
         if (!empty($registration['photo_path'])) {

@@ -1,6 +1,6 @@
 <div class="w-full py-2 space-y-10">
   <!-- Active Announcement Alert -->
-  <?php if ($active_announcement): ?>
+  <?php if ($active_announcement && $state !== 'belum_daftar'): ?>
     <div class="bg-indigo-50 border border-indigo-200/60 rounded-3xl p-6 md:p-8 flex gap-4 items-start shadow-sm">
       <span class="text-3xl">📢</span>
       <div class="space-y-1 text-xs">
@@ -10,6 +10,7 @@
     </div>
   <?php endif; ?>
 
+  <?php if ($state !== 'belum_daftar'): ?>
   <!-- Stepper Timeline -->
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 text-center">Progress Alur Pendaftaran PMB</h3>
@@ -21,7 +22,7 @@
       <!-- Step 1 -->
       <?php 
         $step1_done = in_array($state, ['belum_bayar', 'verifikasi_pembayaran', 'upload_berkas', 'verifikasi_berkas', 'ujian_seleksi', 'lolos', 'tidak_lolos']);
-        $step1_active = ($state === 'belum_daftar');
+        $step1_active = in_array($state, ['belum_daftar', 'draft']);
         $step1_editable = !in_array($state, ['lolos', 'tidak_lolos']);
       ?>
       <?php if ($step1_editable): ?>
@@ -116,8 +117,9 @@
       </div>
     </div>
   </div>
+  <?php endif; ?>
 
-  <?php if ($state !== 'belum_daftar'): ?>
+  <?php if ($state !== 'belum_daftar' && $state !== 'draft'): ?>
     <div class="bg-indigo-50/40 rounded-3xl border border-indigo-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
       <div class="flex items-start gap-4">
         <span class="text-3xl">🖨️</span>
@@ -137,15 +139,65 @@
   <!-- State-Driven Content Card -->
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-8 space-y-6">
     <?php if ($state === 'belum_daftar'): ?>
-      <div class="text-center space-y-6 py-6 max-w-lg mx-auto">
+      <div class="text-center space-y-6 py-6 max-w-2xl mx-auto">
+        <div class="text-5xl">🎓</div>
+        <div class="space-y-3">
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang di Portal PMB</h2>
+          <p class="text-xs text-slate-500 leading-relaxed max-w-lg mx-auto">
+            Portal ini dirancang untuk memudahkan Anda melakukan proses pendaftaran kuliah secara praktis, terintegrasi, dan aman. Ikuti instruksi pendaftaran berikut untuk memulai.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left max-w-2xl mx-auto my-6">
+          <div class="bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100/40 space-y-1">
+            <span class="text-lg">📝</span>
+            <h4 class="text-xs font-bold text-slate-800">1. Pilih Gelombang & Isi Formulir</h4>
+            <p class="text-[10px] text-slate-500 leading-normal">Pilih periode gelombang aktif, isi data diri singkat, serta tentukan pilihan program studi impian Anda.</p>
+          </div>
+          <div class="bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100/40 space-y-1">
+            <span class="text-lg">💳</span>
+            <h4 class="text-xs font-bold text-slate-800">2. Pembayaran & Upload Berkas</h4>
+            <p class="text-[10px] text-slate-500 leading-normal">Bayar biaya administrasi formulir, lalu unggah dokumen kelengkapan berkas pendaftaran Anda.</p>
+          </div>
+          <div class="bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100/40 space-y-1">
+            <span class="text-lg">⚡</span>
+            <h4 class="text-xs font-bold text-slate-800">3. Ujian Seleksi & Hasil</h4>
+            <p class="text-[10px] text-slate-500 leading-normal">Mengikuti tahapan ujian seleksi masuk dan dapatkan pengumuman hasil kelulusan langsung di portal ini.</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Silakan pilih gelombang untuk memulai</p>
+        </div>
+
+        <form data-spa method="POST" action="/dashboard/init-registration" onsubmit="return validateInitForm(event)" class="space-y-4 max-w-md mx-auto text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
+          <div class="space-y-1">
+            <label for="wave_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Gelombang Pendaftaran <span class="text-red-550">*</span></label>
+            <select id="wave_id" name="wave_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white font-medium">
+              <option value="" disabled selected>Pilih Gelombang</option>
+              <?php foreach ($active_waves as $w): ?>
+                <option value="<?= $w['id'] ?>"><?= htmlspecialchars($w['name']) ?> (Tahun Akademik: <?= htmlspecialchars($w['academic_year']) ?>) — Periode: <?= date('d M Y', strtotime($w['start_date'])) ?> s/d <?= date('d M Y', strtotime($w['end_date'])) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all cursor-pointer">
+            Mulai Pendaftaran
+          </button>
+        </form>
+      </div>
+
+    <?php elseif ($state === 'draft'): ?>
+      <div class="text-center space-y-6 py-6 max-w-xl mx-auto">
         <div class="text-5xl">📝</div>
         <div class="space-y-2">
-          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Formulir Pendaftaran Belum Diisi</h2>
-          <p class="text-sm text-slate-500 leading-relaxed">Selamat bergabung! Langkah pertama untuk mendaftar sebagai mahasiswa baru adalah mengisi formulir data diri, data orang tua, riwayat pendidikan, dan program studi pilihan Anda.</p>
+          <span class="bg-indigo-100 text-indigo-800 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Draf Pendaftaran Aktif</span>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Lanjutkan Pengisian Formulir</h2>
+          <p class="text-sm text-slate-500 leading-relaxed">Anda telah memilih **<?= htmlspecialchars($wave['name'] ?? 'Gelombang Pendaftaran') ?>**. Silakan selesaikan pengisian formulir pendaftaran dan kelengkapan profil Anda.</p>
         </div>
         <div class="pt-2">
-          <a data-spa href="<?= getBaseUrl('/pendaftaran') ?>" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5">
-            Mulai Isi Formulir
+          <a data-spa href="/pendaftaran" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl shadow-md text-sm font-semibold transition-all">
+            Lanjutkan Pengisian Formulir
           </a>
         </div>
       </div>
@@ -357,6 +409,11 @@
           <span class="h-2 w-2 rounded-full bg-amber-500 animate-ping"></span>
           Menunggu Verifikasi Berkas Akademik
         </div>
+        <div class="pt-2">
+          <a data-spa href="/pendaftaran/dokumen" class="inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-full shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all hover:-translate-y-0.5 cursor-pointer">
+            👁️ Lihat Berkas Saya
+          </a>
+        </div>
       </div>
 
     <?php elseif ($state === 'ujian_seleksi'): ?>
@@ -369,60 +426,55 @@
           </div>
         </div>
 
-        <?php foreach ($wave_study_programs as $wsp): 
-          $stages = json_decode($wsp['exam_stages'] ?? '[]', true) ?: [];
+        <?php 
+          $stages = json_decode($wave['exam_stages'] ?? '[]', true) ?: [];
         ?>
-          <div class="bg-indigo-50/30 px-5 py-2.5 rounded-2xl text-xs font-bold text-indigo-955 border border-indigo-100/50 uppercase tracking-wider">
-            Program Studi: <?= htmlspecialchars($wsp['study_program_name'] ?: 'Umum') ?>
-          </div>
-          
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pl-2">
-            <div class="lg:col-span-2 space-y-4">
-              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Tahapan Ujian</h3>
-              
-              <?php if (empty($stages)): ?>
-                <div class="p-6 bg-slate-50 border rounded-2xl text-center text-xs text-slate-550 font-semibold italic">
-                  Belum ada jadwal tahapan ujian yang ditentukan untuk program studi ini.
-                </div>
-              <?php else: foreach ($stages as $stg): 
-                $res = array_values(array_filter($exam_results, fn($r) => 
-                    $r['stage_index'] == $stg['stage_number'] && 
-                    ($r['study_program_id'] == $wsp['study_program_id'] || $r['study_program_id'] === null)
-                ))[0] ?? null;
-                $status = $res ? $res['status'] : 'Pending';
-              ?>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-                  <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                    <span class="text-xs font-extrabold text-indigo-755">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
-                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-red-100 text-red-800' : 'bg-slate-150 text-slate-600') ?>">
-                      <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
-                    </span>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <span class="text-slate-400 block text-[10px] font-bold uppercase">Tanggal & Jam</span>
-                      <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time'] ?? '') ?>)</strong>
-                    </div>
-                    <div>
-                      <span class="text-slate-400 block text-[10px] font-bold uppercase">Tipe & Tempat</span>
-                      <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['place'] ?? '') ?> (<?= strtoupper($stg['type'] ?? 'OFFLINE') ?>)</strong>
-                    </div>
-                  </div>
-                </div>
-              <?php endforeach; endif; ?>
-            </div>
-
-            <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 space-y-3 flex flex-col justify-between h-fit">
-              <div>
-                <h4 class="font-bold text-indigo-900 text-sm">Cetak Kartu Ujian</h4>
-                <p class="text-xs text-indigo-700 mt-1">Kartu ujian wajib dicetak dan dibawa saat pelaksanaan tes seleksi fisik di kampus.</p>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pl-2">
+          <div class="lg:col-span-2 space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Tahapan Ujian Gelombang</h3>
+            
+            <?php if (empty($stages)): ?>
+              <div class="p-6 bg-slate-50 border rounded-2xl text-center text-xs text-slate-550 font-semibold italic">
+                Belum ada jadwal tahapan ujian yang ditentukan untuk gelombang ini.
               </div>
-              <a href="/pendaftaran/kartu-ujian?study_program_id=<?= $wsp['study_program_id'] ?>" download class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors mt-4 text-center">
-                🖨️ Cetak Kartu CBT
-              </a>
-            </div>
+            <?php else: foreach ($stages as $stg): 
+              $res = array_values(array_filter($exam_results, fn($r) => 
+                  $r['stage_index'] == $stg['stage_number']
+              ))[0] ?? null;
+              $status = $res ? $res['status'] : 'Pending';
+            ?>
+              <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                  <span class="text-xs font-extrabold text-indigo-755 font-sans">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
+                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-red-100 text-red-800' : 'bg-slate-150 text-slate-600') ?>">
+                    <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
+                  </span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-bold uppercase">Tanggal & Jam</span>
+                    <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time'] ?? '') ?>)</strong>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block text-[10px] font-bold uppercase">Tipe & Tempat</span>
+                    <strong class="text-slate-800 font-semibold"><?= htmlspecialchars($stg['place'] ?? '') ?> (<?= strtoupper($stg['type'] ?? 'OFFLINE') ?>)</strong>
+                  </div>
+                </div>
+              </div>
+            <?php endforeach; endif; ?>
           </div>
-        <?php endforeach; ?>
+
+          <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 space-y-3 flex flex-col justify-between h-fit">
+            <div>
+              <h4 class="font-bold text-indigo-900 text-sm">Cetak Kartu Ujian</h4>
+              <p class="text-xs text-indigo-700 mt-1">Kartu ujian wajib dicetak dan dibawa saat pelaksanaan tes seleksi fisik di kampus.</p>
+            </div>
+            <a href="/pendaftaran/kartu-ujian" download class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors mt-4 text-center">
+              🖨️ Cetak Kartu Ujian
+            </a>
+          </div>
+        </div>
       </div>
 
     <?php elseif ($state === 'lolos'): ?>
@@ -557,3 +609,26 @@
   </div>
 </div>
 */ ?>
+
+<script>
+  function validateInitForm(event) {
+    const waveSelect = document.getElementById('wave_id');
+    const waveId = waveSelect ? waveSelect.value : '';
+    if (!waveId) {
+      event.preventDefault();
+      event.stopPropagation();
+      Swal.fire({
+        icon: 'warning',
+        title: 'Gelombang Belum Dipilih',
+        text: 'Silakan pilih salah satu gelombang pendaftaran terlebih dahulu untuk memulai pendaftaran.',
+        confirmButtonColor: '#4f46e5',
+        customClass: {
+          popup: 'rounded-3xl',
+          confirmButton: 'rounded-xl text-xs font-bold px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white'
+        }
+      });
+      return false;
+    }
+    return true;
+  }
+</script>

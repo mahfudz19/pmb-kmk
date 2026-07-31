@@ -19,6 +19,7 @@ if ($userId) {
     } catch (\Throwable $e) {
     }
 }
+$hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,12 +103,21 @@ if ($userId) {
       overflow-y: auto !important;
     }
 
+    .topbar-nav {
+      display: none;
+    }
     @media (min-width: 768px) {
-      .is-logged-in #sidebar-container {
+      .topbar-nav {
+        display: flex !important;
+        align-items: center;
+        gap: 20px;
+        margin-left: 24px;
+      }
+      .has-sidebar #sidebar-container {
         width: 16rem;
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .is-logged-in #app-content {
+      .has-sidebar #app-content {
         margin-left: 16rem;
         transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
@@ -154,7 +164,7 @@ if ($userId) {
   <?php if (!$isAuthPage): ?>
   <header class="fixed top-0 left-0 right-0 z-40 h-14 bg-white/75 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between shadow-sm">
     <div class="flex items-center gap-3">
-      <?php if ($isLoggedIn): ?>
+      <?php if ($hasSidebar): ?>
         <button type="button" id="btn-mobile-toggle" onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer focus:outline-none">
           <i data-lucide="menu" class="w-5 h-5"></i>
         </button>
@@ -165,50 +175,16 @@ if ($userId) {
       <a data-spa href="<?= getBaseUrl('/') ?>" class="flex items-center gap-2.5 transition-all active:scale-[0.98]">
         <img src="<?= getBaseUrl('/logo_app/mazu-logo.svg') ?>" alt="Logo" class="h-7 w-auto" />
       </a>
+      <?php if ($isLoggedIn && !$hasSidebar): ?>
+        <nav class="topbar-nav text-xs font-bold text-slate-600">
+          <a data-spa href="/dashboard" class="hover:text-indigo-650 transition-colors <?= $isDashboard ? 'text-indigo-650 font-extrabold' : '' ?>">Dashboard</a>
+          <a data-spa href="/profile" class="hover:text-indigo-650 transition-colors <?= $isProfile ? 'text-indigo-650 font-extrabold' : '' ?>">Profil Saya</a>
+        </nav>
+      <?php endif; ?>
     </div>
 
     <div class="flex items-center gap-4">
       <?php if ($isLoggedIn): ?>
-        <!-- Notifications Bell & Dropdown -->
-        <div class="relative">
-          <button type="button" onclick="toggleNotificationsDropdown(event)" class="relative p-1.5 text-slate-500 hover:bg-slate-50 rounded-full transition-colors cursor-pointer focus:outline-none">
-            <i data-lucide="bell" class="w-4.5 h-4.5"></i>
-            <?php if ($unreadCount > 0): ?>
-              <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
-            <?php endif; ?>
-          </button>
-          
-          <!-- Dropdown Card -->
-          <div id="notifications-dropdown" style="width: 440px;" class="dropdown-animate absolute right-0 mt-2 max-w-[calc(100vw-2rem)] bg-white border border-slate-200/80 rounded-2xl shadow-lg py-1.5 text-xs text-slate-700 z-50">
-            <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
-              <span class="font-bold text-slate-800">Notifikasi</span>
-              <?php if ($unreadCount > 0): ?>
-                <a href="/notifications/mark-read" class="text-[10px] text-indigo-600 hover:text-indigo-750 font-bold">Tandai Semua Dibaca</a>
-              <?php endif; ?>
-            </div>
-            
-            <div class="max-h-60 overflow-y-auto divide-y divide-slate-50">
-              <?php if (empty($notifications)): ?>
-                <div class="px-4 py-6 text-center text-slate-400 font-medium">Tidak ada notifikasi baru.</div>
-              <?php else: ?>
-                <?php foreach ($notifications as $notif): ?>
-                  <div class="px-4 py-3 hover:bg-slate-50 transition-colors flex items-start gap-2.5 <?= !$notif['is_read'] ? 'bg-indigo-50/20' : '' ?>">
-                    <span class="text-md mt-0.5 select-none">
-                      <?= $notif['type'] === 'success' ? '✅' : ($notif['type'] === 'danger' ? '❌' : ($notif['type'] === 'warning' ? '⚠️' : 'ℹ️')) ?>
-                    </span>
-                    <div class="space-y-0.5">
-                      <p class="font-bold text-slate-800 leading-tight"><?= htmlspecialchars($notif['title']) ?></p>
-                      <p class="text-[10px] text-slate-500 leading-normal font-normal"><?= htmlspecialchars($notif['message']) ?></p>
-                      <span class="text-[8px] text-slate-400 font-normal block pt-0.5"><?= date('d-m-Y H:i', strtotime($notif['created_at'])) ?></span>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              <?php endif; ?>
-            </div>
-          </div>
-        </div>
-        <div class="w-px h-5 bg-slate-200"></div>
-
         <!-- Profile Dropdown -->
         <div class="relative">
           <button type="button" onclick="toggleUserDropdown(event)" class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-full md:rounded-xl transition-all cursor-pointer focus:outline-none">
@@ -225,9 +201,14 @@ if ($userId) {
           <!-- Dropdown Card -->
           <div id="user-dropdown" class="dropdown-animate absolute right-0 mt-2 w-52 bg-white border border-slate-200/80 rounded-2xl shadow-lg py-1.5 text-xs text-slate-700 z-50">
             <div class="px-4 py-2 border-b border-slate-100 md:hidden">
-              <p class="font-bold text-slate-850 truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></p>
+              <p class="font-bold text-slate-855 truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></p>
               <p class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></p>
             </div>
+            <?php if (!$hasSidebar): ?>
+              <a data-spa href="/dashboard" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors md:hidden">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i> Dashboard
+              </a>
+            <?php endif; ?>
             <a data-spa href="/profile" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
               <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> Profil Saya
             </a>
@@ -261,9 +242,9 @@ if ($userId) {
   <div id="mobile-sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden md:hidden"></div>
 
   <!-- Layout Wrapper -->
-  <div class="flex-grow flex flex-row <?= $isAuthPage ? '' : 'pt-14' ?> <?= $isLoggedIn ? 'is-logged-in' : 'is-guest' ?>" id="admin-layout-wrapper">
+  <div class="flex-grow flex flex-row <?= $isAuthPage ? '' : 'pt-14' ?> <?= $hasSidebar ? 'has-sidebar' : 'is-guest' ?>" id="admin-layout-wrapper">
     <!-- Sidebar -->
-    <?php if ($isLoggedIn): ?>
+    <?php if ($hasSidebar): ?>
       <aside id="sidebar-container" class="fixed top-14 left-0 bottom-0 z-30 w-64 bg-white border-r border-slate-200/80 flex flex-col py-6 px-4 space-y-6 overflow-y-auto transition-all duration-300 transform -translate-x-full md:translate-x-0">
         <!-- Main Links Group -->
         <div class="space-y-1.5">
@@ -277,18 +258,11 @@ if ($userId) {
             <span class="sidebar-collapsed-label">Profil Saya</span>
           </a>
         </div>
-
         <!-- Administration Group -->
         <?php if (has_any_permission(['manage_users', 'verify_payment', 'verify_document', 'manage_selection', 'manage_settings'])): ?>
           <div class="space-y-1.5 border-t border-slate-100 pt-5">
             <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block pl-3 mb-1 sidebar-collapsed-hide">Administrasi</span>
-            <?php if (has_permission('manage_users')): ?>
-              <a data-spa data-sidebar-link="users" href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="key-round" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Hak Akses Pengguna</span>
-              </a>
-            <?php endif; ?>
-
+            
             <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection'])): ?>
               <a data-spa data-sidebar-link="registrants" href="<?= getBaseUrl('/admin/registrants') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
                 <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
@@ -296,21 +270,10 @@ if ($userId) {
               </a>
             <?php endif; ?>
 
-            <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection', 'manage_users'])): ?>
-              <a data-spa data-sidebar-link="reports" href="<?= getBaseUrl('/admin/reports') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Laporan & Statistik</span>
-              </a>
-            <?php endif; ?>
-
             <?php if (has_permission('verify_payment')): ?>
               <a data-spa data-sidebar-link="payments" href="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
                 <i data-lucide="credit-card" class="w-4 h-4 flex-shrink-0"></i>
                 <span class="sidebar-collapsed-label">Verifikasi Pembayaran</span>
-              </a>
-              <a data-spa data-sidebar-link="re-registrations" href="<?= getBaseUrl('/admin/re-registrations') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Verifikasi Daftar Ulang</span>
               </a>
             <?php endif; ?>
 
@@ -326,9 +289,33 @@ if ($userId) {
                 <i data-lucide="award" class="w-4 h-4 flex-shrink-0"></i>
                 <span class="sidebar-collapsed-label">Seleksi & Kelulusan</span>
               </a>
+            <?php endif; ?>
+
+            <?php if (has_permission('verify_payment')): ?>
+              <a data-spa data-sidebar-link="re-registrations" href="<?= getBaseUrl('/admin/re-registrations') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="sidebar-collapsed-label">Verifikasi Daftar Ulang</span>
+              </a>
+            <?php endif; ?>
+
+            <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection', 'manage_users'])): ?>
+              <a data-spa data-sidebar-link="reports" href="<?= getBaseUrl('/admin/reports') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="sidebar-collapsed-label">Laporan & Statistik</span>
+              </a>
+            <?php endif; ?>
+
+            <?php if (has_permission('manage_selection')): ?>
               <a data-spa data-sidebar-link="announcements" href="<?= getBaseUrl('/admin/announcements') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
                 <i data-lucide="megaphone" class="w-4 h-4 flex-shrink-0"></i>
                 <span class="sidebar-collapsed-label">Kelola Pengumuman</span>
+              </a>
+            <?php endif; ?>
+
+            <?php if (has_permission('manage_users')): ?>
+              <a data-spa data-sidebar-link="users" href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <i data-lucide="key-round" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="sidebar-collapsed-label">Hak Akses Pengguna</span>
               </a>
             <?php endif; ?>
 
@@ -378,7 +365,7 @@ if ($userId) {
     <?php endif; ?>
 
     <!-- Main Content Panel -->
-    <main id="app-content" data-layout="layout.php" class="flex-grow flex flex-col transition-all duration-300 <?= $isAuthPage ? 'min-h-screen justify-center items-center p-6 w-full' : ($isLoggedIn ? 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] ml-0 md:ml-64' : 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] max-w-7xl mx-auto w-full') ?>">
+    <main id="app-content" data-layout="layout.php" class="flex-grow flex flex-col transition-all duration-300 <?= $isAuthPage ? 'min-h-screen justify-center items-center p-6 w-full' : ($hasSidebar ? 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] ml-0 md:ml-64' : 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] max-w-7xl mx-auto w-full') ?>">
       <?= $children; ?>
     </main>
   </div>
