@@ -366,8 +366,8 @@ class DashboardController
             'wave_id' => $waveId,
             'full_name' => $this->session->get('auth.user_name') ?: '',
             'birth_place' => '',
-            'birth_date' => '',
-            'gender' => '',
+            'birth_date' => '1970-01-01',
+            'gender' => 'Laki-laki',
             'religion' => '',
             'status' => 'Draft',
             'current_step' => 1
