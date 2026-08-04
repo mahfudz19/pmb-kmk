@@ -36,7 +36,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
   <?= App\Core\View\View::renderStyles() ?>
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="<?= asset('assets/tailwind.css') ?>?v=<?= filemtime(__DIR__ . '/tailwind.css') ?>">
+  <link rel="stylesheet" href="<?= asset('assets/tailwind.css') ?>">
 
   <!-- Lucide Icons CDN -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>

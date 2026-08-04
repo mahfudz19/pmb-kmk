@@ -41,16 +41,6 @@
     </div>
   </div>
 
-  <?php if (isset($_GET['success'])): ?>
-    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex gap-3 text-emerald-800 text-xs">
-      <span class="text-lg">✅</span>
-      <div>
-        <p class="font-bold">Berhasil!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['success']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Column: Personal, Education, Address, Parents (2 cols span) -->
     <div class="lg:col-span-2 space-y-6">
@@ -275,133 +265,134 @@
       </div>
 
 
-      <!-- Blok Informasi per Program Studi -->
-      <?php if (!empty($wave_study_programs)): 
-        foreach ($wave_study_programs as $wsp):
-          $stages = json_decode($wsp['exam_stages'] ?? '[]', true) ?: [];
-      ?>
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
-          <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
-            <h3 class="text-xs font-bold text-indigo-950 uppercase tracking-wider">
-              Prodi: <?= htmlspecialchars($wsp['study_program_name'] ?: 'Umum') ?>
-            </h3>
-            <a href="/admin/registrants/pdf/kartu-ujian?id=<?= $registration['id'] ?>&study_program_id=<?= $wsp['study_program_id'] ?>" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold transition-colors">
-              🎟️ Kartu Ujian
-            </a>
-          </div>
-
-          <!-- 1. Dokumen Pendaftaran Prodi -->
-          <div class="space-y-3">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dokumen Prodi</h4>
-            <div class="space-y-2 text-xs">
-              <?php 
-              $prodiDocs = array_filter($documents, fn($d) => ($d['study_program_id'] == $wsp['study_program_id']));
-              if (empty($prodiDocs)):
-              ?>
-                <p class="text-slate-400 font-medium italic text-[11px]">Belum ada dokumen yang diunggah.</p>
-              <?php else: foreach ($prodiDocs as $doc): ?>
-                <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                  <div class="truncate pr-2">
-                    <span class="font-bold text-slate-700 block truncate"><?= htmlspecialchars($doc['document_name']) ?></span>
-                    <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-bold mt-0.5 <?= $doc['status'] === 'Approved' ? 'bg-emerald-100 text-emerald-800' : ($doc['status'] === 'Rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800') ?>">
-                      <?= $doc['status'] ?>
-                    </span>
-                  </div>
-                  <a href="/documents/view?id=<?= $doc['id'] ?>" target="_blank" class="inline-flex items-center justify-center p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg transition-colors cursor-pointer text-[10px] font-bold">
-                    👁️ Lihat
-                  </a>
-                </div>
-              <?php endforeach; endif; ?>
+      <!-- Hasil Seleksi Card -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi</h3>
+        </div>
+        <div class="space-y-3 text-xs">
+          <?php if (!$selection): ?>
+            <p class="text-slate-400 font-medium italic text-[11px]">Belum ada penilaian seleksi masuk.</p>
+          <?php else: ?>
+            <div class="flex justify-between items-center py-1.5 border-b border-slate-50">
+              <span class="text-slate-400 font-medium">Status Kelulusan</span>
+              <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold <?= $selection['status'] === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($selection['status'] === 'Cadangan' ? 'bg-amber-100 text-amber-800' : ($selection['status'] === 'Tidak Lulus' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-500')) ?>">
+                <?= $selection['status'] ?>
+              </span>
             </div>
-          </div>
-
-          <!-- 2. Hasil Seleksi Prodi -->
-          <div class="space-y-3 pt-3 border-t border-slate-100">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Hasil Seleksi</h4>
-            <div class="space-y-2 text-xs">
-              <?php if (!$selection): ?>
-                <p class="text-slate-400 font-medium italic text-[11px]">Belum ada penilaian seleksi masuk.</p>
-              <?php else: 
-                $isPassedThis = ($selection['passed_program_id'] == $wsp['study_program_id']);
-                $prodiStatus = 'Pending';
-                if ($selection['status'] === 'Tidak Lulus') {
-                    $prodiStatus = 'Tidak Lulus';
-                } elseif ($selection['status'] === 'Lulus') {
-                    $prodiStatus = $isPassedThis ? 'Lulus' : 'Tidak Diterima';
-                } elseif ($selection['status'] === 'Cadangan') {
-                    $prodiStatus = $isPassedThis ? 'Cadangan' : 'Tidak Diterima';
-                }
-              ?>
-                <div class="flex justify-between items-center">
-                  <span class="text-slate-400 font-medium">Status Akhir</span>
-                  <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold <?= in_array($prodiStatus, ['Lulus', 'Cadangan']) ? 'bg-emerald-100 text-emerald-800' : ($prodiStatus === 'Tidak Diterima' || $prodiStatus === 'Tidak Lulus' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800') ?>">
-                    <?= $prodiStatus ?>
-                  </span>
-                </div>
-                <?php if ($isPassedThis): ?>
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-400 font-medium">Nilai Ujian CBT</span>
-                    <strong class="text-slate-800 font-bold"><?= number_format($selection['test_score'], 2) ?></strong>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-400 font-medium">Nilai Wawancara</span>
-                    <strong class="text-slate-800 font-bold"><?= number_format($selection['interview_score'], 2) ?></strong>
-                  </div>
-                  <?php if (!empty($selection['notes'])): ?>
-                    <div class="pt-1.5 text-slate-500 italic text-[11px] border-t border-slate-50 mt-1">
-                      "<?= htmlspecialchars($selection['notes']) ?>"
-                    </div>
-                  <?php endif; ?>
-                <?php endif; ?>
-              <?php endif; ?>
+            <?php 
+              $passedProgramName = '-';
+              if ($selection['passed_program_id']) {
+                  foreach ($wave_study_programs as $wsp) {
+                      if ($wsp['study_program_id'] == $selection['passed_program_id']) {
+                          $passedProgramName = $wsp['study_program_name'];
+                          break;
+                      }
+                  }
+              }
+            ?>
+            <div class="flex justify-between items-center py-1.5 border-b border-slate-50">
+              <span class="text-slate-400 font-medium">Prodi Penerimaan</span>
+              <strong class="text-slate-800 font-bold"><?= htmlspecialchars($passedProgramName) ?></strong>
             </div>
-          </div>
-
-          <!-- 3. Tahapan Seleksi Gelombang -->
-          <div class="space-y-3 pt-3 border-t border-slate-100">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tahapan Ujian</h4>
-            <?php if (empty($stages)): ?>
-              <p class="text-slate-400 font-medium italic text-[11px]">Belum ada tahapan seleksi yang dikonfigurasi.</p>
-            <?php else: ?>
-              <div class="space-y-3">
-                <?php foreach ($stages as $stg): 
-                  $res = array_values(array_filter($exam_results, fn($r) => 
-                      $r['stage_index'] == $stg['stage_number'] && 
-                      ($r['study_program_id'] == $wsp['study_program_id'] || $r['study_program_id'] === null)
-                  ))[0] ?? null;
-                  $status = $res ? $res['status'] : 'Pending';
-                ?>
-                  <div class="p-3 bg-slate-50 rounded-2xl border border-slate-150 space-y-2.5 text-xs">
-                    <div class="flex justify-between items-center">
-                      <span class="font-bold text-slate-800">Tahap <?= $stg['stage_number'] ?></span>
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-600') ?>">
-                        <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'BELUM UJIAN') ?>
-                      </span>
-                    </div>
-                    <div class="text-[11px] text-slate-505 space-y-0.5">
-                      <div><strong>Waktu:</strong> <?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time']) ?>)</div>
-                      <div><strong>Tempat:</strong> <?= htmlspecialchars($stg['place']) ?> (<?= htmlspecialchars($stg['type']) ?>)</div>
-                    </div>
-
-                    <!-- Update Status Form -->
-                    <form action="/admin/registrants/exam-stage/save" method="POST" class="flex gap-2 pt-1.5 border-t border-slate-200/50">
-                      <input type="hidden" name="registration_id" value="<?= htmlspecialchars($registration['id']) ?>">
-                      <input type="hidden" name="stage_number" value="<?= htmlspecialchars($stg['stage_number']) ?>">
-                      <input type="hidden" name="study_program_id" value="<?= htmlspecialchars($wsp['study_program_id']) ?>">
-                      <select name="status" class="flex-1 px-2.5 py-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">
-                        <option value="Lulus" <?= $status === 'Lulus' ? 'selected' : '' ?>>Lolos</option>
-                        <option value="Tidak Lulus" <?= $status === 'Tidak Lulus' ? 'selected' : '' ?>>Gagal</option>
-                        <option value="Pending" <?= $status === 'Pending' ? 'selected' : '' ?>>Pending</option>
-                      </select>
-                      <button type="submit" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-sm">Update</button>
-                    </form>
-                  </div>
-                <?php endforeach; ?>
+            <div class="flex justify-between items-center py-1.5 border-b border-slate-50">
+              <span class="text-slate-400 font-medium">Nilai Ujian CBT</span>
+              <strong class="text-slate-800 font-bold"><?= number_format((float)($selection['test_score'] ?? 0), 2) ?></strong>
+            </div>
+            <div class="flex justify-between items-center py-1.5 border-b border-slate-50">
+              <span class="text-slate-400 font-medium">Nilai Wawancara</span>
+              <strong class="text-slate-800 font-bold"><?= number_format((float)($selection['interview_score'] ?? 0), 2) ?></strong>
+            </div>
+            <?php if (!empty($selection['notes'])): ?>
+              <div class="pt-1.5 text-slate-505 italic text-[11px] mt-1">
+                "<?= htmlspecialchars($selection['notes']) ?>"
               </div>
             <?php endif; ?>
-          </div>
+          <?php endif; ?>
         </div>
-      <?php endforeach; endif; ?>
+      </div>
+
+      <!-- Jadwal & Tahapan Ujian Card -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Tahapan Ujian</h3>
+          <a href="/admin/registrants/pdf/kartu-ujian?id=<?= $registration['id'] ?>" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold transition-colors">
+            🎟️ Cetak Kartu Ujian
+          </a>
+        </div>
+
+        <div class="space-y-3">
+          <?php 
+            $stages = [];
+            if (!empty($wave_study_programs)) {
+                $stages = json_decode($wave_study_programs[0]['exam_stages'] ?? '[]', true) ?: [];
+            }
+          ?>
+          <?php if (empty($stages)): ?>
+            <p class="text-slate-400 font-medium italic text-[11px]">Belum ada tahapan seleksi yang dikonfigurasi.</p>
+          <?php else: ?>
+            <div class="space-y-3">
+              <?php foreach ($stages as $stg): 
+                $res = array_values(array_filter($exam_results, fn($r) => 
+                    $r['stage_index'] == $stg['stage_number']
+                ))[0] ?? null;
+                $status = $res ? $res['status'] : 'Pending';
+              ?>
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-150 space-y-2.5 text-xs">
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-800">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-600') ?>">
+                      <?= $status === 'Lulus' ? 'LOLOS' : ($status === 'Tidak Lulus' ? 'GAGAL' : 'PENDING') ?>
+                    </span>
+                  </div>
+                  <div class="text-[11px] text-slate-505 space-y-0.5">
+                    <div><strong>Waktu:</strong> <?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time'] ?? '') ?>)</div>
+                    <div><strong>Tempat:</strong> <?= htmlspecialchars($stg['place'] ?? '') ?> (<?= strtoupper($stg['type'] ?? 'OFFLINE') ?>)</div>
+                  </div>
+
+                  <!-- Update Status Form -->
+                  <form action="/admin/registrants/exam-stage/save" method="POST" class="flex gap-2 pt-1.5 border-t border-slate-200/50">
+                    <input type="hidden" name="registration_id" value="<?= htmlspecialchars($registration['id']) ?>">
+                    <input type="hidden" name="stage_number" value="<?= htmlspecialchars($stg['stage_number']) ?>">
+                    <select name="status" class="flex-1 px-2.5 py-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">
+                      <option value="Lulus" <?= $status === 'Lulus' ? 'selected' : '' ?>>Lolos</option>
+                      <option value="Tidak Lulus" <?= $status === 'Tidak Lulus' ? 'selected' : '' ?>>Gagal</option>
+                      <option value="Pending" <?= $status === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                    </select>
+                    <button type="submit" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-sm">Update</button>
+                  </form>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+      </div>
+
+      <!-- Dokumen Persyaratan Card -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Dokumen Persyaratan</h3>
+        </div>
+        <div class="space-y-2 text-xs">
+          <?php if (empty($documents)): ?>
+            <p class="text-slate-400 font-medium italic text-[11px]">Belum ada dokumen yang diunggah.</p>
+          <?php else: foreach ($documents as $doc): ?>
+            <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 font-medium text-slate-700">
+              <div class="truncate pr-2">
+                <span class="font-bold text-slate-700 block truncate"><?= htmlspecialchars($doc['document_name']) ?></span>
+                <span class="inline-flex px-1.5 py-0.5 rounded-full text-[8px] font-bold mt-0.5 <?= $doc['status'] === 'Approved' ? 'bg-emerald-100 text-emerald-800' : ($doc['status'] === 'Rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800') ?>">
+                  <?= $doc['status'] ?>
+                </span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <a href="/documents/view?id=<?= $doc['id'] ?>" target="_blank" class="inline-flex items-center justify-center p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg transition-colors cursor-pointer text-[10px] font-bold">
+                  👁️ Lihat
+                </a>
+              </div>
+            </div>
+          <?php endforeach; endif; ?>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -69,9 +69,31 @@ class SelectionController
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
         $stmt->execute();
-        $candidates = $stmt->fetchAll();
+        $candidates = $stmt->fetchAll() ?: [];
+        $stmt->closeCursor();
 
         $programs = $this->studyPrograms->all();
+
+        $stmtWaves = $db->prepare("SELECT id, exam_stages FROM waves");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
+        $stmtWaves->closeCursor();
+
+        $wavesMap = [];
+        foreach ($waves as $w) {
+            $wavesMap[$w['id']] = json_decode($w['exam_stages'] ?? '[]', true) ?: [];
+        }
+
+        $candidateIds = array_column($candidates, 'id');
+        $examResultsMap = [];
+        if (!empty($candidateIds)) {
+            $placeholders = implode(',', array_fill(0, count($candidateIds), '?'));
+            $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id IN ($placeholders)");
+            $stmt->execute($candidateIds);
+            foreach ($stmt->fetchAll() as $r) {
+                $examResultsMap[$r['registration_id']][$r['stage_index']] = $r['status'];
+            }
+        }
 
         return $response->renderPage([
             'candidates' => $candidates,
@@ -79,31 +101,13 @@ class SelectionController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
-            'limit' => $limit
+            'limit' => $limit,
+            'waves_map' => $wavesMap,
+            'exam_results_map' => $examResultsMap
         ], [
             'path' => '/admin/selection',
             'meta' => ['title' => 'Penilaian & Kelulusan PMB | ' . env('APP_NAME')]
         ]);
-    }
-
-    public function updateQuota(Request $request, Response $response): RedirectResponse
-    {
-        if (!has_permission('manage_selection')) {
-            return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
-        }
-
-        $programId = (int) $request->input('program_id');
-        $quota = (int) $request->input('quota');
-
-        if (!$programId || $quota < 0) {
-            return $response->redirect('/admin/selection?error=Input+daya+tampung+tidak+valid');
-        }
-
-        $this->studyPrograms->updateById($programId, [
-            'quota' => $quota
-        ]);
-
-        return $response->redirect('/admin/selection?success=Kuota+program+studi+berhasil+diperbarui&tab=quota');
     }
 
     public function saveScoresAndStatus(Request $request, Response $response): RedirectResponse
@@ -144,6 +148,54 @@ class SelectionController
         }
 
         return $response->redirect('/admin/selection?success=Data+penilaian+dan+kelulusan+berhasil+disimpan');
+    }
+
+    public function saveExamStages(Request $request, Response $response): RedirectResponse
+    {
+        if (!has_permission('manage_selection')) {
+            return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
+        }
+
+        $regId = (int) $request->input('registration_id');
+        $stages = $request->input('stages');
+
+        if (!$regId) {
+            return $response->redirect('/admin/selection?error=Pendaftar+tidak+valid');
+        }
+
+        $db = $this->registrations->getDb();
+
+        if (is_array($stages)) {
+            foreach ($stages as $stageIndex => $stageStatus) {
+                if (in_array($stageStatus, ['Lulus', 'Tidak Lulus', 'Pending'], true)) {
+                    $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id AND stage_index = :stage_index LIMIT 1");
+                    $stmt->execute([
+                        'reg_id' => $regId,
+                        'stage_index' => $stageIndex
+                    ]);
+                    $existingStage = $stmt->fetch();
+                    if ($existingStage) {
+                        $stmt = $db->prepare("UPDATE registration_exam_results SET status = :status, updated_at = :now WHERE id = :id");
+                        $stmt->execute([
+                            'status' => $stageStatus,
+                            'now' => date('Y-m-d H:i:s'),
+                            'id' => $existingStage['id']
+                        ]);
+                    } else {
+                        $stmt = $db->prepare("INSERT INTO registration_exam_results (registration_id, stage_index, study_program_id, status, created_at, updated_at) VALUES (:reg_id, :stage_index, NULL, :status, :created_at, :updated_at)");
+                        $stmt->execute([
+                            'reg_id' => $regId,
+                            'stage_index' => $stageIndex,
+                            'status' => $stageStatus,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return $response->redirect('/admin/selection?success=Penilaian+tahapan+ujian+berhasil+disimpan');
     }
 
     public function publishStatus(Request $request, Response $response): RedirectResponse

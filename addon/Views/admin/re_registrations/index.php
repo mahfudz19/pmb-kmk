@@ -13,26 +13,6 @@
     </div>
   </div>
 
-  <?php if (isset($_GET['success'])): ?>
-    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex gap-3 text-emerald-800 text-xs">
-      <span class="text-lg">✅</span>
-      <div>
-        <p class="font-bold">Berhasil!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['success']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
-  <?php if (isset($_GET['error'])): ?>
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl flex gap-3 text-red-800 text-xs">
-      <span class="text-lg">⚠️</span>
-      <div>
-        <p class="font-bold">Gagal!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['error']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
   <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
     <div class="p-6 border-b border-slate-100">
       <h3 class="text-sm font-bold text-slate-800">Daftar Antrean Daftar Ulang</h3>

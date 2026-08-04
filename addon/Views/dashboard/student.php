@@ -341,29 +341,27 @@
               if (empty($required_docs)):
               ?>
                 <div class="p-8 text-center text-xs text-slate-500 font-semibold">Tidak ada dokumen persyaratan yang harus diunggah untuk program studi pilihan Anda.</div>
-              <?php else:
-                $groupedDocs = [];
-                foreach ($required_docs as $rd) {
-                    $prodiName = $rd['study_program_name'] ?: 'Umum';
-                    $groupedDocs[$prodiName][] = $rd;
-                }
-                foreach ($groupedDocs as $prodiName => $docs):
-              ?>
-                <div class="bg-indigo-50/40 px-4 py-2 text-xs font-bold text-indigo-900 border-t border-b border-indigo-100/50 uppercase tracking-wider">
-                  Program Studi: <?= htmlspecialchars($prodiName) ?>
-                </div>
+              <?php else: ?>
                 <div class="divide-y divide-slate-100 bg-white">
-                  <?php foreach ($docs as $rd): ?>
+                  <?php foreach ($required_docs as $rd): ?>
                     <?php 
                       $docTypeId = $rd['document_type_id'] ?? null;
-                      $prodiId = $rd['study_program_id'] ?? 'global';
-                      $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_' . $prodiId] ?? null) : null;
-                      $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']);
+                      $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
+                      $docDisplayName = htmlspecialchars($rd['name']);
+                      
+                      $prodisStr = implode(', ', $rd['prodi_names'] ?? []);
+                      $descParts = [];
+                      foreach ($rd['descriptions'] ?? [] as $pName => $pDesc) {
+                          if (!empty($pDesc)) {
+                              $descParts[] = $pName . ': ' . $pDesc;
+                          }
+                      }
+                      $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
                     ?>
                     <div class="p-4 flex justify-between items-center">
                       <div>
-                        <span class="text-sm font-semibold text-slate-800"><?= htmlspecialchars($docDisplayName) ?></span>
-                        <span class="text-[10px] text-slate-400 block"><?= htmlspecialchars($rd['description'] ?? '') ?></span>
+                        <span class="text-sm font-semibold text-slate-800"><?= $docDisplayName ?></span>
+                        <span class="text-[10px] text-slate-400 block">Prodi: <span class="text-indigo-700 font-semibold"><?= $prodisStr ?></span><?= $descStr ?></span>
                       </div>
                       <div>
                         <?php if ($uploaded): ?>
@@ -381,7 +379,7 @@
                     </div>
                   <?php endforeach; ?>
                 </div>
-              <?php endforeach; endif; ?>
+              <?php endif; ?>
             </div>
           </div>
 

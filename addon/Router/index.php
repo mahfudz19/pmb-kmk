@@ -127,13 +127,13 @@ $router->group(['middleware' => ['auth', 'permission:verify_document']], functio
     $router->post('/admin/verifications/verify-document', [DocumentController::class, 'verifyDocument']);
 });
 
-// Admin selection & quota management (require login & manage_selection permission)
+// Admin selection management (require login & manage_selection permission)
 $router->group(['middleware' => ['auth', 'permission:manage_selection']], function () use ($router) {
     $router->get('/admin/selection', [SelectionController::class, 'listCandidates']);
-    $router->post('/admin/selection/quota', [SelectionController::class, 'updateQuota']);
     $router->post('/admin/selection/save', [SelectionController::class, 'saveScoresAndStatus']);
     $router->post('/admin/selection/publish', [SelectionController::class, 'publishStatus']);
     $router->post('/admin/selection/publish-all', [SelectionController::class, 'publishAll']);
+    $router->post('/admin/selection/exam-stage/save', [SelectionController::class, 'saveExamStages']);
 
     // Announcements CRUD
     $router->get('/admin/announcements', [AnnouncementController::class, 'listAnnouncements']);

@@ -24,16 +24,14 @@ if (!function_exists('asset')) {
     $altPath = str_replace('/', '\\', $path);
     $altPath2 = str_replace('\\', '/', $path);
 
-    if (isProduction()) {
-      if (isset($manifest[$path])) {
-        return getBaseUrl('build/' . $manifest[$path]);
-      }
-      if (isset($manifest[$altPath])) {
-        return getBaseUrl('build/' . $manifest[$altPath]);
-      }
-      if (isset($manifest[$altPath2])) {
-        return getBaseUrl('build/' . $manifest[$altPath2]);
-      }
+    if (isset($manifest[$path])) {
+      return getBaseUrl('build/' . $manifest[$path]);
+    }
+    if (isset($manifest[$altPath])) {
+      return getBaseUrl('build/' . $manifest[$altPath]);
+    }
+    if (isset($manifest[$altPath2])) {
+      return getBaseUrl('build/' . $manifest[$altPath2]);
     }
 
     $filePath = __DIR__ . '/../../public/build/' . $path;

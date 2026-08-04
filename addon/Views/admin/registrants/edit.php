@@ -228,7 +228,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
               <select name="living_type" id="living_type" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold text-slate-700">
                 <option value="">Pilih Jenis Tinggal</option>
                 <?php foreach ($tinggalList as $tl): ?>
-                  <option value="<?= htmlspecialchars($tl['nm_jenis_tinggal']) ?>" <?= ($address['living_type'] ?? '') === $tl['nm_jenis_tinggal'] ? 'selected' : '' ?>><?= htmlspecialchars($tl['nm_jenis_tinggal']) ?></option>
+                  <option value="<?= htmlspecialchars($tl['nm_jns_tinggal'] ?? '') ?>" <?= ($address['living_type'] ?? '') === ($tl['nm_jns_tinggal'] ?? '') ? 'selected' : '' ?>><?= htmlspecialchars($tl['nm_jns_tinggal'] ?? '') ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
@@ -482,7 +482,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
         </div>
 
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-          <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-650 hover:bg-indigo-700 transition-all cursor-pointer">
+          <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all cursor-pointer">
             💾 Simpan Perubahan
           </button>
           
@@ -497,17 +497,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
 <script>
 (function() {
-  <?php
-    $waveProdiList = [];
-    $stmt = $db->prepare("SELECT wave_id, study_program_id FROM wave_study_programs");
-    $stmt->execute();
-    $waveProdiList = $stmt->fetchAll() ?: [];
-    $waveProdis = [];
-    foreach ($waveProdiList as $wp) {
-        $waveProdis[$wp['wave_id']][] = (int)$wp['study_program_id'];
-    }
-  ?>
-  const waveStudyPrograms = <?= json_encode($waveProdis) ?>;
+  const waveStudyPrograms = <?= json_encode($wave_prodis ?? []) ?>;
   const allStudyPrograms = <?= json_encode($study_programs) ?>;
   const waveSelect = document.getElementById('wave_id');
   const p1Select = document.getElementById('program1_id');

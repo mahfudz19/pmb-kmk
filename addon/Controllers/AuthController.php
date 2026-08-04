@@ -734,10 +734,6 @@ class AuthController
         $tab = $request->input('tab') ?: 'alamat';
 
         $registration = $this->registrations->findByUserId($user['id']);
-        $isLocked = $registration && in_array($registration['status'], ['Submitted', 'Verified', 'Released']);
-        if ($isLocked && $tab !== 'password') {
-            return $response->redirect('/profile?tab=' . urlencode($tab) . '&error=' . urlencode('Profil Anda telah dikunci karena pendaftaran telah dikirim.'));
-        }
 
         if ($tab === 'password') {
             $currentPassword = $request->input('current_password');

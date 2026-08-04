@@ -10,42 +10,8 @@
     </div>
   </div>
 
-  <!-- Notifications -->
-  <?php if (isset($_GET['success'])): ?>
-    <div class="p-4 bg-emerald-50 border border-emerald-500 text-emerald-700 rounded-2xl flex items-center gap-3">
-      <span>✅</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['success']) ?></span>
-    </div>
-  <?php endif; ?>
-  <?php if (isset($_GET['error'])): ?>
-    <div class="p-4 bg-red-50 border border-red-500 text-red-700 rounded-2xl flex items-center gap-3">
-      <span>⚠️</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['error']) ?></span>
-    </div>
-  <?php endif; ?>
-
-  <!-- Tab Switcher Header -->
-  <div class="flex border-b border-slate-200 gap-6">
-    <button 
-      type="button" 
-      onclick="switchTab('scoring')" 
-      id="tab-btn-scoring"
-      class="pb-4 text-sm font-bold transition-all border-b-2 cursor-pointer <?= $activeTab === 'scoring' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600' ?>"
-    >
-      🏅 Penilaian & Kelulusan
-    </button>
-    <button 
-      type="button" 
-      onclick="switchTab('quota')" 
-      id="tab-btn-quota"
-      class="pb-4 text-sm font-bold transition-all border-b-2 cursor-pointer <?= $activeTab === 'quota' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600' ?>"
-    >
-      🏢 Daya Tampung / Kuota Prodi
-    </button>
-  </div>
-
   <!-- Tab 1: Penilaian & Kelulusan -->
-  <div id="tab-content-scoring" class="<?= $activeTab === 'scoring' ? '' : 'hidden' ?> bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+  <div id="tab-content-scoring" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi Calon Mahasiswa</h3>
       <div class="flex gap-2">
@@ -130,6 +96,13 @@
                 <div class="flex items-center justify-center gap-2">
                   <button 
                     type="button" 
+                    onclick="openExamStagesModal(<?= htmlspecialchars(json_encode($c)) ?>)"
+                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm"
+                  >
+                    🏆 Tahapan
+                  </button>
+                  <button 
+                    type="button" 
                     onclick="openScoringModal(<?= htmlspecialchars(json_encode($c)) ?>)"
                     class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm"
                   >
@@ -185,45 +158,6 @@
   <?php endif; ?>
 </div>
 
-  <!-- Tab 2: Pengaturan Kuota -->
-  <div id="tab-content-quota" class="<?= $activeTab === 'quota' ? '' : 'hidden' ?> bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
-    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
-      <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Kuota / Daya Tampung Program Studi</h3>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="border-b border-slate-150 text-[10px] font-bold text-slate-450 uppercase tracking-wider bg-slate-50/30">
-            <th class="px-6 py-4">Kode Prodi</th>
-            <th class="px-6 py-4">Nama Program Studi</th>
-            <th class="px-6 py-4 text-center">Kuota Daya Tampung</th>
-            <th class="px-6 py-4 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-150 text-xs text-slate-650">
-          <?php foreach ($programs as $p): ?>
-            <tr class="hover:bg-slate-50/30 transition-colors">
-              <td class="px-6 py-4 font-mono font-bold text-slate-800"><?= htmlspecialchars($p['code']) ?></td>
-              <td class="px-6 py-4 font-semibold text-slate-800"><?= htmlspecialchars($p['name']) ?></td>
-              <td class="px-6 py-4 text-center font-bold text-slate-900"><?= $p['quota'] ?></td>
-              <td class="px-6 py-4 text-center">
-                <form action="/admin/selection/quota" method="POST" class="inline-flex items-center gap-2">
-                  <input type="hidden" name="program_id" value="<?= $p['id'] ?>">
-                  <input type="number" name="quota" value="<?= $p['quota'] ?>" required min="0" class="w-20 px-2 py-1 border border-slate-200 rounded-lg text-center focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold bg-slate-50">
-                  <button type="submit" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-bold rounded-lg cursor-pointer transition-colors shadow-sm">
-                    Simpan Kuota
-                  </button>
-                </form>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
 <!-- Scoring & Status Modal -->
 <div id="scoring-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeScoringModal()"></div>
@@ -270,27 +204,32 @@
   </div>
 </div>
 
+<!-- Exam Stages Grading Modal -->
+<div id="exam-stages-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeExamStagesModal()"></div>
+  <div class="relative bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="exam-stages-modal-card">
+    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+      <h3 class="text-sm font-bold text-slate-900" id="exam-stages-modal-title">Penilaian Tahapan Ujian</h3>
+      <button type="button" onclick="closeExamStagesModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
+    </div>
+
+    <form action="/admin/selection/exam-stage/save" method="POST" class="space-y-4 text-xs">
+      <input type="hidden" id="exam-stage-registration-id" name="registration_id">
+
+      <div id="modal-exam-stages-list" class="space-y-3"></div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeExamStagesModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors cursor-pointer">Batal</button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Simpan Penilaian Ujian</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   const allProgramsList = <?= json_encode($programs) ?>;
-
-  function switchTab(tab) {
-    const scoringContent = document.getElementById('tab-content-scoring');
-    const quotaContent = document.getElementById('tab-content-quota');
-    const scoringBtn = document.getElementById('tab-btn-scoring');
-    const quotaBtn = document.getElementById('tab-btn-quota');
-
-    if (tab === 'scoring') {
-      scoringContent.classList.remove('hidden');
-      quotaContent.classList.add('hidden');
-      scoringBtn.className = "pb-4 text-sm font-bold transition-all border-b-2 border-indigo-600 text-indigo-600 cursor-pointer";
-      quotaBtn.className = "pb-4 text-sm font-bold transition-all border-b-2 border-transparent text-slate-400 hover:text-slate-600 cursor-pointer";
-    } else {
-      scoringContent.classList.add('hidden');
-      quotaContent.classList.remove('hidden');
-      scoringBtn.className = "pb-4 text-sm font-bold transition-all border-b-2 border-transparent text-slate-400 hover:text-slate-600 cursor-pointer";
-      quotaBtn.className = "pb-4 text-sm font-bold transition-all border-b-2 border-indigo-600 text-indigo-600 cursor-pointer";
-    }
-  }
+  const wavesMap = <?= json_encode($waves_map) ?>;
+  const examResultsMap = <?= json_encode($exam_results_map) ?>;
 
   function openScoringModal(c) {
     document.getElementById('score-registration-id').value = c.id;
@@ -357,6 +296,56 @@
   function closeScoringModal() {
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
+    
+    card.classList.remove('scale-100', 'opacity-100');
+    card.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  function openExamStagesModal(c) {
+    document.getElementById('exam-stage-registration-id').value = c.id;
+    document.getElementById('exam-stages-modal-title').innerText = `Tahapan Ujian: ${c.full_name}`;
+
+    const stagesList = document.getElementById('modal-exam-stages-list');
+    stagesList.innerHTML = '';
+
+    const stages = wavesMap[c.wave_id] || [];
+    if (stages.length > 0) {
+      stages.forEach(stg => {
+        const stageNum = stg.stage_number;
+        const currentStatus = (examResultsMap[c.id] && examResultsMap[c.id][stageNum]) || 'Pending';
+
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-150 text-xs';
+        row.innerHTML = `
+          <span class="font-semibold text-slate-700">Tahap ${stageNum}: ${stg.description || 'Ujian'}</span>
+          <select name="stages[${stageNum}]" class="px-2.5 py-1.5 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">
+            <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="Lulus" ${currentStatus === 'Lulus' ? 'selected' : ''}>Lolos</option>
+            <option value="Tidak Lulus" ${currentStatus === 'Tidak Lulus' ? 'selected' : ''}>Gagal</option>
+          </select>
+        `;
+        stagesList.appendChild(row);
+      });
+    } else {
+      stagesList.innerHTML = '<div class="text-center text-xs text-slate-400 py-3 italic">Belum ada tahapan seleksi yang dikonfigurasi.</div>';
+    }
+
+    const modal = document.getElementById('exam-stages-modal');
+    const card = document.getElementById('exam-stages-modal-card');
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      card.classList.remove('scale-95', 'opacity-0');
+      card.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeExamStagesModal() {
+    const modal = document.getElementById('exam-stages-modal');
+    const card = document.getElementById('exam-stages-modal-card');
     
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');

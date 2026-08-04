@@ -204,25 +204,32 @@ class DashboardController
                   }
                   unset($wsp);
 
-                  $requiredDocs = [];
-                  foreach ($waveStudyPrograms as $wsp) {
-                      $prodiId = (int)$wsp['study_program_id'];
-                      $prodiName = $prodiNamesMap[$prodiId] ?? '';
-                      $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
-                      foreach ($reqDocs as $rd) {
-                          if (isset($rd['document_type_id'])) {
-                              $dtId = (int)$rd['document_type_id'];
-                              $requiredDocs[] = [
-                                  'document_type_id' => $dtId,
-                                  'study_program_id' => $prodiId,
-                                  'study_program_name' => $prodiName,
-                                  'name' => $rd['name'] . ' (Prodi: ' . $prodiName . ')',
-                                  'description' => $rd['description'] ?? ''
-                              ];
-                          }
-                      }
-                  }
-             }
+                   $uniqueDocsMap = [];
+                   foreach ($waveStudyPrograms as $wsp) {
+                       $prodiId = (int)$wsp['study_program_id'];
+                       $prodiName = $prodiNamesMap[$prodiId] ?? '';
+                       $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
+                       foreach ($reqDocs as $rd) {
+                           if (isset($rd['document_type_id'])) {
+                               $dtId = (int)$rd['document_type_id'];
+                               if (!isset($uniqueDocsMap[$dtId])) {
+                                   $uniqueDocsMap[$dtId] = [
+                                       'document_type_id' => $dtId,
+                                       'name' => preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']),
+                                       'prodi_names' => [$prodiName],
+                                       'descriptions' => [$prodiName => $rd['description'] ?? '']
+                                   ];
+                               } else {
+                                   if (!in_array($prodiName, $uniqueDocsMap[$dtId]['prodi_names'])) {
+                                       $uniqueDocsMap[$dtId]['prodi_names'][] = $prodiName;
+                                   }
+                                   $uniqueDocsMap[$dtId]['descriptions'][$prodiName] = $rd['description'] ?? '';
+                               }
+                           }
+                       }
+                   }
+                   $requiredDocs = array_values($uniqueDocsMap);
+              }
 
             $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
             $stmt->execute(['reg_id' => $registration['id']]);
@@ -264,11 +271,10 @@ class DashboardController
 
                     $requiredDocKeys = [];
                     foreach ($waveStudyPrograms as $wsp) {
-                        $prodiId = (int)$wsp['study_program_id'];
                         $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
                         foreach ($reqDocs as $rd) {
                             if (isset($rd['document_type_id'])) {
-                                $requiredDocKeys[] = (int)$rd['document_type_id'] . '_' . $prodiId;
+                                $requiredDocKeys[] = (int)$rd['document_type_id'] . '_global';
                             }
                         }
                     }

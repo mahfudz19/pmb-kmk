@@ -1,20 +1,7 @@
 <div class="w-full py-2">
-  <?php if (isset($_GET['success'])): ?>
-    <div class="mb-6 p-4 bg-emerald-50 border border-emerald-500 text-emerald-700 rounded-2xl flex items-center gap-3">
-      <span>✅</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['success']) ?></span>
-    </div>
-  <?php endif; ?>
-
-  <?php if (isset($_GET['error'])): ?>
-    <div class="mb-6 p-4 bg-red-50 border border-red-500 text-red-700 rounded-2xl flex items-center gap-3">
-      <span>⚠️</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['error']) ?></span>
-    </div>
-  <?php endif; ?>
 
   <?php 
-    $isLocked = $registration && in_array($registration['status'], ['Submitted', 'Verified', 'Released']);
+    $isLocked = false;
     $userPerms = json_decode($user['permissions'] ?? '[]', true) ?: [];
     $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) || count(array_intersect($userPerms, ['verify_payment', 'verify_document', 'manage_selection', 'manage_settings', 'manage_users'])) > 0;
   ?>

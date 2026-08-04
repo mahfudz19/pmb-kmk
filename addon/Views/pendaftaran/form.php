@@ -330,8 +330,8 @@ foreach ($waves as $w) {
               Kunci & Finalisasi Pendaftaran
             </button>
           <?php else: ?>
-            <a href="/profile" id="btn-locked" class="hidden px-6 py-2.5 bg-slate-300 text-slate-600 font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none pointer-events-none cursor-not-allowed">
-              Profil Belum Lengkap
+            <a href="/profile" id="btn-locked" class="hidden px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none text-center">
+              Lengkapi Profil
             </a>
           <?php endif; ?>
         </div>
@@ -579,27 +579,29 @@ foreach ($waves as $w) {
   }
 
   function showErrorAlert(msg) {
-    const alert = document.getElementById('step-error-alert');
-    const text = document.getElementById('error-alert-message');
-    text.textContent = msg;
-    alert.classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    Swal.fire({
+      icon: 'error',
+      title: 'Perhatian',
+      text: msg,
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 4000,
+      timerProgressBar: true
+    });
   }
 
   function showTemporaryAlert(msg, type = 'emerald') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-5 right-5 p-4 rounded-2xl shadow-lg border text-white text-xs font-bold z-50 transform translate-y-10 opacity-0 transition-all duration-300 ${type === 'emerald' ? 'bg-emerald-600 border-emerald-500' : 'bg-red-600 border-red-500'}`;
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.classList.remove('translate-y-10', 'opacity-0');
-    }, 100);
-
-    setTimeout(() => {
-      toast.classList.add('translate-y-10', 'opacity-0');
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    Swal.fire({
+      icon: type === 'emerald' ? 'success' : 'error',
+      title: type === 'emerald' ? 'Berhasil' : 'Perhatian',
+      text: msg,
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
   }
 
   function previewPhoto(input) {

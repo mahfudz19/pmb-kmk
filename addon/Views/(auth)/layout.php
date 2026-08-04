@@ -9,7 +9,7 @@
     <!-- Left Column: Visual Illustration (Desktop/Tablet only) -->
     <div class="hidden md:flex md:w-1/2 bg-slate-900 text-white p-10 lg:p-12 flex-col justify-between relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(30, 27, 75, 0.4), rgba(15, 23, 42, 0.85)), url('<?= getBaseUrl('/logo_app/campus-hero.png') ?>');">
       <!-- Gradient overlay decoration -->
-      <div class="absolute inset-0 bg-indigo-650/15 mix-blend-overlay"></div>
+      <div class="absolute inset-0 bg-indigo-600/15 mix-blend-overlay"></div>
       
       <!-- Top Brand area -->
       <div class="z-10 flex items-center gap-2.5">

@@ -21,34 +21,34 @@
     <div class="divide-y divide-slate-150">
       <?php if (empty($document_types)): ?>
         <div class="p-8 text-center text-sm text-slate-400 italic">Belum ada tipe dokumen persyaratan yang dikonfigurasi.</div>
-      <?php else: 
-        $groupedTypes = [];
-        foreach ($document_types as $dt) {
-            $prodiName = $dt['study_program_name'] ?: 'Umum';
-            $groupedTypes[$prodiName][] = $dt;
-        }
-        foreach ($groupedTypes as $prodiName => $types):
-      ?>
-        <div class="bg-indigo-50/60 px-8 py-3 text-xs font-bold text-indigo-900 border-t border-b border-indigo-100/50 uppercase tracking-wider">
-          Program Studi: <?= htmlspecialchars($prodiName) ?>
-        </div>
+      <?php else: ?>
         <div class="divide-y divide-slate-150 bg-white">
-          <?php foreach ($types as $dt): ?>
+          <?php foreach ($document_types as $dt): ?>
             <?php 
-              $prodiId = $dt['study_program_id'] ?? 'global';
-              $uploaded = $uploaded_docs[$dt['document_type_id'] . '_' . $prodiId] ?? null;
-              $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $dt['name']);
+              $docTypeId = $dt['document_type_id'] ?? null;
+              $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
+              $docDisplayName = htmlspecialchars($dt['name']);
+              
+              $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
+              $descParts = [];
+              foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
+                  if (!empty($pDesc)) {
+                      $descParts[] = $pName . ': ' . $pDesc;
+                  }
+              }
+              $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
             ?>
             <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:bg-slate-50/30 transition-colors">
               <!-- Left: Doc Type Info -->
               <div class="space-y-2 max-w-md">
                 <div class="flex items-center gap-3">
-                  <h4 class="text-sm font-bold text-slate-800"><?= htmlspecialchars($docDisplayName) ?></h4>
+                  <h4 class="text-sm font-bold text-slate-800"><?= $docDisplayName ?></h4>
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-800">
                     WAJIB
                   </span>
                 </div>
-                <p class="text-[11px] text-slate-400 leading-normal">Unggah berkas dalam format PDF, JPG, atau PNG. Maksimal ukuran file 2MB.</p>
+                <p class="text-[11px] text-slate-400 leading-normal">Prodi: <span class="text-indigo-750 font-bold"><?= $prodisStr ?></span><?= $descStr ?></p>
+                <p class="text-[10px] text-slate-400 leading-normal">Format file: PDF, JPG, atau PNG (Maks 2MB).</p>
               </div>
 
               <!-- Middle: Status Badge -->
@@ -99,7 +99,7 @@
                     <!-- Can change file if not approved yet -->
                     <button 
                       type="button" 
-                      onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, <?= $dt['study_program_id'] ?? 'null' ?>)" 
+                      onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)" 
                       class="flex-grow md:flex-grow-0 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full transition-colors cursor-pointer"
                     >
                       🔄 Ganti Berkas
@@ -119,7 +119,7 @@
                   <!-- Action for not uploaded file -->
                   <button 
                     type="button" 
-                    onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, <?= $dt['study_program_id'] ?? 'null' ?>)" 
+                    onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)" 
                     class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors shadow-sm cursor-pointer"
                   >
                     📤 Unggah Berkas
@@ -129,7 +129,7 @@
             </div>
           <?php endforeach; ?>
         </div>
-      <?php endforeach; endif; ?>
+      <?php endif; ?>
     </div>
   </div>
 </div>
@@ -138,7 +138,6 @@
 <form id="hidden-upload-form" method="POST" class="hidden">
   <input type="file" id="hidden-file-input" name="document" accept=".pdf,.png,.jpg,.jpeg" onchange="handleFileSelected(event)">
   <input type="hidden" id="hidden-doc-type-id" name="document_type_id">
-  <input type="hidden" id="hidden-study-program-id" name="study_program_id">
 </form>
 
 <!-- Uploading Overlay Spinner -->
@@ -170,13 +169,10 @@
 
 <script>
   let activeDocTypeId = null;
-  let activeStudyProgramId = null;
 
-  function triggerFileUpload(docTypeId, studyProgramId) {
+  function triggerFileUpload(docTypeId) {
     activeDocTypeId = docTypeId;
-    activeStudyProgramId = studyProgramId;
     document.getElementById('hidden-doc-type-id').value = docTypeId;
-    document.getElementById('hidden-study-program-id').value = studyProgramId || '';
     document.getElementById('hidden-file-input').click();
   }
 

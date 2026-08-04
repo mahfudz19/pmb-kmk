@@ -150,10 +150,15 @@ class ReRegistrationController
 
         $data['dynamic_documents'] = json_encode([]);
 
-        $paymentAmount = $request->input('payment_amount');
-        if ($paymentAmount !== '') {
-            $data['payment_amount'] = (float) str_replace(['.', ','], '', $paymentAmount);
-        }
+        $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+        $stmt->execute([
+            'wave_id' => $registration['wave_id'],
+            'prodi_id' => $passedProgramId
+        ]);
+        $waveStudyProgram = $stmt->fetch() ?: null;
+        $tuitionFee = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : 0.0;
+
+        $data['payment_amount'] = $tuitionFee;
 
         if ($reReg) {
             $this->reRegistrations->updateById($reReg['id'], $data);

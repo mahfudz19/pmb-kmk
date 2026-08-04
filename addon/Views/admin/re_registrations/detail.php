@@ -22,26 +22,6 @@
     </div>
   </div>
 
-  <?php if (isset($_GET['success'])): ?>
-    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex gap-3 text-emerald-800 text-xs">
-      <span class="text-lg">✅</span>
-      <div>
-        <p class="font-bold">Berhasil!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['success']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
-  <?php if (isset($_GET['error'])): ?>
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl flex gap-3 text-red-800 text-xs">
-      <span class="text-lg">⚠️</span>
-      <div>
-        <p class="font-bold">Gagal!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['error']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Panel: Applicant & Payment info -->
     <div class="lg:col-span-1 space-y-6">
@@ -69,21 +49,6 @@
           <div>
             <span class="text-[10px] text-slate-400 block font-medium">Biaya Pendidikan yang Wajib Dibayar</span>
             <strong class="text-slate-800 font-bold text-sm">Rp <?= number_format($expected_tuition, 0, ',', '.') ?></strong>
-          </div>
-          <div>
-            <span class="text-[10px] text-slate-400 block font-medium">Nominal Pembayaran yang Dilaporkan</span>
-            <strong class="text-indigo-650 font-bold text-sm">
-              <?= $re_registration && $re_registration['payment_amount'] ? 'Rp ' . number_format($re_registration['payment_amount'], 0, ',', '.') : '-' ?>
-            </strong>
-          </div>
-          <div class="pt-2 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-[10px] text-slate-400 font-medium">Kecocokan Nominal</span>
-            <?php 
-              $isMatch = $re_registration && (float)$re_registration['payment_amount'] === (float)$expected_tuition;
-            ?>
-            <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold <?= $isMatch ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800' ?>">
-              <?= $isMatch ? 'Sesuai' : 'Tidak Sesuai' ?>
-            </span>
           </div>
         </div>
       </div>

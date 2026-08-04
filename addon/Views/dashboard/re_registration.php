@@ -22,26 +22,6 @@
     </div>
   </div>
 
-  <?php if (isset($_GET['success'])): ?>
-    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl flex gap-3 text-emerald-800 text-xs">
-      <span class="text-lg">✅</span>
-      <div>
-        <p class="font-bold">Berhasil!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['success']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
-  <?php if (isset($_GET['error'])): ?>
-    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl flex gap-3 text-red-800 text-xs">
-      <span class="text-lg">⚠️</span>
-      <div>
-        <p class="font-bold">Gagal!</p>
-        <p class="mt-0.5"><?= htmlspecialchars($_GET['error']) ?></p>
-      </div>
-    </div>
-  <?php endif; ?>
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Column: Guidelines & Payment Instructions -->
     <div class="lg:col-span-1 space-y-6">
@@ -149,26 +129,7 @@
 
           </div>
 
-          <div class="border-t border-slate-100 pt-5 space-y-4">
-            <div>
-              <label for="payment_amount" class="block text-xs font-bold text-slate-700">Nominal Transfer Pembayaran (Rp) <span class="text-red-500">*</span></label>
-              <div class="mt-1.5 relative rounded-xl shadow-sm">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style="position: absolute; top: 0; bottom: 0; left: 12px; display: flex; align-items: center; pointer-events: none; z-index: 10;">
-                  <span class="text-xs text-slate-400 font-semibold">Rp</span>
-                </div>
-                <input
-                  type="text"
-                  name="payment_amount"
-                  id="payment_amount"
-                  style="padding-left: 44px !important;"
-                  class="block w-full pr-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
-                  placeholder="Contoh: <?= number_format($tuition_fee, 0, '', '') ?>"
-                  value="<?= $re_registration ? number_format($re_registration['payment_amount'], 0, '', '') : '' ?>"
-                  <?= $isApproved ? 'disabled' : 'required' ?>
-                />
-              </div>
-            </div>
-          </div>
+
 
           <?php if (!$isApproved): ?>
             <div class="pt-2 flex justify-end">

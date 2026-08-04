@@ -12,19 +12,7 @@
     </div>
   </div>
 
-  <!-- Notifications -->
-  <?php if (isset($_GET['success'])): ?>
-    <div class="p-4 bg-emerald-50 border border-emerald-500 text-emerald-700 rounded-2xl flex items-center gap-3">
-      <span>✅</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['success']) ?></span>
-    </div>
-  <?php endif; ?>
-  <?php if (isset($_GET['error'])): ?>
-    <div class="p-4 bg-red-50 border border-red-500 text-red-700 rounded-2xl flex items-center gap-3">
-      <span>⚠️</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['error']) ?></span>
-    </div>
-  <?php endif; ?>
+
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
     <!-- Left: Applicant Details Summary (Data Pribadi s.d Prodi Pilihan) -->
@@ -128,30 +116,29 @@
         <div class="space-y-6">
           <?php if (empty($document_types)): ?>
             <div class="p-8 text-center text-xs text-slate-400 italic">Belum ada tipe dokumen persyaratan yang dikonfigurasi.</div>
-          <?php else:
-            $groupedTypes = [];
-            foreach ($document_types as $dt) {
-                $prodiName = $dt['study_program_name'] ?: 'Umum';
-                $groupedTypes[$prodiName][] = $dt;
-            }
-            foreach ($groupedTypes as $prodiName => $types):
-          ?>
-            <div class="bg-indigo-50/50 px-4 py-2 rounded-xl text-xs font-bold text-indigo-900 border border-indigo-100/50 uppercase tracking-wider">
-              Program Studi: <?= htmlspecialchars($prodiName) ?>
-            </div>
-            
-            <div class="space-y-3 pl-2">
-              <?php foreach ($types as $dt): ?>
+          <?php else: ?>
+            <div class="space-y-4">
+              <?php foreach ($document_types as $dt): ?>
                 <?php 
-                  $prodiId = $dt['study_program_id'] ?? 'global';
-                  $uploaded = $uploaded_docs[$dt['document_type_id'] . '_' . $prodiId] ?? null;
-                  $docDisplayName = preg_replace('/ \(Prodi: .*\)$/', '', $dt['name']);
+                  $docTypeId = $dt['document_type_id'] ?? null;
+                  $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
+                  $docDisplayName = htmlspecialchars($dt['name']);
+                  
+                  $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
+                  $descParts = [];
+                  foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
+                      if (!empty($pDesc)) {
+                          $descParts[] = $pName . ': ' . $pDesc;
+                      }
+                  }
+                  $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
                 ?>
                 <div class="p-4 bg-slate-50/30 rounded-2xl border border-slate-150 space-y-3">
                   <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
-                      <h4 class="text-xs font-bold text-slate-800 break-words"><?= htmlspecialchars($docDisplayName) ?></h4>
-                      <span class="text-[9px] text-slate-400 font-semibold block">Wajib</span>
+                      <h4 class="text-xs font-bold text-slate-800 break-words"><?= $docDisplayName ?></h4>
+                      <p class="text-[10px] text-slate-450 mt-0.5 leading-normal">Prodi: <span class="text-indigo-700 font-bold"><?= $prodisStr ?></span><?= $descStr ?></p>
+                      <span class="text-[9px] text-slate-400 font-semibold block mt-1">Wajib</span>
                     </div>
                     <div class="flex-shrink-0">
                       <?php if ($uploaded): ?>
@@ -208,7 +195,7 @@
                 </div>
               <?php endforeach; ?>
             </div>
-          <?php endforeach; endif; ?>
+          <?php endif; ?>
         </div>
       </div>
     </div>

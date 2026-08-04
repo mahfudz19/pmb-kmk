@@ -34,7 +34,6 @@ class DocumentController
         $regId = $registration['id'];
         $uploadedDocs = $this->documents->findByRegistrationId($regId);
 
-        // Map uploaded documents by document_type_id and study_program_id for easy lookup in View
         $mappedDocs = [];
         foreach ($uploadedDocs as $doc) {
             $key = $doc['document_type_id'] . '_' . ($doc['study_program_id'] ?? 'global');
@@ -46,7 +45,7 @@ class DocumentController
         $stmt->execute(['id' => $regId]);
         $regProgram = $stmt->fetch() ?: null;
 
-        $requiredDocTypes = [];
+        $uniqueDocsMap = [];
         if ($regProgram && $registration['wave_id']) {
             $prodiIds = [];
             if (!empty($regProgram['program1_id'])) $prodiIds[] = (int)$regProgram['program1_id'];
@@ -60,7 +59,6 @@ class DocumentController
                 $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
                 $waveStudyPrograms = $stmt->fetchAll() ?: [];
 
-                // Fetch study program names for display
                 $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
                 $stmtProdis->execute($prodiIds);
                 $prodiNamesMap = [];
@@ -68,7 +66,6 @@ class DocumentController
                     $prodiNamesMap[$p['id']] = $p['name'];
                 }
 
-                // Construct required documents list per prodi
                 foreach ($waveStudyPrograms as $wsp) {
                     $prodiId = (int)$wsp['study_program_id'];
                     $prodiName = $prodiNamesMap[$prodiId] ?? '';
@@ -77,14 +74,19 @@ class DocumentController
                     foreach ($reqDocs as $rd) {
                         if (isset($rd['document_type_id'])) {
                             $dtId = (int)$rd['document_type_id'];
-                            $requiredDocTypes[] = [
-                                'document_type_id' => $dtId,
-                                'study_program_id' => $prodiId,
-                                'study_program_name' => $prodiName,
-                                'name' => $rd['name'] . ' (Prodi: ' . $prodiName . ')',
-                                'description' => $rd['description'] ?? '',
-                                'is_required' => true
-                            ];
+                            if (!isset($uniqueDocsMap[$dtId])) {
+                                $uniqueDocsMap[$dtId] = [
+                                    'document_type_id' => $dtId,
+                                    'name' => preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']),
+                                    'prodi_names' => [$prodiName],
+                                    'descriptions' => [$prodiName => $rd['description'] ?? '']
+                                ];
+                            } else {
+                                if (!in_array($prodiName, $uniqueDocsMap[$dtId]['prodi_names'])) {
+                                    $uniqueDocsMap[$dtId]['prodi_names'][] = $prodiName;
+                                }
+                                $uniqueDocsMap[$dtId]['descriptions'][$prodiName] = $rd['description'] ?? '';
+                            }
                         }
                     }
                 }
@@ -93,7 +95,7 @@ class DocumentController
 
         $data = [
             'registration' => $registration,
-            'document_types' => $requiredDocTypes,
+            'document_types' => array_values($uniqueDocsMap),
             'uploaded_docs' => $mappedDocs
         ];
 
@@ -118,7 +120,7 @@ class DocumentController
         }
 
         $documentTypeId = (int) $request->input('document_type_id');
-        $studyProgramId = $request->input('study_program_id') ? (int)$request->input('study_program_id') : null;
+        $studyProgramId = null;
         if (!$documentTypeId) {
             $response->setStatusCode(400);
             return $response->json(['success' => false, 'message' => 'Jenis dokumen tidak valid']);
@@ -131,13 +133,11 @@ class DocumentController
 
         $file = $_FILES['document'];
 
-        // Task 6.3: Validasi Ukuran File (Max 2MB)
         if ($file['size'] > 2 * 1024 * 1024) {
             $response->setStatusCode(400);
             return $response->json(['success' => false, 'message' => 'Ukuran file maksimal adalah 2MB']);
         }
 
-        // Task 6.4: Validasi Format File (PDF, JPG, PNG)
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $allowed = ['pdf', 'jpg', 'jpeg', 'png'];
         if (!in_array($ext, $allowed, true)) {
@@ -145,13 +145,12 @@ class DocumentController
             return $response->json(['success' => false, 'message' => 'Format file harus berupa PDF, JPG, JPEG, atau PNG']);
         }
 
-        // Simpan file ke direktori privat
         $storageDir = __DIR__ . '/../../storage/app/documents/';
         if (!is_dir($storageDir)) {
             mkdir($storageDir, 0755, true);
         }
 
-        $filename = 'reg_' . $registration['id'] . '_doc_' . $documentTypeId . ($studyProgramId ? '_prodi_' . $studyProgramId : '') . '.' . $ext;
+        $filename = 'reg_' . $registration['id'] . '_doc_' . $documentTypeId . '.' . $ext;
         $destPath = $storageDir . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $destPath)) {
@@ -159,13 +158,12 @@ class DocumentController
             return $response->json(['success' => false, 'message' => 'Gagal menyimpan file ke penyimpanan server']);
         }
 
-        // Insert or update record
-        $existingDoc = $this->documents->findByRegTypeAndProdi($registration['id'], $documentTypeId, $studyProgramId);
+        $existingDoc = $this->documents->findByRegAndType($registration['id'], $documentTypeId);
         
         $docData = [
             'registration_id' => $registration['id'],
             'document_type_id' => $documentTypeId,
-            'study_program_id' => $studyProgramId,
+            'study_program_id' => null,
             'file_path' => $filename,
             'status' => 'Pending',
             'rejection_reason' => null
@@ -285,7 +283,7 @@ class DocumentController
             $stmt->execute(['id' => $c['id']]);
             $prog = $stmt->fetch() ?: null;
 
-            $requiredDocKeys = [];
+            $requiredDocTypes = [];
             if ($prog && $c['wave_id']) {
                 $prodiIds = [];
                 if (!empty($prog['program1_id'])) $prodiIds[] = (int)$prog['program1_id'];
@@ -295,21 +293,19 @@ class DocumentController
 
                 if (!empty($prodiIds)) {
                     $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
-                    $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
-                    $stmt->execute(array_merge([$c['wave_id']], $prodiIds));
-                    $waveStudyPrograms = $stmt->fetchAll() ?: [];
+                    $stmtWaveDocs = $db->prepare("SELECT required_documents FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
+                    $stmtWaveDocs->execute(array_merge([$c['wave_id']], $prodiIds));
+                    $waveStudyPrograms = $stmtWaveDocs->fetchAll() ?: [];
 
                     foreach ($waveStudyPrograms as $wsp) {
-                        $prodiId = (int)$wsp['study_program_id'];
                         $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
                         foreach ($reqDocs as $rd) {
                             if (isset($rd['document_type_id'])) {
-                                $dtId = (int)$rd['document_type_id'];
-                                $requiredDocKeys[] = $dtId . '_' . $prodiId;
+                                $requiredDocTypes[] = (int)$rd['document_type_id'];
                             }
                         }
                     }
-                    $requiredDocKeys = array_unique($requiredDocKeys);
+                    $requiredDocTypes = array_unique($requiredDocTypes);
                 }
             }
 
@@ -317,8 +313,8 @@ class DocumentController
             $uploadedCount = 0;
             $approvedCount = 0;
             foreach ($docs as $doc) {
-                $key = $doc['document_type_id'] . '_' . ($doc['study_program_id'] ?? 'global');
-                if (in_array($key, $requiredDocKeys, true)) {
+                $dtId = (int)$doc['document_type_id'];
+                if (in_array($dtId, $requiredDocTypes, true)) {
                     $uploadedCount++;
                     if ($doc['status'] === 'Approved') {
                         $approvedCount++;
@@ -326,7 +322,7 @@ class DocumentController
                 }
             }
             $c['uploaded_count'] = $uploadedCount;
-            $c['required_count'] = count($requiredDocKeys);
+            $c['required_count'] = count($requiredDocTypes);
             $c['approved_count'] = $approvedCount;
         }
 
@@ -398,7 +394,7 @@ class DocumentController
             $mappedDocs[$key] = $doc;
         }
 
-        $requiredDocTypes = [];
+        $uniqueDocsMap = [];
         if ($program && $registration['wave_id']) {
             $prodiIds = [];
             if (!empty($program['program1_id'])) $prodiIds[] = (int)$program['program1_id'];
@@ -412,7 +408,6 @@ class DocumentController
                 $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
                 $waveStudyPrograms = $stmt->fetchAll() ?: [];
 
-                // Fetch study program names for display
                 $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
                 $stmtProdis->execute($prodiIds);
                 $prodiNamesMap = [];
@@ -420,7 +415,6 @@ class DocumentController
                     $prodiNamesMap[$p['id']] = $p['name'];
                 }
 
-                // Construct required documents list per prodi
                 foreach ($waveStudyPrograms as $wsp) {
                     $prodiId = (int)$wsp['study_program_id'];
                     $prodiName = $prodiNamesMap[$prodiId] ?? '';
@@ -429,14 +423,20 @@ class DocumentController
                     foreach ($reqDocs as $rd) {
                         if (isset($rd['document_type_id'])) {
                             $dtId = (int)$rd['document_type_id'];
-                             $requiredDocTypes[] = [
-                                 'document_type_id' => $dtId,
-                                 'study_program_id' => $prodiId,
-                                 'study_program_name' => $prodiName,
-                                 'name' => $rd['name'] . ' (Prodi: ' . $prodiName . ')',
-                                 'description' => $rd['description'] ?? '',
-                                 'is_required' => true
-                             ];
+                            if (!isset($uniqueDocsMap[$dtId])) {
+                                $uniqueDocsMap[$dtId] = [
+                                    'document_type_id' => $dtId,
+                                    'name' => preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']),
+                                    'prodi_names' => [$prodiName],
+                                    'descriptions' => [$prodiName => $rd['description'] ?? ''],
+                                    'is_required' => true
+                                ];
+                            } else {
+                                if (!in_array($prodiName, $uniqueDocsMap[$dtId]['prodi_names'])) {
+                                    $uniqueDocsMap[$dtId]['prodi_names'][] = $prodiName;
+                                }
+                                $uniqueDocsMap[$dtId]['descriptions'][$prodiName] = $rd['description'] ?? '';
+                            }
                         }
                     }
                 }
@@ -449,7 +449,7 @@ class DocumentController
             'parents' => $parents,
             'education' => $education,
             'program' => $program,
-            'document_types' => $requiredDocTypes,
+            'document_types' => array_values($uniqueDocsMap),
             'uploaded_docs' => $mappedDocs
         ];
 

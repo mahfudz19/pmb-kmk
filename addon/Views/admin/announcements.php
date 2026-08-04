@@ -7,20 +7,6 @@
     </div>
   </div>
 
-  <!-- Notifications -->
-  <?php if (isset($_GET['success'])): ?>
-    <div class="p-4 bg-emerald-50 border border-emerald-500 text-emerald-700 rounded-2xl flex items-center gap-3">
-      <span>✅</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['success']) ?></span>
-    </div>
-  <?php endif; ?>
-  <?php if (isset($_GET['error'])): ?>
-    <div class="p-4 bg-red-50 border border-red-500 text-red-700 rounded-2xl flex items-center gap-3">
-      <span>⚠️</span>
-      <span class="text-sm font-semibold"><?= htmlspecialchars($_GET['error']) ?></span>
-    </div>
-  <?php endif; ?>
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
     <!-- Form Card -->
     <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 space-y-6">

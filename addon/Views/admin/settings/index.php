@@ -14,13 +14,6 @@
     </div>
   </div>
 
-  <?php if ($success = $_GET['success'] ?? null): ?>
-    <div class="bg-emerald-50 border border-emerald-250 rounded-2xl p-4 text-xs font-semibold text-emerald-800 flex items-center gap-3">
-      <span>✅</span>
-      <span><?= htmlspecialchars($success) ?></span>
-    </div>
-  <?php endif; ?>
-
   <div class="border-b border-slate-200">
     <nav class="flex space-x-6" aria-label="Tabs">
       <button onclick="switchTab('tab-general', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-indigo-600 text-indigo-600 transition-all focus:outline-none">
