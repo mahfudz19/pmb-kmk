@@ -810,6 +810,19 @@ class AuthController
             $city = $request->input('city') ?: null;
             $addressDetail = $request->input('address') ?: null;
 
+            $npwp = $npwp ? substr($npwp, 0, 30) : null;
+            $street = $street ? substr($street, 0, 100) : null;
+            $telephone = $telephone ? substr($telephone, 0, 15) : null;
+            $dusun = $dusun ? substr($dusun, 0, 50) : null;
+            $rt = $rt ? substr($rt, 0, 5) : null;
+            $rw = $rw ? substr($rw, 0, 5) : null;
+            $kelurahan = $kelurahan ? substr($kelurahan, 0, 100) : null;
+            $postalCode = $postalCode ? substr($postalCode, 0, 5) : null;
+            $kps_number = $kps_number ? substr($kps_number, 0, 50) : null;
+            $kecamatan = $kecamatan ? substr($kecamatan, 0, 100) : null;
+            $province = $province ? substr($province, 0, 100) : null;
+            $city = $city ? substr($city, 0, 100) : null;
+
             if (!$email || !$kelurahan || !$kps_receiver || !$kecamatan || !$addressDetail) {
                 return $response->redirect('/profile?tab=alamat&error=Harap+isi+semua+kolom+wajib+pada+alamat');
             }

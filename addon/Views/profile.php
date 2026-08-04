@@ -118,25 +118,25 @@
 
               <div class="space-y-1">
                 <label for="npwp" class="block text-sm font-semibold text-slate-700">NPWP</label>
-                <input type="text" id="npwp" name="npwp" value="<?= htmlspecialchars($address['npwp'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="15 digit NPWP jika ada" <?= $isLocked ? 'disabled' : '' ?>>
+                <input type="text" id="npwp" name="npwp" maxlength="30" value="<?= htmlspecialchars($address['npwp'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="15 digit NPWP jika ada" <?= $isLocked ? 'disabled' : '' ?>>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="md:col-span-2 space-y-1">
                 <label for="street" class="block text-sm font-semibold text-slate-700">Jalan</label>
-                <input type="text" id="street" name="street" value="<?= htmlspecialchars($address['street'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Nama Jalan" <?= $isLocked ? 'disabled' : '' ?>>
+                <input type="text" id="street" name="street" maxlength="100" value="<?= htmlspecialchars($address['street'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Nama Jalan" <?= $isLocked ? 'disabled' : '' ?>>
               </div>
               <div class="space-y-1">
                 <label for="telephone" class="block text-sm font-semibold text-slate-700">Telepon Rumah</label>
-                <input type="text" id="telephone" name="telephone" value="<?= htmlspecialchars($address['telephone'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Telepon Rumah" <?= $isLocked ? 'disabled' : '' ?>>
+                <input type="text" id="telephone" name="telephone" maxlength="15" value="<?= htmlspecialchars($address['telephone'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Telepon Rumah" <?= $isLocked ? 'disabled' : '' ?>>
               </div>
             </div>
 
             <div class="grid grid-cols-3 gap-4">
               <div class="space-y-1">
                 <label for="dusun" class="block text-sm font-semibold text-slate-700">Dusun</label>
-                <input type="text" id="dusun" name="dusun" value="<?= htmlspecialchars($address['dusun'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Dusun" <?= $isLocked ? 'disabled' : '' ?>>
+                <input type="text" id="dusun" name="dusun" maxlength="50" value="<?= htmlspecialchars($address['dusun'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all bg-slate-50" placeholder="Dusun" <?= $isLocked ? 'disabled' : '' ?>>
               </div>
               <div class="space-y-1">
                 <label for="rt" class="block text-sm font-semibold text-slate-700">RT</label>
