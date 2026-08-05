@@ -90,7 +90,7 @@
                     </button>
                     <form action="/admin/announcements/delete" method="POST" onsubmit="return confirmAction(event, 'Hapus Pengumuman', 'Apakah Anda yakin ingin menghapus pengumuman ini?')">
                       <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                      <button type="submit" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[10px] font-bold text-red-655 rounded-lg cursor-pointer">
+                      <button type="submit" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[10px] font-bold text-red-600 rounded-lg cursor-pointer">
                         🗑️ Hapus
                       </button>
                     </form>

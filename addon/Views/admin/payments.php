@@ -169,7 +169,7 @@
 
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
         <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors cursor-pointer">Batal</button>
-        <button type="submit" class="px-4 py-2 bg-red-655 hover:bg-red-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Tolak Pembayaran</button>
+        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Tolak Pembayaran</button>
       </div>
     </form>
   </div>
