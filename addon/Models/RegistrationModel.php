@@ -12,7 +12,7 @@ class RegistrationModel extends Model
 
     protected array $schema = [
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
-        'user_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'unique' => true, 'nullable' => false],
+        'user_id' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'unique' => false, 'nullable' => false],
         'full_name' => ['type' => 'varchar', 'length' => 100, 'nullable' => false],
         'nik' => ['type' => 'varchar', 'length' => 16, 'nullable' => true],
         'nisn' => ['type' => 'varchar', 'length' => 10, 'nullable' => true],
@@ -35,9 +35,16 @@ class RegistrationModel extends Model
 
     public function findByUserId(int $userId): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE user_id = :user_id LIMIT 1");
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE user_id = :user_id ORDER BY id DESC LIMIT 1");
         $stmt->execute(['user_id' => $userId]);
         $row = $stmt->fetch();
         return $row === false ? null : $row;
+    }
+
+    public function findAllByUserId(int $userId): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE user_id = :user_id ORDER BY id DESC");
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll() ?: [];
     }
 }

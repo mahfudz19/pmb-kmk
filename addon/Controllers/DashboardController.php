@@ -141,6 +141,15 @@ class DashboardController
         $stmt->execute();
         $activeWaves = $stmt->fetchAll() ?: [];
 
+        if ($userId) {
+            $stmt = $db->prepare("SELECT wave_id FROM registrations WHERE user_id = :user_id AND wave_id IS NOT NULL");
+            $stmt->execute(['user_id' => $userId]);
+            $registeredWaveIds = $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+            $activeWaves = array_values(array_filter($activeWaves, function($w) use ($registeredWaveIds) {
+                return !in_array((int)$w['id'], array_map('intval', $registeredWaveIds));
+            }));
+        }
+
         $wave = null;
         if ($registration && $registration['wave_id']) {
             $stmt = $db->prepare("SELECT * FROM waves WHERE id = :wave_id LIMIT 1");
@@ -317,6 +326,40 @@ class DashboardController
         $reReg = $registration ? $this->reRegistrations->findByRegistrationId($registration['id']) : null;
         $activeAnnouncement = $this->announcements->getActive();
 
+        $history = [];
+        if ($registration) {
+            $allRegs = $this->registrations->findAllByUserId($userId);
+            if (count($allRegs) > 1) {
+                $historyRegs = array_slice($allRegs, 1);
+                foreach ($historyRegs as $hr) {
+                    $stmt = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+                    $stmt->execute(['id' => $hr['wave_id']]);
+                    $w = $stmt->fetch();
+
+                    $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id LIMIT 1");
+                    $stmt->execute(['id' => $hr['id']]);
+                    $sel = $stmt->fetch();
+
+                    $passedProdi = '-';
+                    if ($sel && $sel['passed_program_id']) {
+                        $stmt = $db->prepare("SELECT * FROM study_programs WHERE id = :id LIMIT 1");
+                        $stmt->execute(['id' => $sel['passed_program_id']]);
+                        $prodi = $stmt->fetch();
+                        if ($prodi) {
+                            $passedProdi = $prodi['name'];
+                        }
+                    }
+
+                    $history[] = [
+                        'registration' => $hr,
+                        'wave' => $w,
+                        'selection' => $sel,
+                        'passed_program_name' => $passedProdi
+                    ];
+                }
+            }
+        }
+
         return $response->renderPage([
             'state' => $state,
             'registration' => $registration,
@@ -333,7 +376,8 @@ class DashboardController
             'active_payment_account' => $activePaymentAccount,
             'exam_results' => $examResults,
             'active_waves' => $activeWaves,
-            'wave' => $wave
+            'wave' => $wave,
+            'history' => $history
         ], [
             'path' => '/dashboard/student',
             'meta' => ['title' => 'Dashboard Pendaftaran | ' . env('APP_NAME')]
@@ -353,31 +397,90 @@ class DashboardController
             return $response->redirect('/dashboard?error=Gelombang+pendaftaran+harus+dipilih');
         }
 
-        $existing = $this->registrations->findByUserId($userId);
-        if ($existing) {
-            $this->registrations->updateById($existing['id'], [
+        $db = $this->registrations->getDb();
+        $stmt = $db->prepare("SELECT * FROM registrations WHERE user_id = :user_id AND wave_id = :wave_id LIMIT 1");
+        $stmt->execute(['user_id' => $userId, 'wave_id' => $waveId]);
+        if ($stmt->fetch()) {
+            return $response->redirect('/dashboard?error=' . urlencode('Anda sudah terdaftar di gelombang ini.'));
+        }
+
+        $latest = $this->registrations->findByUserId($userId);
+        if ($latest && $latest['status'] === 'Draft') {
+            $this->registrations->updateById($latest['id'], [
                 'wave_id' => $waveId,
                 'status' => 'Draft',
                 'current_step' => 1
             ]);
-            $db = $this->registrations->getDb();
             $stmt = $db->prepare("DELETE FROM registration_programs WHERE registration_id = :id");
-            $stmt->execute(['id' => $existing['id']]);
+            $stmt->execute(['id' => $latest['id']]);
 
             return $response->redirect('/pendaftaran')->hard();
         }
 
-        $this->registrations->insert([
+        $newRegId = $this->registrations->insert([
             'user_id' => $userId,
             'wave_id' => $waveId,
-            'full_name' => $this->session->get('auth.user_name') ?: '',
-            'birth_place' => '',
-            'birth_date' => '1970-01-01',
-            'gender' => 'Laki-laki',
-            'religion' => '',
+            'full_name' => $latest ? $latest['full_name'] : ($this->session->get('auth.user_name') ?: ''),
+            'nik' => $latest ? $latest['nik'] : null,
+            'nisn' => $latest ? $latest['nisn'] : null,
+            'birth_place' => $latest ? $latest['birth_place'] : '',
+            'birth_date' => $latest ? $latest['birth_date'] : '1970-01-01',
+            'gender' => $latest ? $latest['gender'] : 'Laki-laki',
+            'religion' => $latest ? $latest['religion'] : '',
+            'email' => $latest ? $latest['email'] : null,
+            'phone' => $latest ? $latest['phone'] : null,
+            'mother_name' => $latest ? $latest['mother_name'] : null,
+            'info_source' => $latest ? $latest['info_source'] : null,
+            'photo_path' => $latest ? $latest['photo_path'] : null,
             'status' => 'Draft',
             'current_step' => 1
         ]);
+
+        if ($latest) {
+            $stmt = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $latest['id']]);
+            $addr = $stmt->fetch();
+            if ($addr) {
+                unset($addr['id']);
+                $addr['registration_id'] = $newRegId;
+                $cols = implode(', ', array_keys($addr));
+                $vals = ':' . implode(', :', array_keys($addr));
+                $db->prepare("INSERT INTO registration_addresses ($cols) VALUES ($vals)")->execute($addr);
+            }
+
+            $stmt = $db->prepare("SELECT * FROM registration_educations WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $latest['id']]);
+            $edu = $stmt->fetch();
+            if ($edu) {
+                unset($edu['id']);
+                $edu['registration_id'] = $newRegId;
+                $cols = implode(', ', array_keys($edu));
+                $vals = ':' . implode(', :', array_keys($edu));
+                $db->prepare("INSERT INTO registration_educations ($cols) VALUES ($vals)")->execute($edu);
+            }
+
+            $stmt = $db->prepare("SELECT * FROM registration_parents WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $latest['id']]);
+            $par = $stmt->fetch();
+            if ($par) {
+                unset($par['id']);
+                $par['registration_id'] = $newRegId;
+                $cols = implode(', ', array_keys($par));
+                $vals = ':' . implode(', :', array_keys($par));
+                $db->prepare("INSERT INTO registration_parents ($cols) VALUES ($vals)")->execute($par);
+            }
+
+            $stmt = $db->prepare("SELECT * FROM registration_special_needs WHERE registration_id = :id");
+            $stmt->execute(['id' => $latest['id']]);
+            $needs = $stmt->fetchAll();
+            foreach ($needs as $n) {
+                unset($n['id']);
+                $n['registration_id'] = $newRegId;
+                $cols = implode(', ', array_keys($n));
+                $vals = ':' . implode(', :', array_keys($n));
+                $db->prepare("INSERT INTO registration_special_needs ($cols) VALUES ($vals)")->execute($n);
+            }
+        }
 
         return $response->redirect('/pendaftaran')->hard();
     }
@@ -400,5 +503,92 @@ class DashboardController
             $stmt->execute(['user_id' => $userId]);
         }
         return $response->redirect('/dashboard');
+    }
+
+    public function showHistory(Request $request, Response $response): View | RedirectResponse
+    {
+        if (!$this->session->get('is_logged_in')) {
+            return $response->redirect('/login');
+        }
+
+        $userId = $this->session->get('auth.user_id');
+        $db = $this->registrations->getDb();
+
+        $stmt = $db->prepare("SELECT id FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
+        $stmt->execute(['user_id' => $userId]);
+        $firstReg = $stmt->fetch();
+        $isAccessAllowed = false;
+        if ($firstReg) {
+            $stmt = $db->prepare("SELECT count(*) FROM selection_results WHERE registration_id = :id AND is_published = 1 AND status IN ('Lulus', 'Tidak Lulus', 'Cadangan')");
+            $stmt->execute(['id' => $firstReg['id']]);
+            if ($stmt->fetchColumn() > 0) {
+                $isAccessAllowed = true;
+            }
+        }
+
+        if (!$isAccessAllowed) {
+            return $response->redirect('/dashboard?error=' . urlencode('Halaman riwayat belum dapat diakses.'));
+        }
+
+        $allRegs = $this->registrations->findAllByUserId($userId);
+        $allFinalized = true;
+        foreach ($allRegs as $r) {
+            if ($r['status'] === 'Draft') {
+                $allFinalized = false;
+                break;
+            }
+            $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id AND is_published = 1 LIMIT 1");
+            $stmt->execute(['id' => $r['id']]);
+            $sel = $stmt->fetch();
+            if (!$sel || !in_array($sel['status'], ['Lulus', 'Tidak Lulus', 'Cadangan'])) {
+                $allFinalized = false;
+                break;
+            }
+        }
+
+        $stmt = $db->prepare("SELECT * FROM waves WHERE is_active = 1");
+        $stmt->execute();
+        $activeWaves = $stmt->fetchAll() ?: [];
+        $registeredWaveIds = array_filter(array_column($allRegs, 'wave_id'));
+        $activeWaves = array_values(array_filter($activeWaves, function($w) use ($registeredWaveIds) {
+            return !in_array((int)$w['id'], array_map('intval', $registeredWaveIds));
+        }));
+
+        $history = [];
+        foreach ($allRegs as $hr) {
+            $stmt = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+            $stmt->execute(['id' => $hr['wave_id']]);
+            $w = $stmt->fetch();
+
+            $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $hr['id']]);
+            $sel = $stmt->fetch();
+
+            $passedProdi = '-';
+            if ($sel && $sel['passed_program_id']) {
+                $stmt = $db->prepare("SELECT * FROM study_programs WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => $sel['passed_program_id']]);
+                $prodi = $stmt->fetch();
+                if ($prodi) {
+                    $passedProdi = $prodi['name'];
+                }
+            }
+
+            $history[] = [
+                'registration' => $hr,
+                'wave' => $w,
+                'selection' => $sel,
+                'passed_program_name' => $passedProdi
+            ];
+        }
+
+        return $response->renderPage([
+            'history' => $history,
+            'all_finalized' => $allFinalized,
+            'active_waves' => $activeWaves
+        ], [
+            'path' => '/dashboard/history',
+            'meta' => ['title' => 'Riwayat Pendaftaran | ' . env('APP_NAME')]
+        ]);
     }
 }

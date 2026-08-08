@@ -109,7 +109,14 @@ class AnnouncementController
             $registration = $this->registrations->find($regId);
         } else {
             $userId = $this->session->get('auth.user_id');
-            $registration = $this->registrations->findByUserId($userId);
+            if ($regId) {
+                $registration = $this->registrations->find($regId);
+                if ($registration && (int)$registration['user_id'] !== (int)$userId) {
+                    $registration = null;
+                }
+            } else {
+                $registration = $this->registrations->findByUserId($userId);
+            }
         }
 
         if (!$registration) {

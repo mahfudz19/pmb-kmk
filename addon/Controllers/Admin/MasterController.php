@@ -59,9 +59,7 @@ class MasterController
                 $end = $request->input('end_date');
                 $is_active = $request->input('is_active') ? 1 : 0;
                 if (!$name || !$start || !$end) return $response->redirect('/admin/master?tab=wave&error=Seluruh+kolom+harus+diisi');
-                if ($is_active) {
-                    $this->waves->getDb()->query("UPDATE waves SET is_active = 0");
-                }
+
                 $this->waves->insert([
                     'name' => $name, 
                     'academic_year' => $academic_year,
@@ -147,9 +145,7 @@ class MasterController
                 $start = $request->input('start_date');
                 $end = $request->input('end_date');
                 $is_active = $request->input('is_active') ? 1 : 0;
-                if ($is_active) {
-                    $this->waves->getDb()->query("UPDATE waves SET is_active = 0");
-                }
+
                 $this->waves->updateById($id, [
                     'name' => $name, 
                     'academic_year' => $academic_year,

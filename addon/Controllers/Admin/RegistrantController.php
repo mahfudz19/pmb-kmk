@@ -1095,7 +1095,15 @@ class RegistrantController
             return $response->redirect('/login');
         }
         $userId = $this->session->get('auth.user_id');
-        $registration = $this->registrations->findByUserId($userId);
+        $regId = $request->input('registration_id') !== '' ? (int)$request->input('registration_id') : null;
+        if ($regId) {
+            $registration = $this->registrations->find($regId);
+            if ($registration && (int)$registration['user_id'] !== (int)$userId) {
+                $registration = null;
+            }
+        } else {
+            $registration = $this->registrations->findByUserId($userId);
+        }
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');
         }
@@ -1109,7 +1117,15 @@ class RegistrantController
             return $response->redirect('/login');
         }
         $userId = $this->session->get('auth.user_id');
-        $registration = $this->registrations->findByUserId($userId);
+        $regId = $request->input('registration_id') !== '' ? (int)$request->input('registration_id') : null;
+        if ($regId) {
+            $registration = $this->registrations->find($regId);
+            if ($registration && (int)$registration['user_id'] !== (int)$userId) {
+                $registration = null;
+            }
+        } else {
+            $registration = $this->registrations->findByUserId($userId);
+        }
         if (!$registration) {
             return $response->redirect('/dashboard?error=Pendaftaran+tidak+ditemukan');
         }

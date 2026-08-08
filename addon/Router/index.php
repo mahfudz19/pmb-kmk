@@ -47,6 +47,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     $router->get('/dashboard', [DashboardController::class, 'index']);
     $router->post('/dashboard/simulate-state', [DashboardController::class, 'simulateState']);
     $router->post('/dashboard/init-registration', [DashboardController::class, 'initRegistration']);
+    $router->get('/dashboard/history', [DashboardController::class, 'showHistory']);
     
     // Logout
     $router->post('/logout', [AuthController::class, 'logout']);

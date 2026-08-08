@@ -151,6 +151,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
                   str_contains($currentPath, '/password/reset');
     $isDashboard = str_ends_with($currentPath, '/dashboard');
     $isProfile = str_ends_with($currentPath, '/profile');
+    $isHistory = str_ends_with($currentPath, '/dashboard/history');
     $isUsers = str_ends_with($currentPath, '/admin/users');
     $isMaster = str_ends_with($currentPath, '/admin/master');
     $isPayments = str_ends_with($currentPath, '/admin/payments');
@@ -158,6 +159,26 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
     $isSelection = str_contains($currentPath, '/admin/selection');
     $isAnnouncements = str_contains($currentPath, '/admin/announcements');
     $activeTab = $_GET['tab'] ?? 'academic-year';
+
+    $showHistoryMenu = false;
+    if ($isLoggedIn && $_SESSION['auth.user_role'] === 'user') {
+        $userId = $_SESSION['auth.user_id'] ?? null;
+        if ($userId) {
+            $container = App\Core\Foundation\Application::getInstance()->getContainer();
+            $registrationsModel = $container->resolve(Addon\Models\RegistrationModel::class);
+            $db = $registrationsModel->getDb();
+            $stmt = $db->prepare("SELECT id FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
+            $stmt->execute(['user_id' => $userId]);
+            $firstReg = $stmt->fetch();
+            if ($firstReg) {
+                $stmt = $db->prepare("SELECT count(*) FROM selection_results WHERE registration_id = :id AND is_published = 1 AND status IN ('Lulus', 'Tidak Lulus', 'Cadangan')");
+                $stmt->execute(['id' => $firstReg['id']]);
+                if ($stmt->fetchColumn() > 0) {
+                    $showHistoryMenu = true;
+                }
+            }
+        }
+    }
   ?>
 
   <!-- Header -->
@@ -179,6 +200,9 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
         <nav class="topbar-nav text-xs font-bold text-slate-600">
           <a data-spa href="/dashboard" class="hover:text-indigo-650 transition-colors <?= $isDashboard ? 'text-indigo-650 font-extrabold' : '' ?>">Dashboard</a>
           <a data-spa href="/profile" class="hover:text-indigo-650 transition-colors <?= $isProfile ? 'text-indigo-650 font-extrabold' : '' ?>">Profil Saya</a>
+          <?php if ($showHistoryMenu): ?>
+            <a data-spa href="/dashboard/history" class="hover:text-indigo-650 transition-colors <?= $isHistory ? 'text-indigo-650 font-extrabold' : '' ?>">Riwayat Pendaftaran</a>
+          <?php endif; ?>
         </nav>
       <?php endif; ?>
     </div>
@@ -212,6 +236,11 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
             <a data-spa href="/profile" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
               <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> Profil Saya
             </a>
+            <?php if ($showHistoryMenu): ?>
+              <a data-spa href="/dashboard/history" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
+                <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Riwayat Pendaftaran
+              </a>
+            <?php endif; ?>
             <div class="border-t border-slate-100 my-1"></div>
             <form id="logout-form" action="<?= getBaseUrl('/logout') ?>" method="POST" onsubmit="openLogoutModal(event)">
               <button type="submit" onclick="closeUserDropdown()" class="w-full text-left flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 text-red-600 font-bold transition-colors cursor-pointer border-none bg-transparent">
