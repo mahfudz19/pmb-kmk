@@ -195,10 +195,16 @@
           <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Lanjutkan Pengisian Formulir</h2>
           <p class="text-sm text-slate-500 leading-relaxed">Anda telah memilih **<?= htmlspecialchars($wave['name'] ?? 'Gelombang Pendaftaran') ?>**. Silakan selesaikan pengisian formulir pendaftaran dan kelengkapan profil Anda.</p>
         </div>
-        <div class="pt-2">
+        <div class="pt-2 flex items-center justify-center gap-3">
           <a data-spa href="/pendaftaran" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl shadow-md text-sm font-semibold transition-all">
             Lanjutkan Pengisian Formulir
           </a>
+          <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+            <?= csrf_field() ?>
+            <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl shadow-sm text-sm border border-red-200 transition-all cursor-pointer">
+              ❌ Batalkan Pendaftaran
+            </button>
+          </form>
         </div>
       </div>
 
@@ -212,9 +218,17 @@
               <p class="text-sm text-slate-500">Silakan lakukan transfer pembayaran biaya formulir awal sebelum melanjutkan pengunggahan berkas.</p>
             </div>
           </div>
-          <a data-spa href="/pendaftaran" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100 shrink-0">
-            ✏️ Ubah Data Formulir
-          </a>
+          <div class="flex items-center gap-2 shrink-0">
+            <a data-spa href="/pendaftaran" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100">
+              ✏️ Ubah Data Formulir
+            </a>
+            <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+              <?= csrf_field() ?>
+              <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-red-100 cursor-pointer">
+                ❌ Batal
+              </button>
+            </form>
+          </div>
         </div>
 
         <?php if ($payment && $payment['status'] === 'Rejected'): ?>
@@ -317,9 +331,17 @@
           <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Bukti Pembayaran Sedang Diverifikasi</h2>
           <p class="text-sm text-slate-500 leading-relaxed">Bukti transfer pembayaran biaya formulir Anda telah kami terima dan sedang diproses oleh Tim Keuangan kami. Proses verifikasi biasanya memakan waktu maksimal 24 jam kerja.</p>
         </div>
-        <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs px-4 py-2 rounded-full font-bold">
-          <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
-          Menunggu Konfirmasi Keuangan
+        <div class="flex flex-col items-center gap-3">
+          <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs px-4 py-2 rounded-full font-bold">
+            <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
+            Menunggu Konfirmasi Keuangan
+          </div>
+          <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+            <?= csrf_field() ?>
+            <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs border border-red-100 transition-all cursor-pointer">
+              ❌ Batalkan Pendaftaran
+            </button>
+          </form>
         </div>
       </div>
 
@@ -567,12 +589,6 @@
             <p class="mt-1 italic text-red-700">"<?= htmlspecialchars($selection_result['notes']) ?>"</p>
           </div>
         <?php endif; ?>
-
-        <div class="pt-2">
-          <a href="#" class="inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-full shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-all">
-            Hubungi Panitia Seleksi
-          </a>
-        </div>
       </div>
     <?php endif; ?>
   </div>
@@ -628,5 +644,30 @@
       return false;
     }
     return true;
+  }
+
+  function confirmCancelRegistration(event) {
+    event.preventDefault();
+    const form = event.target;
+    Swal.fire({
+      title: 'Batalkan Pendaftaran?',
+      text: 'Apakah Anda yakin ingin membatalkan pendaftaran gelombang ini? Semua data pendaftaran ini akan dihapus secara permanen. PENTING: Biaya pendaftaran yang telah ditransfer tidak dapat dikembalikan (non-refundable).',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Ya, Batalkan!',
+      cancelButtonText: 'Kembali',
+      customClass: {
+        popup: 'rounded-3xl',
+        confirmButton: 'rounded-xl text-xs font-bold px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white',
+        cancelButton: 'rounded-xl text-xs font-bold px-6 py-2.5 bg-slate-500 hover:bg-slate-600 text-white'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
+      }
+    });
+    return false;
   }
 </script>

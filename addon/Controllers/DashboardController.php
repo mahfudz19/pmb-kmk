@@ -404,6 +404,35 @@ class DashboardController
             return $response->redirect('/dashboard?error=' . urlencode('Anda sudah terdaftar di gelombang ini.'));
         }
 
+        $allRegs = $this->registrations->findAllByUserId($userId);
+        $allFinalized = true;
+        foreach ($allRegs as $r) {
+            if ($r['status'] === 'Draft') {
+                $allFinalized = false;
+                break;
+            }
+            $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id AND is_published = 1 LIMIT 1");
+            $stmt->execute(['id' => $r['id']]);
+            $sel = $stmt->fetch();
+            if (!$sel || !in_array($sel['status'], ['Lulus', 'Tidak Lulus', 'Cadangan'])) {
+                $allFinalized = false;
+                break;
+            }
+            if (in_array($sel['status'], ['Lulus', 'Cadangan'])) {
+                $stmt = $db->prepare("SELECT * FROM re_registrations WHERE registration_id = :id LIMIT 1");
+                $stmt->execute(['id' => $r['id']]);
+                $reReg = $stmt->fetch();
+                if (!$reReg || !in_array($reReg['status'], ['Approved', 'Rejected'])) {
+                    $allFinalized = false;
+                    break;
+                }
+            }
+        }
+
+        if (!$allFinalized) {
+            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran gelombang sebelumnya belum selesai diproses atau belum diverifikasi daftar ulang.'));
+        }
+
         $latest = $this->registrations->findByUserId($userId);
         if ($latest && $latest['status'] === 'Draft') {
             $this->registrations->updateById($latest['id'], [
@@ -485,6 +514,33 @@ class DashboardController
         return $response->redirect('/pendaftaran')->hard();
     }
 
+    public function cancelRegistration(Request $request, Response $response): RedirectResponse
+    {
+        if (!$this->session->get('is_logged_in')) {
+            return $response->redirect('/login');
+        }
+
+        $userId = $this->session->get('auth.user_id');
+        $registration = $this->registrations->findByUserId($userId);
+
+        if (!$registration) {
+            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak ditemukan.'));
+        }
+
+        $payment = $this->payments->findByRegistrationId($registration['id']);
+        if ($payment && $payment['status'] === 'Approved') {
+            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak dapat dibatalkan karena pembayaran biaya formulir sudah diverifikasi oleh admin.'));
+        }
+
+        if (in_array($registration['status'], ['Verified', 'Released'])) {
+            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak dapat dibatalkan karena berkas pendaftaran Anda sudah diproses.'));
+        }
+
+        $this->registrations->deleteById($registration['id']);
+
+        return $response->redirect('/dashboard?success=' . urlencode('Pendaftaran Anda berhasil dibatalkan.'));
+    }
+
     public function simulateState(Request $request, Response $response): RedirectResponse
     {
         $state = $request->input('state');
@@ -543,6 +599,15 @@ class DashboardController
             if (!$sel || !in_array($sel['status'], ['Lulus', 'Tidak Lulus', 'Cadangan'])) {
                 $allFinalized = false;
                 break;
+            }
+            if (in_array($sel['status'], ['Lulus', 'Cadangan'])) {
+                $stmt = $db->prepare("SELECT * FROM re_registrations WHERE registration_id = :id LIMIT 1");
+                $stmt->execute(['id' => $r['id']]);
+                $reReg = $stmt->fetch();
+                if (!$reReg || !in_array($reReg['status'], ['Approved', 'Rejected'])) {
+                    $allFinalized = false;
+                    break;
+                }
             }
         }
 
