@@ -24,7 +24,7 @@
   </div>
 <?php endif; ?>
 
-<form data-spa method="POST" action="/login" class="space-y-5">
+<form data-spa method="POST" action="<?= getBaseUrl('/login') ?>" class="space-y-5">
   <div>
     <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
     <div class="mt-1">
@@ -42,7 +42,7 @@
   <div>
     <div class="flex justify-between items-center">
       <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
-      <a data-spa href="/password/forgot" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Lupa password?</a>
+      <a data-spa tabindex="-1" href="/password/forgot" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Lupa password?</a>
     </div>
     <div class="relative mt-1">
       <input
@@ -54,9 +54,9 @@
         required>
       <button
         type="button"
+        tabindex="-1"
         onclick="togglePasswordVisibility('password', this)"
-        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
-      >
+        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none">
         <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -94,7 +94,7 @@
 <div class="mt-6 border-t border-slate-200 pt-6 text-center">
   <p class="text-sm text-slate-500">
     Belum memiliki akun?
-    <a href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">Daftar Sekarang</a>
+    <a data-spa href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">Daftar Sekarang</a>
   </p>
 </div>
 

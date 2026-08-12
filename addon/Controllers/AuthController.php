@@ -141,7 +141,6 @@ class AuthController
         }
 
         $this->session->set('is_logged_in', true);
-        log_activity('LOGIN_SUCCESS', "Pengguna {$user['email']} berhasil masuk ke sistem.");
     }
 
     /**
@@ -150,7 +149,6 @@ class AuthController
     private function logoutSession(): void
     {
         $email = $this->session->get('auth.user_email') ?? 'User';
-        log_activity('LOGOUT', "Pengguna {$email} keluar dari sistem.");
         $this->session->destroy();
     }
 
@@ -170,48 +168,48 @@ class AuthController
     /**
      * Process login (Email/Password)
      */
-    public function login(Request $request, Response $response): View | RedirectResponse
+    public function login(Request $request, Response $response): RedirectResponse
     {
-        $email = $request->input('email');
-        $password = $request->input('password');
+        try {
+            $email = $request->input('email');
+            $password = $request->input('password');
 
-        if (!$email || !$password) {
-            return $response->redirect('/login?error=Email+dan+password+harus+diisi');
+            if (!$email || !$password) {
+                return $response->redirect('/login?error=Email+dan+password+harus+diisi');
+            }
+
+            // Find user by email
+            $user = $this->users->findByEmail($email);
+
+            if (!$user) {
+                return $response->redirect('/login?error=Email+tidak+ditemukan');
+            }
+
+            // Verify password
+            if (!$this->verifyPassword($password, $user['password'])) {
+                return $response->redirect('/login?error=Password+salah');
+            }
+
+            // Check if user is active
+            if (!$user['is_active']) {
+                // User not active - resend OTP and redirect to verify
+                $this->sendOtpToUser($user['id'], $user['email']);
+                return $response->redirect('/verify-otp?email=' . urlencode($user['email']) . '&info=Akun+belum+terverifikasi.+Silakan+verifikasi+email+Anda');
+            }
+
+            // Update last login
+            $this->users->updateLastLogin($user['id']);
+
+            // Login successful - save session
+            $this->loginSession($user);
+
+            // Send login notification email
+            // $this->sendLoginNotification($user);
+
+            return $response->redirect('/dashboard')->hard();
+        } catch (\Throwable $th) {
+            return $response->redirect('/login?error=Something+went+wrong');
         }
-
-        // Find user by email
-        $user = $this->users->findByEmail($email);
-
-        if (!$user) {
-            log_activity('LOGIN_FAILED', "Percobaan masuk gagal: Email {$email} tidak ditemukan.");
-            return $response->redirect('/login?error=Email+tidak+ditemukan');
-        }
-
-
-
-        // Verify password
-        if (!$this->verifyPassword($password, $user['password'])) {
-            log_activity('LOGIN_FAILED', "Percobaan masuk gagal: Password salah untuk pengguna {$email}.");
-            return $response->redirect('/login?error=Password+salah');
-        }
-
-        // Check if user is active
-        if (!$user['is_active']) {
-            // User not active - resend OTP and redirect to verify
-            $this->sendOtpToUser($user['id'], $user['email']);
-            return $response->redirect('/verify-otp?email=' . urlencode($user['email']) . '&info=Akun+belum+terverifikasi.+Silakan+verifikasi+email+Anda');
-        }
-
-        // Update last login
-        $this->users->updateLastLogin($user['id']);
-
-        // Login successful - save session
-        $this->loginSession($user);
-
-        // Send login notification email
-        $this->sendLoginNotification($user);
-
-        return $response->redirect('/dashboard')->hard();
     }
 
     /**
@@ -681,7 +679,7 @@ class AuthController
         $penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], fn($item) => !empty($item['nm_penghasilan'])));
         usort($penghasilanList, fn($a, $b) => ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0)));
         $pekerjaanList = $jsonData['pekerjaan'][0] ?? [];
-        usort($pekerjaanList, function($a, $b) {
+        usort($pekerjaanList, function ($a, $b) {
             $nameA = $a['nm_pekerjaan'] ?? '';
             $nameB = $b['nm_pekerjaan'] ?? '';
             if ($nameA === 'Tidak bekerja') return -1;
@@ -895,8 +893,10 @@ class AuthController
             $isParentFilled = !empty($fatherName) || !empty($motherName);
 
             if ($isParentFilled) {
-                if (!$fatherName || !$fatherNik || !$fatherBirthDate || !$fatherEducation || !$fatherOccupation || !$fatherIncome ||
-                    !$motherName || !$motherNik || !$motherBirthDate || !$motherEducation || !$motherOccupation || !$motherIncome) {
+                if (
+                    !$fatherName || !$fatherNik || !$fatherBirthDate || !$fatherEducation || !$fatherOccupation || !$fatherIncome ||
+                    !$motherName || !$motherNik || !$motherBirthDate || !$motherEducation || !$motherOccupation || !$motherIncome
+                ) {
                     return $response->redirect('/profile?tab=ortu&error=Harap+lengkapi+semua+kolom+data+Orang+Tua+(Ayah+dan+Ibu)');
                 }
             } else {

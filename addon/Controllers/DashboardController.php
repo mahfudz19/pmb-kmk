@@ -39,7 +39,7 @@ class DashboardController
 
         if ($role === 'admin' || has_any_permission(['manage_users', 'verify_payment', 'verify_document', 'manage_selection', 'manage_settings'])) {
             $db = $this->registrations->getDb();
-            
+
             $stmt = $db->prepare("SELECT COUNT(*) as total FROM registrations");
             $stmt->execute();
             $totalApplicants = $stmt->fetch()['total'] ?? 0;
@@ -76,14 +76,19 @@ class DashboardController
             $trendData = [];
             $trendLabels = [];
             $daysIndo = [
-                'Mon' => 'Senin', 'Tue' => 'Selasa', 'Wed' => 'Rabu', 
-                'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu', 'Sun' => 'Minggu'
+                'Mon' => 'Senin',
+                'Tue' => 'Selasa',
+                'Wed' => 'Rabu',
+                'Thu' => 'Kamis',
+                'Fri' => 'Jumat',
+                'Sat' => 'Sabtu',
+                'Sun' => 'Minggu'
             ];
             for ($i = 6; $i >= 0; $i--) {
                 $date = date('Y-m-d', strtotime("-$i days"));
                 $dayName = date('D', strtotime($date));
                 $trendLabels[] = $daysIndo[$dayName] ?? $dayName;
-                
+
                 $count = 0;
                 foreach ($rawTrend as $t) {
                     if ($t['date'] === $date) {
@@ -104,7 +109,7 @@ class DashboardController
             ");
             $stmt->execute();
             $rawPrograms = $stmt->fetchAll();
-            
+
             $programLabels = [];
             $programData = [];
             foreach ($rawPrograms as $p) {
@@ -145,7 +150,7 @@ class DashboardController
             $stmt = $db->prepare("SELECT wave_id FROM registrations WHERE user_id = :user_id AND wave_id IS NOT NULL");
             $stmt->execute(['user_id' => $userId]);
             $registeredWaveIds = $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-            $activeWaves = array_values(array_filter($activeWaves, function($w) use ($registeredWaveIds) {
+            $activeWaves = array_values(array_filter($activeWaves, function ($w) use ($registeredWaveIds) {
                 return !in_array((int)$w['id'], array_map('intval', $registeredWaveIds));
             }));
         }
@@ -176,69 +181,69 @@ class DashboardController
             $stmt->execute(['id' => $registration['id']]);
             $regProgram = $stmt->fetch() ?: null;
 
-             $waveStudyPrograms = [];
-             if ($regProgram && $registration['wave_id']) {
-                 $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
-                 $stmt->execute([
-                     'wave_id' => $registration['wave_id'],
-                     'prodi_id' => $regProgram['program1_id']
-                 ]);
-                 $waveStudyProgram = $stmt->fetch() ?: null;
+            $waveStudyPrograms = [];
+            if ($regProgram && $registration['wave_id']) {
+                $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = :wave_id AND study_program_id = :prodi_id LIMIT 1");
+                $stmt->execute([
+                    'wave_id' => $registration['wave_id'],
+                    'prodi_id' => $regProgram['program1_id']
+                ]);
+                $waveStudyProgram = $stmt->fetch() ?: null;
 
-                 $prodiIds = [];
-                 if (!empty($regProgram['program1_id'])) $prodiIds[] = (int)$regProgram['program1_id'];
-                 if (!empty($regProgram['program2_id'])) $prodiIds[] = (int)$regProgram['program2_id'];
-                 if (!empty($regProgram['program3_id'])) $prodiIds[] = (int)$regProgram['program3_id'];
-                 $prodiIds = array_unique(array_filter($prodiIds));
+                $prodiIds = [];
+                if (!empty($regProgram['program1_id'])) $prodiIds[] = (int)$regProgram['program1_id'];
+                if (!empty($regProgram['program2_id'])) $prodiIds[] = (int)$regProgram['program2_id'];
+                if (!empty($regProgram['program3_id'])) $prodiIds[] = (int)$regProgram['program3_id'];
+                $prodiIds = array_unique(array_filter($prodiIds));
 
-                 if (!empty($prodiIds)) {
-                     $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
-                     $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
-                     $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
-                     $waveStudyPrograms = $stmt->fetchAll() ?: [];
-                 }
+                if (!empty($prodiIds)) {
+                    $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
+                    $stmt = $db->prepare("SELECT * FROM wave_study_programs WHERE wave_id = ? AND study_program_id IN ($placeholders)");
+                    $stmt->execute(array_merge([$registration['wave_id']], $prodiIds));
+                    $waveStudyPrograms = $stmt->fetchAll() ?: [];
+                }
 
-                  $prodiNamesMap = [];
-                  if (!empty($prodiIds)) {
-                      $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
-                      $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
-                      $stmtProdis->execute($prodiIds);
-                      foreach ($stmtProdis->fetchAll() as $p) {
-                          $prodiNamesMap[$p['id']] = $p['name'];
-                      }
-                  }
+                $prodiNamesMap = [];
+                if (!empty($prodiIds)) {
+                    $placeholders = implode(',', array_fill(0, count($prodiIds), '?'));
+                    $stmtProdis = $db->prepare("SELECT id, name FROM study_programs WHERE id IN ($placeholders)");
+                    $stmtProdis->execute($prodiIds);
+                    foreach ($stmtProdis->fetchAll() as $p) {
+                        $prodiNamesMap[$p['id']] = $p['name'];
+                    }
+                }
 
-                  foreach ($waveStudyPrograms as &$wsp) {
-                      $wsp['study_program_name'] = $prodiNamesMap[$wsp['study_program_id']] ?? '';
-                  }
-                  unset($wsp);
+                foreach ($waveStudyPrograms as &$wsp) {
+                    $wsp['study_program_name'] = $prodiNamesMap[$wsp['study_program_id']] ?? '';
+                }
+                unset($wsp);
 
-                   $uniqueDocsMap = [];
-                   foreach ($waveStudyPrograms as $wsp) {
-                       $prodiId = (int)$wsp['study_program_id'];
-                       $prodiName = $prodiNamesMap[$prodiId] ?? '';
-                       $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
-                       foreach ($reqDocs as $rd) {
-                           if (isset($rd['document_type_id'])) {
-                               $dtId = (int)$rd['document_type_id'];
-                               if (!isset($uniqueDocsMap[$dtId])) {
-                                   $uniqueDocsMap[$dtId] = [
-                                       'document_type_id' => $dtId,
-                                       'name' => preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']),
-                                       'prodi_names' => [$prodiName],
-                                       'descriptions' => [$prodiName => $rd['description'] ?? '']
-                                   ];
-                               } else {
-                                   if (!in_array($prodiName, $uniqueDocsMap[$dtId]['prodi_names'])) {
-                                       $uniqueDocsMap[$dtId]['prodi_names'][] = $prodiName;
-                                   }
-                                   $uniqueDocsMap[$dtId]['descriptions'][$prodiName] = $rd['description'] ?? '';
-                               }
-                           }
-                       }
-                   }
-                   $requiredDocs = array_values($uniqueDocsMap);
-              }
+                $uniqueDocsMap = [];
+                foreach ($waveStudyPrograms as $wsp) {
+                    $prodiId = (int)$wsp['study_program_id'];
+                    $prodiName = $prodiNamesMap[$prodiId] ?? '';
+                    $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
+                    foreach ($reqDocs as $rd) {
+                        if (isset($rd['document_type_id'])) {
+                            $dtId = (int)$rd['document_type_id'];
+                            if (!isset($uniqueDocsMap[$dtId])) {
+                                $uniqueDocsMap[$dtId] = [
+                                    'document_type_id' => $dtId,
+                                    'name' => preg_replace('/ \(Prodi: .*\)$/', '', $rd['name']),
+                                    'prodi_names' => [$prodiName],
+                                    'descriptions' => [$prodiName => $rd['description'] ?? '']
+                                ];
+                            } else {
+                                if (!in_array($prodiName, $uniqueDocsMap[$dtId]['prodi_names'])) {
+                                    $uniqueDocsMap[$dtId]['prodi_names'][] = $prodiName;
+                                }
+                                $uniqueDocsMap[$dtId]['descriptions'][$prodiName] = $rd['description'] ?? '';
+                            }
+                        }
+                    }
+                }
+                $requiredDocs = array_values($uniqueDocsMap);
+            }
 
             $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id ORDER BY stage_index ASC");
             $stmt->execute(['reg_id' => $registration['id']]);
@@ -615,7 +620,7 @@ class DashboardController
         $stmt->execute();
         $activeWaves = $stmt->fetchAll() ?: [];
         $registeredWaveIds = array_filter(array_column($allRegs, 'wave_id'));
-        $activeWaves = array_values(array_filter($activeWaves, function($w) use ($registeredWaveIds) {
+        $activeWaves = array_values(array_filter($activeWaves, function ($w) use ($registeredWaveIds) {
             return !in_array((int)$w['id'], array_map('intval', $registeredWaveIds));
         }));
 
