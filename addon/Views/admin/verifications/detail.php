@@ -171,7 +171,7 @@
 
                       <div class="flex gap-1.5">
                         <?php if ($uploaded['status'] !== 'Approved'): ?>
-                          <form action="/admin/verifications/verify-document" method="POST" onsubmit="return confirmAction(event, 'Setujui Dokumen', 'Apakah Anda yakin ingin menyetujui dokumen ini?')">
+                          <form action="<?= getBaseUrl('/admin/verifications/verify-document') ?>" method="POST" onsubmit="return confirmAction(event, 'Setujui Dokumen', 'Apakah Anda yakin ingin menyetujui dokumen ini?')">
                             <input type="hidden" name="document_id" value="<?= $uploaded['id'] ?>">
                             <input type="hidden" name="status" value="Approved">
                             <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm">
@@ -226,7 +226,7 @@
       <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
     </div>
 
-    <form action="/admin/verifications/verify-document" method="POST" class="space-y-4 text-xs">
+    <form action="<?= getBaseUrl('/admin/verifications/verify-document') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="reject-document-id" name="document_id">
       <input type="hidden" name="status" value="Rejected">
 

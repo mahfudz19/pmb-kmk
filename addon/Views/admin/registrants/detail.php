@@ -351,7 +351,7 @@
                   </div>
 
                   <!-- Update Status Form -->
-                  <form action="/admin/registrants/exam-stage/save" method="POST" class="flex gap-2 pt-1.5 border-t border-slate-200/50">
+                  <form action="<?= getBaseUrl('/admin/registrants/exam-stage/save') ?>" method="POST" class="flex gap-2 pt-1.5 border-t border-slate-200/50">
                     <input type="hidden" name="registration_id" value="<?= htmlspecialchars($registration['id']) ?>">
                     <input type="hidden" name="stage_number" value="<?= htmlspecialchars($stg['stage_number']) ?>">
                     <select name="status" class="flex-1 px-2.5 py-1 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">

@@ -72,7 +72,7 @@
       <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none text-2xl font-semibold">&times;</button>
     </div>
 
-    <form id="edit-form" method="POST" action="/admin/users/update" class="space-y-6">
+    <form id="edit-form" method="POST" action="<?= getBaseUrl('/admin/users/update') ?>" class="space-y-6">
       <input type="hidden" name="user_id" id="edit-user-id">
 
       <div class="space-y-1">

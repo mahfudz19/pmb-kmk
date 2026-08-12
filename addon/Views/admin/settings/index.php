@@ -29,7 +29,7 @@
   </div>
 
   <div id="tab-general" class="tab-content space-y-6">
-    <form action="/admin/settings/general" method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Informasi Umum Institusi</h3>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,7 +88,7 @@
 
 
   <div id="tab-format" class="tab-content space-y-6 hidden">
-    <form action="/admin/settings/general" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Format Custom Nomor Pendaftaran</h3>
       
       <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-850 space-y-2">
@@ -127,7 +127,7 @@
   </div>
 
   <div id="tab-smtp" class="tab-content space-y-6 hidden">
-    <form action="/admin/settings/general" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Konfigurasi SMTP Mail Server</h3>
       
       <input type="hidden" name="campus_name" value="<?= htmlspecialchars($settings['campus_name'] ?? '') ?>">

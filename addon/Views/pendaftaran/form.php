@@ -80,7 +80,7 @@ foreach ($waves as $w) {
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden p-6 md:p-8">
-      <form id="wizard-form" method="POST" action="/pendaftaran/submit" enctype="multipart/form-data" class="space-y-6">
+      <form id="wizard-form" method="POST" action="<?= getBaseUrl('/pendaftaran/submit') ?>" enctype="multipart/form-data" class="space-y-6">
         
         <div id="step-content-1" class="step-pane space-y-6">
           <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">

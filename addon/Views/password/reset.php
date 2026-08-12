@@ -9,7 +9,7 @@
   </div>
 <?php endif; ?>
 
-<form data-spa method="POST" action="/password/reset" class="space-y-4">
+<form data-spa method="POST" action="<?= getBaseUrl('/password/reset') ?>" class="space-y-4">
   <?php if (isset($token)): ?>
     <input type="hidden" name="token" value="<?= $token ?>">
   <?php endif; ?>

@@ -15,11 +15,11 @@
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi Calon Mahasiswa</h3>
       <div class="flex gap-2">
-        <form action="/admin/selection/publish-all" method="POST" onsubmit="return confirmAction(event, 'Publish Semua', 'Apakah Anda yakin ingin menerbitkan semua hasil kelulusan?')">
+        <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Publish Semua', 'Apakah Anda yakin ingin menerbitkan semua hasil kelulusan?')">
           <input type="hidden" name="is_published" value="1">
           <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">📢 Publish Semua</button>
         </form>
-        <form action="/admin/selection/publish-all" method="POST" onsubmit="return confirmAction(event, 'Unpublish Semua', 'Apakah Anda yakin ingin menarik kembali semua pengumuman kelulusan?')">
+        <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Unpublish Semua', 'Apakah Anda yakin ingin menarik kembali semua pengumuman kelulusan?')">
           <input type="hidden" name="is_published" value="0">
           <button type="submit" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">🔒 Unpublish Semua</button>
         </form>
@@ -108,7 +108,7 @@
                   >
                     📝 Nilai
                   </button>
-                  <form action="/admin/selection/publish" method="POST" class="inline">
+                  <form action="<?= getBaseUrl('/admin/selection/publish') ?>" method="POST" class="inline">
                     <input type="hidden" name="registration_id" value="<?= $c['id'] ?>">
                     <input type="hidden" name="is_published" value="<?= (int)$c['is_published'] === 1 ? '0' : '1' ?>">
                     <button type="submit" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-750 rounded-full cursor-pointer transition-colors">
@@ -167,7 +167,7 @@
       <button type="button" onclick="closeScoringModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
     </div>
 
-    <form action="/admin/selection/save" method="POST" class="space-y-4 text-xs">
+    <form action="<?= getBaseUrl('/admin/selection/save') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="score-registration-id" name="registration_id">
 
       <div class="grid grid-cols-2 gap-4 pt-3">
@@ -213,7 +213,7 @@
       <button type="button" onclick="closeExamStagesModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
     </div>
 
-    <form action="/admin/selection/exam-stage/save" method="POST" class="space-y-4 text-xs">
+    <form action="<?= getBaseUrl('/admin/selection/exam-stage/save') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="exam-stage-registration-id" name="registration_id">
 
       <div id="modal-exam-stages-list" class="space-y-3"></div>

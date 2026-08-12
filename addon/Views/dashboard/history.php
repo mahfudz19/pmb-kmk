@@ -81,7 +81,7 @@
         <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Daftar Gelombang Lain</h3>
         <p class="text-xs text-slate-500">Semua gelombang pendaftaran Anda sebelumnya telah selesai diproses. Anda dapat mencoba mendaftar kembali pada gelombang aktif berikut ini.</p>
       </div>
-      <form data-spa method="POST" action="/dashboard/init-registration" onsubmit="return validateInitForm(event)" class="space-y-4 text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
+      <form data-spa method="POST" action="<?= getBaseUrl('/dashboard/init-registration') ?>" onsubmit="return validateInitForm(event)" class="space-y-4 text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
         <div class="space-y-1">
           <label for="wave_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pilih Gelombang Baru <span class="text-red-550">*</span></label>
           <select id="wave_id" name="wave_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white font-medium">

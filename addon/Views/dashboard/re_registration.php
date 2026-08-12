@@ -80,7 +80,7 @@
 
     <!-- Right Column: Re-registration Upload Form & PDF Guide Preview -->
     <div class="lg:col-span-2 space-y-6">
-      <form action="/pendaftaran/daftar-ulang/submit" method="POST" enctype="multipart/form-data" style="margin: 0; padding: 0;">
+      <form action="<?= getBaseUrl('/pendaftaran/daftar-ulang/submit') ?>" method="POST" enctype="multipart/form-data" style="margin: 0; padding: 0;">
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <h2 class="text-sm font-bold text-slate-850">Upload Dokumen & Bukti Bayar</h2>

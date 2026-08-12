@@ -30,7 +30,7 @@
 
   <!-- Search & Filter Card -->
   <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
-    <form action="/admin/registrants" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <form action="<?= getBaseUrl('/admin/registrants') ?>" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- Search Input -->
       <div>
         <label for="search" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Cari Pendaftar</label>

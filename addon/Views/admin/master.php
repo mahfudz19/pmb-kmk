@@ -347,7 +347,7 @@
       <button type="button" onclick="closeMasterModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none text-2xl font-semibold">&times;</button>
     </div>
 
-    <form id="modal-form" method="POST" action="/admin/master/create" class="space-y-4">
+    <form id="modal-form" method="POST" action="<?= getBaseUrl('/admin/master/create') ?>" class="space-y-4">
       <input type="hidden" name="type" value="<?= htmlspecialchars($tab) ?>">
       <input type="hidden" name="id" id="form-id">
 
@@ -466,7 +466,7 @@
       <h3 class="text-lg font-bold text-slate-900">Konfirmasi Hapus Data</h3>
       <p class="text-xs text-slate-500">Apakah Anda yakin ingin menghapus data ini? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.</p>
     </div>
-    <form action="/admin/master/delete" method="POST" class="flex gap-3">
+    <form action="<?= getBaseUrl('/admin/master/delete') ?>" method="POST" class="flex gap-3">
       <input type="hidden" name="type" value="<?= htmlspecialchars($tab) ?>">
       <input type="hidden" name="id" id="delete-id">
       <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 px-4 bg-slate-150 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors focus:outline-none">

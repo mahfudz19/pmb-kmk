@@ -82,7 +82,7 @@
 
         <?php if ($re_registration): ?>
           <!-- Decision / Verification Form -->
-          <form action="/admin/re-registrations/verify" method="POST" class="border-t border-slate-100 pt-6 space-y-4">
+          <form action="<?= getBaseUrl('/admin/re-registrations/verify') ?>" method="POST" class="border-t border-slate-100 pt-6 space-y-4">
             <input type="hidden" name="id" value="<?= $re_registration['id'] ?>">
             
             <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Keputusan Verifikasi</h3>

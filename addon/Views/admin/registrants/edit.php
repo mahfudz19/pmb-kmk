@@ -53,7 +53,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
     </div>
   <?php endif; ?>
 
-  <form action="/admin/registrants/update" method="POST" class="space-y-6">
+  <form action="<?= getBaseUrl('/admin/registrants/update') ?>" method="POST" class="space-y-6">
     <input type="hidden" name="id" value="<?= $registration['id'] ?>">
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -170,7 +170,7 @@
           <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Silakan pilih gelombang untuk memulai</p>
         </div>
 
-        <form data-spa method="POST" action="/dashboard/init-registration" onsubmit="return validateInitForm(event)" class="space-y-4 max-w-md mx-auto text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
+        <form data-spa method="POST" action="<?= getBaseUrl('/dashboard/init-registration') ?>" onsubmit="return validateInitForm(event)" class="space-y-4 max-w-md mx-auto text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
           <div class="space-y-1">
             <label for="wave_id" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">Gelombang Pendaftaran <span class="text-red-550">*</span></label>
             <select id="wave_id" name="wave_id" class="block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white font-medium">
@@ -199,7 +199,7 @@
           <a data-spa href="/pendaftaran" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl shadow-md text-sm font-semibold transition-all">
             Lanjutkan Pengisian Formulir
           </a>
-          <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+          <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
             <?= csrf_field() ?>
             <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl shadow-sm text-sm border border-red-200 transition-all cursor-pointer">
               ❌ Batalkan Pendaftaran
@@ -222,7 +222,7 @@
             <a data-spa href="/pendaftaran" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100">
               ✏️ Ubah Data Formulir
             </a>
-            <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+            <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
               <?= csrf_field() ?>
               <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-red-100 cursor-pointer">
                 ❌ Batal
@@ -273,7 +273,7 @@
             <?php endif; ?>
           </div>
 
-          <form action="/pendaftaran/pembayaran/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+          <form action="<?= getBaseUrl('/pendaftaran/pembayaran/upload') ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Konfirmasi Pembayaran</h3>
             <div class="space-y-3 text-xs">
               <div class="space-y-1">
@@ -336,7 +336,7 @@
             <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
             Menunggu Konfirmasi Keuangan
           </div>
-          <form action="/dashboard/cancel-registration" method="POST" onsubmit="return confirmCancelRegistration(event)">
+          <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
             <?= csrf_field() ?>
             <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs border border-red-100 transition-all cursor-pointer">
               ❌ Batalkan Pendaftaran
@@ -602,7 +602,7 @@
       <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">⚙️ State Simulator</span>
       <span class="bg-indigo-900 text-indigo-200 font-extrabold text-[8px] px-2 py-0.5 rounded-full uppercase">Testing Mode</span>
     </div>
-    <form action="/dashboard/simulate-state" method="POST" class="space-y-2">
+    <form action="<?= getBaseUrl('/dashboard/simulate-state') ?>" method="POST" class="space-y-2">
       <label for="state-select" class="block text-[10px] text-slate-400 leading-normal">Ubah status alur pendaftaran mahasiswa untuk menguji UI transisi:</label>
       <select 
         name="state" 

@@ -15,7 +15,7 @@
   </div>
 <?php endif; ?>
 
-<form data-spa method="POST" action="/password/forgot" class="space-y-5">
+<form data-spa method="POST" action="<?= getBaseUrl('/password/forgot') ?>" class="space-y-5">
   <div>
     <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
     <div class="mt-1">

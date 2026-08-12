@@ -10,7 +10,7 @@
     <p class="text-xs text-slate-500">Konfigurasikan program studi aktif, biaya formulir, berkas syarat tambahan, serta tahapan ujian seleksi untuk gelombang: <strong><?= htmlspecialchars($wave['name']) ?></strong>.</p>
   </div>
 
-  <form id="wave-detail-form" method="POST" action="/admin/master/wave-detail/save" enctype="multipart/form-data" class="space-y-6">
+  <form id="wave-detail-form" method="POST" action="<?= getBaseUrl('/admin/master/wave-detail/save') ?>" enctype="multipart/form-data" class="space-y-6">
     <input type="hidden" name="wave_id" value="<?= htmlspecialchars($wave['id']) ?>">
 
     <div class="grid grid-cols-1 gap-6">

@@ -203,7 +203,7 @@
     const formData = new FormData(form);
 
     try {
-      const response = await fetch('/pendaftaran/dokumen/upload', {
+      const response = await fetch('<?= getBaseUrl('/pendaftaran/dokumen/upload') ?>', {
         method: 'POST',
         headers: {
           'X-Requested-With': 'XMLHttpRequest'

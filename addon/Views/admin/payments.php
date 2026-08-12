@@ -74,7 +74,7 @@
               <td class="px-6 py-4 text-center">
                 <div class="flex items-center justify-center gap-2">
                   <?php if ($p['status'] === 'Pending'): ?>
-                    <form action="/admin/payments/verify" method="POST" onsubmit="return confirmAction(event, 'Setujui Pembayaran', 'Apakah Anda yakin ingin menyetujui bukti pembayaran ini?')">
+                    <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" onsubmit="return confirmAction(event, 'Setujui Pembayaran', 'Apakah Anda yakin ingin menyetujui bukti pembayaran ini?')">
                       <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
                       <input type="hidden" name="status" value="Approved">
                       <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
@@ -158,7 +158,7 @@
       <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
     </div>
 
-    <form action="/admin/payments/verify" method="POST" class="space-y-4 text-xs">
+    <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="reject-payment-id" name="payment_id">
       <input type="hidden" name="status" value="Rejected">
 
