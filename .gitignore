@@ -1,8 +1,9 @@
 composer.lock
 vendor
 .env
-storage/secrets/*
+storage
 prd.md
 tasks.md
 walkthrough.md
 node_modules/
+public/build/
