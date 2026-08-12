@@ -11,8 +11,8 @@
     <!-- Form Card -->
     <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 space-y-6">
       <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3" id="form-title">Buat Pengumuman Baru</h3>
-      
-      <form action="/admin/announcements/save" method="POST" class="space-y-4 text-xs" id="announcement-form">
+
+      <form action="<?= getBaseUrl('/admin/announcements/save') ?>" method="POST" class="space-y-4 text-xs" id="announcement-form">
         <input type="hidden" id="announcement-id" name="id">
 
         <div class="space-y-1">
@@ -68,36 +68,36 @@
                   </div>
                 </td>
               </tr>
-            <?php else: foreach ($announcements as $a): ?>
-              <tr class="hover:bg-slate-50/30 transition-colors">
-                <td class="px-6 py-4 font-bold text-slate-800"><?= htmlspecialchars($a['title']) ?></td>
-                <td class="px-6 py-4 max-w-xs truncate text-slate-500"><?= htmlspecialchars($a['content']) ?></td>
-                <td class="px-6 py-4 text-center">
-                  <?php if ((int)$a['is_active'] === 1): ?>
-                    <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Aktif</span>
-                  <?php else: ?>
-                    <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Draft</span>
-                  <?php endif; ?>
-                </td>
-                <td class="px-6 py-4 text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <button 
-                      type="button" 
-                      onclick="editAnnouncement(<?= htmlspecialchars(json_encode($a)) ?>)"
-                      class="px-2.5 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-lg cursor-pointer"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <form action="/admin/announcements/delete" method="POST" onsubmit="return confirmAction(event, 'Hapus Pengumuman', 'Apakah Anda yakin ingin menghapus pengumuman ini?')">
-                      <input type="hidden" name="id" value="<?= $a['id'] ?>">
-                      <button type="submit" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[10px] font-bold text-red-600 rounded-lg cursor-pointer">
-                        🗑️ Hapus
+              <?php else: foreach ($announcements as $a): ?>
+                <tr class="hover:bg-slate-50/30 transition-colors">
+                  <td class="px-6 py-4 font-bold text-slate-800"><?= htmlspecialchars($a['title']) ?></td>
+                  <td class="px-6 py-4 max-w-xs truncate text-slate-500"><?= htmlspecialchars($a['content']) ?></td>
+                  <td class="px-6 py-4 text-center">
+                    <?php if ((int)$a['is_active'] === 1): ?>
+                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Aktif</span>
+                    <?php else: ?>
+                      <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Draft</span>
+                    <?php endif; ?>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <div class="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onclick="editAnnouncement(<?= htmlspecialchars(json_encode($a)) ?>)"
+                        class="px-2.5 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-lg cursor-pointer">
+                        ✏️ Edit
                       </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            <?php endforeach; endif; ?>
+                      <form action="<?= getBaseUrl('/admin/announcements/delete') ?>" method="POST" onsubmit="return confirmAction(event, 'Hapus Pengumuman', 'Apakah Anda yakin ingin menghapus pengumuman ini?')">
+                        <input type="hidden" name="id" value="<?= $a['id'] ?>">
+                        <button type="submit" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-[10px] font-bold text-red-600 rounded-lg cursor-pointer">
+                          🗑️ Hapus
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+            <?php endforeach;
+            endif; ?>
           </tbody>
         </table>
       </div>

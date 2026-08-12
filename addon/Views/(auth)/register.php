@@ -24,7 +24,7 @@
   </div>
 <?php endif; ?>
 
-<form data-spa method="POST" action="/register" class="space-y-4">
+<form data-spa method="POST" action="<?= getBaseUrl('/register') ?>" class="space-y-4">
   <div>
     <label for="name" class="block text-sm font-semibold text-slate-700">Nama Lengkap</label>
     <div class="mt-1">

@@ -42,7 +42,7 @@
   </div>
 <?php endif; ?>
 
-<form data-spa method="POST" action="/verify-otp" id="otp-form" class="space-y-6">
+<form data-spa method="POST" action="<?= getBaseUrl('/verify-otp') ?>" id="otp-form" class="space-y-6">
   <input type="hidden" name="email" value="<?= htmlspecialchars($email ?? '') ?>">
 
   <div class="grid grid-cols-6 gap-2 sm:gap-3" role="group" aria-label="Kode verifikasi 6 digit">

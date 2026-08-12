@@ -1,9 +1,9 @@
 <div class="w-full py-2">
 
-  <?php 
-    $isLocked = false;
-    $userPerms = json_decode($user['permissions'] ?? '[]', true) ?: [];
-    $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) || count(array_intersect($userPerms, ['verify_payment', 'verify_document', 'manage_selection', 'manage_settings', 'manage_users'])) > 0;
+  <?php
+  $isLocked = false;
+  $userPerms = json_decode($user['permissions'] ?? '[]', true) ?: [];
+  $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) || count(array_intersect($userPerms, ['verify_payment', 'verify_document', 'manage_selection', 'manage_settings', 'manage_users'])) > 0;
   ?>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -54,7 +54,7 @@
           <p class="mt-1 text-sm text-slate-500">Ubah password akun Anda secara berkala untuk menjaga keamanan data.</p>
         </div>
 
-        <form method="POST" action="/profile" class="space-y-6">
+        <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
           <input type="hidden" name="tab" value="password">
 
           <div class="space-y-1">
@@ -94,7 +94,7 @@
             <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
-          <form method="POST" action="/profile" class="space-y-6">
+          <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
             <input type="hidden" name="tab" value="alamat">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -226,7 +226,7 @@
             <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
-          <form method="POST" action="/profile" class="space-y-6">
+          <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
             <input type="hidden" name="tab" value="ortu">
 
             <div class="space-y-4">
@@ -391,7 +391,7 @@
             <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
-          <form method="POST" action="/profile" class="space-y-6">
+          <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
             <input type="hidden" name="tab" value="kebutuhan">
 
             <div class="space-y-1">
@@ -403,10 +403,10 @@
             </div>
 
             <?php
-              $studentNeedsArr = json_decode($special_needs['student_needs'] ?? '[]', true) ?: [];
-              $fatherNeedsArr = json_decode($special_needs['father_needs'] ?? '[]', true) ?: [];
-              $motherNeedsArr = json_decode($special_needs['mother_needs'] ?? '[]', true) ?: [];
-              $guardianNeedsArr = json_decode($special_needs['guardian_needs'] ?? '[]', true) ?: [];
+            $studentNeedsArr = json_decode($special_needs['student_needs'] ?? '[]', true) ?: [];
+            $fatherNeedsArr = json_decode($special_needs['father_needs'] ?? '[]', true) ?: [];
+            $motherNeedsArr = json_decode($special_needs['mother_needs'] ?? '[]', true) ?: [];
+            $guardianNeedsArr = json_decode($special_needs['guardian_needs'] ?? '[]', true) ?: [];
             ?>
 
             <div id="special_needs_container" class="space-y-4 <?= ($special_needs['has_special_needs'] ?? 'tidak') === 'ya' ? '' : 'hidden' ?>">
@@ -480,7 +480,7 @@
             <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
-          <form method="POST" action="/profile" class="space-y-6">
+          <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
             <input type="hidden" name="tab" value="pendidikan">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
