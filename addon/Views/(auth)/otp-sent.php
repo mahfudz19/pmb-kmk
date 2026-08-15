@@ -89,7 +89,7 @@
 
     resendButton.addEventListener('click', () => {
       if (!resendButton.disabled) {
-        window.location.href = '/resend-otp?email=' + encodeURIComponent('<?= htmlspecialchars($email ?? '') ?>');
+        window.location.href = '<?= getBaseUrl('/resend-otp?email=') ?>' + encodeURIComponent('<?= htmlspecialchars($email ?? '') ?>');
       }
     });
 

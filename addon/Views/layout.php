@@ -373,7 +373,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
                   <a data-spa data-sidebar-sublink="wave" href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="waves" class="w-3.5 h-3.5"></i> Gelombang
                   </a>
-                  <a data-spa data-sidebar-sublink="faculty" href="<?= getBaseUrl('/admin/master?tab=faculty/') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="faculty" href="<?= getBaseUrl('/admin/master?tab=faculty') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="building" class="w-3.5 h-3.5"></i> Fakultas
                   </a>
                   <a data-spa data-sidebar-sublink="study-program" href="<?= getBaseUrl('/admin/master?tab=study-program') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">

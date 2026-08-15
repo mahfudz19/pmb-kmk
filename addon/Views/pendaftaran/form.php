@@ -368,7 +368,7 @@ foreach ($waves as $w) {
       }).then((result) => {
         if (result.isConfirmed) {
           const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-          fetch('/pendaftaran/reset-wave', {
+          fetch('<?= getBaseUrl('/pendaftaran/reset-wave') ?>', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

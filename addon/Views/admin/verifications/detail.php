@@ -246,7 +246,7 @@
     const panel = document.getElementById('preview-content-panel');
     panel.innerHTML = '';
 
-    const viewUrl = `/documents/view?id=${docId}`;
+    const viewUrl = `<?= getBaseUrl('/documents/view?id=') ?>${docId}`;
 
     if (ext === 'pdf') {
       panel.innerHTML = `<iframe src="${viewUrl}" class="w-full h-[600px] border-none rounded-2xl"></iframe>`;

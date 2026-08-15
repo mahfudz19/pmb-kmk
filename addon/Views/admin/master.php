@@ -484,7 +484,7 @@
 
   function openCreateModal() {
     document.getElementById('modal-title').textContent = 'Tambah Data';
-    document.getElementById('modal-form').action = '/admin/master/create';
+    document.getElementById('modal-form').action = "<?= getBaseUrl('/admin/master/create') ?>";
     document.getElementById('form-id').value = '';
 
     // Clear inputs
@@ -508,7 +508,7 @@
 
   function openEditModal(tab, item) {
     document.getElementById('modal-title').textContent = 'Ubah Data';
-    document.getElementById('modal-form').action = '/admin/master/update';
+    document.getElementById('modal-form').action = "<?= getBaseUrl('/admin/master/update') ?>";
     document.getElementById('form-id').value = item.id;
 
     // Fill inputs

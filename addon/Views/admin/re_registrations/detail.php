@@ -168,7 +168,7 @@
     button.disabled = true;
     button.innerHTML = '⌛ Generating...';
     try {
-      const response = await fetch('/admin/re-registrations/generate-nim?registration_id=<?= $registration['id'] ?>');
+      const response = await fetch('<?= getBaseUrl('/admin/re-registrations/generate-nim?registration_id=' . $registration['id']) ?>');
       const data = await response.json();
       if (data.nim) {
         document.getElementById('nim').value = data.nim;

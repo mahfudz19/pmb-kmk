@@ -188,7 +188,7 @@
     const panel = document.getElementById('preview-content-panel');
     panel.innerHTML = '';
 
-    const viewUrl = `/payments/view?id=${paymentId}`;
+    const viewUrl = `<?= getBaseUrl('/payments/view') ?>?id=${paymentId}`;
 
     if (ext === 'pdf') {
       panel.innerHTML = `<iframe src="${viewUrl}" class="w-full h-[600px] border-none rounded-2xl"></iframe>`;
