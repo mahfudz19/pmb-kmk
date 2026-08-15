@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var array $registration
  * @var array $selection
@@ -13,7 +14,7 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
     <div class="space-y-1">
       <div class="flex items-center gap-2">
-        <a data-spa href="/admin/re-registrations" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+        <a data-spa href="<?= getBaseUrl('/admin/re-registrations') ?>" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
           <span>← Kembali ke Daftar Antrean</span>
         </a>
       </div>
@@ -58,7 +59,7 @@
     <div class="lg:col-span-2 space-y-6">
       <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm space-y-6">
         <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Berkas Persyaratan Daftar Ulang</h3>
-        
+
         <div class="divide-y divide-slate-100">
 
           <!-- Payment Receipt Row -->
@@ -69,7 +70,7 @@
             </div>
             <div>
               <?php if ($re_registration && $re_registration['payment_path']): ?>
-                <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=payment" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
+                <a href="<?= getBaseUrl('/re-registrations/view?id=' . $re_registration['id'] . '&file=payment') ?>" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
                   👁️ Buka File
                 </a>
               <?php else: ?>
@@ -84,9 +85,9 @@
           <!-- Decision / Verification Form -->
           <form action="<?= getBaseUrl('/admin/re-registrations/verify') ?>" method="POST" class="border-t border-slate-100 pt-6 space-y-4">
             <input type="hidden" name="id" value="<?= $re_registration['id'] ?>">
-            
+
             <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Keputusan Verifikasi</h3>
-            
+
             <div class="grid grid-cols-2 gap-4">
               <label class="relative flex items-center justify-center p-4 border rounded-2xl cursor-pointer hover:bg-slate-50/50 transition-colors border-slate-200">
                 <input type="radio" name="status" value="Approved" class="sr-only peer" onclick="toggleRejectionBox(false)" <?= $re_registration['status'] === 'Approved' ? 'checked' : '' ?> required>
@@ -115,8 +116,7 @@
                 id="rejection_reason"
                 rows="3"
                 class="block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50"
-                placeholder="Tulis alasan penolakan berkas atau bukti bayar di sini..."
-              ><?= htmlspecialchars($re_registration['rejection_reason'] ?? '') ?></textarea>
+                placeholder="Tulis alasan penolakan berkas atau bukti bayar di sini..."><?= htmlspecialchars($re_registration['rejection_reason'] ?? '') ?></textarea>
             </div>
 
             <!-- NIM Input Section -->
@@ -129,8 +129,7 @@
                   id="nim"
                   class="block flex-1 px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
                   placeholder="Masukkan NIM manual atau klik generate..."
-                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
-                />
+                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>" />
                 <!-- <button type="button" onclick="autoGenerateNim()" class="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1">
                   🔄 Generate
                 </button> -->

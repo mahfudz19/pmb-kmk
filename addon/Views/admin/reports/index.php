@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var array $stats
  */
@@ -102,8 +103,8 @@
               <span><?= number_format($stats['gender_counts']['Laki-laki'] ?? 0) ?> pendaftar</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-2">
-              <?php 
-                $mPercent = $stats['total_registrants'] > 0 ? (($stats['gender_counts']['Laki-laki'] ?? 0) / $stats['total_registrants']) * 100 : 0;
+              <?php
+              $mPercent = $stats['total_registrants'] > 0 ? (($stats['gender_counts']['Laki-laki'] ?? 0) / $stats['total_registrants']) * 100 : 0;
               ?>
               <div class="bg-indigo-600 h-2 rounded-full" style="width: <?= $mPercent ?>%"></div>
             </div>
@@ -114,8 +115,8 @@
               <span><?= number_format($stats['gender_counts']['Perempuan'] ?? 0) ?> pendaftar</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-2">
-              <?php 
-                $fPercent = $stats['total_registrants'] > 0 ? (($stats['gender_counts']['Perempuan'] ?? 0) / $stats['total_registrants']) * 100 : 0;
+              <?php
+              $fPercent = $stats['total_registrants'] > 0 ? (($stats['gender_counts']['Perempuan'] ?? 0) / $stats['total_registrants']) * 100 : 0;
               ?>
               <div class="bg-emerald-500 h-2 rounded-full" style="width: <?= $fPercent ?>%"></div>
             </div>
@@ -129,7 +130,7 @@
   <div id="tab-finance" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Ringkasan Penerimaan Keuangan</h3>
-      <a href="/admin/reports/export/finance" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/finance') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Keuangan (CSV)
       </a>
     </div>
@@ -175,7 +176,8 @@
                 <td colspan="7" class="py-4 text-center text-slate-450 italic font-normal">Belum ada data transaksi tercatat.</td>
               </tr>
             <?php else: ?>
-              <?php $no = 1; foreach ($stats['latest_transactions'] as $t): ?>
+              <?php $no = 1;
+              foreach ($stats['latest_transactions'] as $t): ?>
                 <tr>
                   <td class="py-3.5 text-slate-400 font-normal"><?= $no++ ?></td>
                   <td class="py-3.5 text-slate-900"><?= htmlspecialchars($t['full_name']) ?></td>
@@ -205,7 +207,7 @@
   <div id="tab-selection" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Statistik Hasil Ujian & Seleksi</h3>
-      <a href="/admin/reports/export/selection" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/selection') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Seleksi (CSV)
       </a>
     </div>
@@ -290,7 +292,7 @@
   <div id="tab-rereg" class="tab-content space-y-6 hidden">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Rekapitulasi Daftar Ulang Mahasiswa Baru</h3>
-      <a href="/admin/reports/export/re-registrations" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/re-registrations') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Daftar Ulang (CSV)
       </a>
     </div>
@@ -336,7 +338,8 @@
                 <td colspan="7" class="py-4 text-center text-slate-450 italic font-normal">Belum ada data pendaftaran ulang terverifikasi.</td>
               </tr>
             <?php else: ?>
-              <?php $no = 1; foreach ($stats['latest_reregistrations'] as $rr): ?>
+              <?php $no = 1;
+              foreach ($stats['latest_reregistrations'] as $rr): ?>
                 <tr>
                   <td class="py-3.5 text-slate-400 font-normal"><?= $no++ ?></td>
                   <td class="py-3.5 text-slate-900"><?= htmlspecialchars($rr['full_name']) ?></td>
@@ -386,7 +389,8 @@
                 <td colspan="8" class="py-4 text-center text-slate-450 italic font-normal">Belum ada riwayat pengiriman notifikasi.</td>
               </tr>
             <?php else: ?>
-              <?php $no = 1; foreach ($stats['notification_history'] as $nh): ?>
+              <?php $no = 1;
+              foreach ($stats['notification_history'] as $nh): ?>
                 <tr>
                   <td class="py-3.5 text-slate-400 font-normal"><?= $no++ ?></td>
                   <td class="py-3.5 text-slate-900"><?= htmlspecialchars($nh['full_name'] ?? 'Sistem / Semua') ?></td>
@@ -437,7 +441,8 @@
                 <td colspan="6" class="py-4 text-center text-slate-450 italic font-normal">Belum ada catatan aktivitas sistem.</td>
               </tr>
             <?php else: ?>
-              <?php $no = 1; foreach ($stats['audit_logs'] as $log): ?>
+              <?php $no = 1;
+              foreach ($stats['audit_logs'] as $log): ?>
                 <tr>
                   <td class="py-3.5 text-slate-400 font-normal"><?= $no++ ?></td>
                   <td class="py-3.5 text-slate-900"><?= htmlspecialchars($log['username']) ?></td>
@@ -460,16 +465,16 @@
 </div>
 
 <script>
-function switchTab(tabId, btnEl) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById(tabId).classList.remove('hidden');
+  function switchTab(tabId, btnEl) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById(tabId).classList.remove('hidden');
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('border-indigo-600', 'text-indigo-600');
-    btn.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
-  });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('border-indigo-600', 'text-indigo-600');
+      btn.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
+    });
 
-  btnEl.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
-  btnEl.classList.add('border-indigo-600', 'text-indigo-600');
-}
+    btnEl.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
+    btnEl.classList.add('border-indigo-600', 'text-indigo-600');
+  }
 </script>

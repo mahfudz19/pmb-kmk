@@ -6,7 +6,7 @@
       <p class="mt-1 text-xs text-slate-500">Tinjau biodata pendaftaran dan verifikasi kelengkapan dokumen fisik pendaftar.</p>
     </div>
     <div>
-      <a data-spa href="/admin/verifications" class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors">
+      <a data-spa href="<?= getBaseUrl('/admin/verifications') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors">
         ← Kembali ke Daftar
       </a>
     </div>
@@ -60,7 +60,7 @@
             <p class="text-slate-500"><strong class="text-slate-700">Pekerjaan:</strong> <?= htmlspecialchars($parents['father_occupation'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Penghasilan:</strong> <?= htmlspecialchars($parents['father_income'] ?? '-') ?></p>
           </div>
-          
+
           <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
             <h4 class="font-bold text-indigo-750">👩 Data Ibu</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama:</strong> <?= htmlspecialchars($parents['mother_name'] ?? '-') ?></p>
@@ -112,26 +112,26 @@
         <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>📎</span> Berkas Dokumen Persyaratan
         </h3>
-        
+
         <div class="space-y-6">
           <?php if (empty($document_types)): ?>
             <div class="p-8 text-center text-xs text-slate-400 italic">Belum ada tipe dokumen persyaratan yang dikonfigurasi.</div>
           <?php else: ?>
             <div class="space-y-4">
               <?php foreach ($document_types as $dt): ?>
-                <?php 
-                  $docTypeId = $dt['document_type_id'] ?? null;
-                  $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
-                  $docDisplayName = htmlspecialchars($dt['name']);
-                  
-                  $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
-                  $descParts = [];
-                  foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
-                      if (!empty($pDesc)) {
-                          $descParts[] = $pName . ': ' . $pDesc;
-                      }
+                <?php
+                $docTypeId = $dt['document_type_id'] ?? null;
+                $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
+                $docDisplayName = htmlspecialchars($dt['name']);
+
+                $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
+                $descParts = [];
+                foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
+                  if (!empty($pDesc)) {
+                    $descParts[] = $pName . ': ' . $pDesc;
                   }
-                  $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
+                }
+                $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
                 ?>
                 <div class="p-4 bg-slate-50/30 rounded-2xl border border-slate-150 space-y-3">
                   <div class="flex justify-between items-start gap-3">
@@ -161,11 +161,10 @@
                     <?php endif; ?>
 
                     <div class="flex gap-2">
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
-                        class="flex-1 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-full transition-colors cursor-pointer text-center"
-                      >
+                        class="flex-1 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-700 rounded-full transition-colors cursor-pointer text-center">
                         👁️ Preview Berkas
                       </button>
 
@@ -181,11 +180,10 @@
                         <?php endif; ?>
 
                         <?php if ($uploaded['status'] !== 'Rejected'): ?>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onclick="openRejectModal(<?= $uploaded['id'] ?>)"
-                            class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm"
-                          >
+                            class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-full cursor-pointer shadow-sm">
                             Tolak
                           </button>
                         <?php endif; ?>
@@ -258,7 +256,7 @@
 
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -269,7 +267,7 @@
   function closePreviewModal() {
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
@@ -283,7 +281,7 @@
 
     const modal = document.getElementById('reject-modal');
     const card = document.getElementById('reject-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -294,7 +292,7 @@
   function closeRejectModal() {
     const modal = document.getElementById('reject-modal');
     const card = document.getElementById('reject-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {

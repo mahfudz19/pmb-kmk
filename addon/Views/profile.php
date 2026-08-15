@@ -1,11 +1,23 @@
+<?php
+
+/**
+ * @var \App\Core\View\PageMeta $meta
+ * @var array $user
+ * @var null|array $registration
+ * @var mixed $transportList
+ * @var mixed $tinggalList
+ * @var mixed $pendidikanList
+ * @var mixed $pekerjaanList
+ * @var mixed $penghasilanList
+ * @var mixed $kebutuhanKhususList
+ * @var mixed $wilayahList
+ */
+$isLocked = false;
+$userPerms = json_decode($user['permissions'] ?? '[]', true) ?: [];
+$isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) || count(array_intersect($userPerms, ['verify_payment', 'verify_document', 'manage_selection', 'manage_settings', 'manage_users'])) > 0;
+?>
+
 <div class="w-full py-2">
-
-  <?php
-  $isLocked = false;
-  $userPerms = json_decode($user['permissions'] ?? '[]', true) ?: [];
-  $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) || count(array_intersect($userPerms, ['verify_payment', 'verify_document', 'manage_selection', 'manage_settings', 'manage_users'])) > 0;
-  ?>
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="space-y-6">
       <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 text-center space-y-4">
@@ -28,7 +40,7 @@
 
       <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200/80 space-y-1">
         <?php if (!$isAdmin): ?>
-          <button type="button" onclick="switchTab('alamat')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-indigo-50 text-indigo-750 font-black shadow-sm" id="tab-btn-alamat">
+          <button type="button" onclick="switchTab('alamat')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-indigo-50 text-indigo-750 shadow-sm" id="tab-btn-alamat">
             <span>📍</span> Alamat & Kontak
           </button>
           <button type="button" onclick="switchTab('ortu')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-ortu">
@@ -41,7 +53,7 @@
             <span>🎓</span> Riwayat Pendidikan
           </button>
         <?php endif; ?>
-        <button type="button" onclick="switchTab('password')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 <?= $isAdmin ? 'bg-indigo-50 text-indigo-750 font-black shadow-sm' : 'bg-white text-slate-650 hover:bg-slate-50' ?>" id="tab-btn-password">
+        <button type="button" onclick="switchTab('password')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 <?= $isAdmin ? 'bg-indigo-50 text-indigo-750 shadow-sm' : 'bg-white text-slate-650 hover:bg-slate-50' ?>" id="tab-btn-password">
           <span>🔒</span> Ganti Kata Sandi
         </button>
       </div>
@@ -91,7 +103,7 @@
         <?php if (!$registration): ?>
           <div class="p-6 bg-slate-50 rounded-2xl text-center space-y-3">
             <p class="text-sm text-slate-500">Silakan pilih gelombang pendaftaran di halaman utama / Dashboard terlebih dahulu sebelum mengisi data profil lengkap.</p>
-            <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
+            <a href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
           <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
@@ -223,7 +235,7 @@
         <?php if (!$registration): ?>
           <div class="p-6 bg-slate-50 rounded-2xl text-center space-y-3">
             <p class="text-sm text-slate-500">Silakan pilih gelombang pendaftaran di halaman utama / Dashboard terlebih dahulu sebelum mengisi data profil lengkap.</p>
-            <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
+            <a href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
           <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
@@ -388,7 +400,7 @@
         <?php if (!$registration): ?>
           <div class="p-6 bg-slate-50 rounded-2xl text-center space-y-3">
             <p class="text-sm text-slate-500">Silakan pilih gelombang pendaftaran di halaman utama / Dashboard terlebih dahulu sebelum mengisi data profil lengkap.</p>
-            <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
+            <a href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
           <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">
@@ -477,7 +489,7 @@
         <?php if (!$registration): ?>
           <div class="p-6 bg-slate-50 rounded-2xl text-center space-y-3">
             <p class="text-sm text-slate-500">Silakan pilih gelombang pendaftaran di halaman utama / Dashboard terlebih dahulu sebelum mengisi data profil lengkap.</p>
-            <a href="/dashboard" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
+            <a href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">Pilih Gelombang</a>
           </div>
         <?php else: ?>
           <form method="POST" action="<?= getBaseUrl('/profile') ?>" class="space-y-6">

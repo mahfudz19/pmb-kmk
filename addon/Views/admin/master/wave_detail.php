@@ -1,6 +1,14 @@
+<?php
+
+/**
+ * @var array $wave
+ * @var array $study_programs
+ * @var array $document_types
+ */
+?>
 <div class="w-full py-2 space-y-6">
   <div class="flex items-center justify-between">
-    <a href="/admin/master?tab=wave" class="inline-flex items-center gap-2 text-xs font-bold text-slate-650 hover:text-slate-900 transition-colors">
+    <a href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="inline-flex items-center gap-2 text-xs font-bold text-slate-650 hover:text-slate-900 transition-colors">
       <span>←</span> Kembali ke Data Master
     </a>
   </div>
@@ -14,12 +22,12 @@
     <input type="hidden" name="wave_id" value="<?= htmlspecialchars($wave['id']) ?>">
 
     <div class="grid grid-cols-1 gap-6">
-      <?php foreach ($study_programs as $sp): 
+      <?php foreach ($study_programs as $sp):
         $isConfigured = isset($mapped_programs[$sp['id']]);
         $config = $mapped_programs[$sp['id']] ?? null;
       ?>
         <div class="bg-white border rounded-3xl shadow-sm overflow-hidden transition-all duration-200 <?= $isConfigured ? 'border-indigo-250 ring-1 ring-indigo-50/50' : 'border-slate-200' ?>" id="prodi-card-<?= $sp['id'] ?>">
-          
+
           <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <input type="checkbox" name="prodi_ids[]" value="<?= $sp['id'] ?>" id="chk-prodi-<?= $sp['id'] ?>" <?= $isConfigured ? 'checked' : '' ?> onchange="toggleProdiConfig(<?= $sp['id'] ?>)" class="h-4 w-4 rounded text-indigo-600 border-slate-350 focus:ring-indigo-500 cursor-pointer">
@@ -32,13 +40,15 @@
                 <?= $isConfigured ? 'AKTIF DI GELOMBANG INI' : 'TIDAK AKTIF' ?>
               </span>
               <button type="button" onclick="toggleProdiAccordion(<?= $sp['id'] ?>)" class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all focus:outline-none cursor-pointer">
-                <svg id="chevron-<?= $sp['id'] ?>" class="w-4 h-4 transform transition-transform <?= $isConfigured ? 'rotate-180' : '' ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg id="chevron-<?= $sp['id'] ?>" class="w-4 h-4 transform transition-transform <?= $isConfigured ? 'rotate-180' : '' ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </button>
             </div>
           </div>
 
           <div id="config-panel-<?= $sp['id'] ?>" class="<?= $isConfigured ? '' : 'hidden' ?> p-6 space-y-6">
-            
+
             <div class="bg-slate-50/30 p-5 rounded-2xl border border-slate-150 space-y-4 max-w-xl">
               <h4 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-sans">💳 Biaya Daftar Ulang (Biaya Tahap 2)</h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -69,32 +79,33 @@
                   <div class="col-span-5">Keterangan / Panduan</div>
                   <div class="col-span-2 text-right">Aksi</div>
                 </div>
-                
-                <?php 
+
+                <?php
                 $docs = $config['required_documents'] ?? [];
                 if (empty($docs)):
                 ?>
                   <div class="text-center text-[10px] text-slate-400 py-3 font-semibold empty-docs-placeholder-<?= $sp['id'] ?>">Tidak ada dokumen tambahan. Klik tambah jika ingin mewajibkan dokumen khusus.</div>
-                <?php else: foreach ($docs as $doc): ?>
-                  <div class="grid grid-cols-12 gap-3 items-center document-row">
-                    <div class="col-span-5">
-                      <select name="doc_type_ids_<?= $sp['id'] ?>[]" onchange="updateDocDescription(this)" required class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium">
-                        <option value="" disabled>Pilih Jenis Dokumen</option>
-                        <?php foreach ($document_types as $dt): ?>
-                          <option value="<?= $dt['id'] ?>" data-description="<?= htmlspecialchars($dt['description'] ?? '') ?>" <?= (($doc['document_type_id'] ?? '') == $dt['id'] || ($doc['name'] ?? '') === $dt['name']) ? 'selected' : '' ?>><?= htmlspecialchars($dt['name']) ?></option>
-                        <?php endforeach; ?>
-                      </select>
+                  <?php else: foreach ($docs as $doc): ?>
+                    <div class="grid grid-cols-12 gap-3 items-center document-row">
+                      <div class="col-span-5">
+                        <select name="doc_type_ids_<?= $sp['id'] ?>[]" onchange="updateDocDescription(this)" required class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium">
+                          <option value="" disabled>Pilih Jenis Dokumen</option>
+                          <?php foreach ($document_types as $dt): ?>
+                            <option value="<?= $dt['id'] ?>" data-description="<?= htmlspecialchars($dt['description'] ?? '') ?>" <?= (($doc['document_type_id'] ?? '') == $dt['id'] || ($doc['name'] ?? '') === $dt['name']) ? 'selected' : '' ?>><?= htmlspecialchars($dt['name']) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
+                      <div class="col-span-5">
+                        <input type="text" name="doc_descriptions_<?= $sp['id'] ?>[]" value="<?= htmlspecialchars($doc['description'] ?? '') ?>" class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium" placeholder="Pilih jenis dokumen untuk memuat deskripsi default">
+                      </div>
+                      <div class="col-span-2 text-right">
+                        <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1 transition-colors">
+                          &times; Hapus Syarat
+                        </button>
+                      </div>
                     </div>
-                    <div class="col-span-5">
-                      <input type="text" name="doc_descriptions_<?= $sp['id'] ?>[]" value="<?= htmlspecialchars($doc['description'] ?? '') ?>" class="appearance-none block w-full px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white font-medium" placeholder="Pilih jenis dokumen untuk memuat deskripsi default">
-                    </div>
-                    <div class="col-span-2 text-right">
-                      <button type="button" onclick="removeDocumentRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold cursor-pointer inline-flex items-center gap-1 transition-colors">
-                        &times; Hapus Syarat
-                      </button>
-                    </div>
-                  </div>
-                <?php endforeach; endif; ?>
+                <?php endforeach;
+                endif; ?>
               </div>
             </div>
 
@@ -112,55 +123,56 @@
         <button type="button" onclick="addExamRow()" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-[10px] font-extrabold rounded-lg transition-colors cursor-pointer">+ Tambah Ujian</button>
       </div>
       <div id="exam-rows-container" class="space-y-4">
-        <?php 
+        <?php
         $stages = json_decode($wave['exam_stages'] ?? '[]', true) ?: [];
         if (empty($stages)):
         ?>
           <div class="text-center text-[10px] text-slate-400 py-3 font-semibold empty-exams-placeholder">Belum ada tahapan ujian. Klik tambah untuk menambahkan jadwal CBT / wawancara.</div>
-        <?php else: foreach ($stages as $idx => $stg): ?>
-          <div class="bg-white p-4 rounded-xl border border-slate-150 space-y-3 exam-row">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-              <span class="text-xs font-extrabold text-indigo-750 flex items-center gap-1.5">
-                📅 Tahap Ke-<?= $idx + 1 ?>
-              </span>
-              <button type="button" onclick="removeExamRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold font-mono cursor-pointer flex items-center gap-1">
-                &times; Hapus Tahap
-              </button>
+          <?php else: foreach ($stages as $idx => $stg): ?>
+            <div class="bg-white p-4 rounded-xl border border-slate-150 space-y-3 exam-row">
+              <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-xs font-extrabold text-indigo-750 flex items-center gap-1.5">
+                  📅 Tahap Ke-<?= $idx + 1 ?>
+                </span>
+                <button type="button" onclick="removeExamRow(this)" class="text-red-550 hover:text-red-800 text-xs font-bold font-mono cursor-pointer flex items-center gap-1">
+                  &times; Hapus Tahap
+                </button>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="space-y-1">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase">Tanggal Ujian</label>
+                  <input type="date" name="exam_date[]" value="<?= htmlspecialchars($stg['date']) ?>" required class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
+                </div>
+                <div class="space-y-1">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase">Jam Pelaksanaan</label>
+                  <input type="text" name="exam_time[]" value="<?= htmlspecialchars($stg['time'] ?? '') ?>" placeholder="Contoh: 09:00 - 11:00 WIB" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
+                </div>
+                <div class="space-y-1">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase">Tipe Seleksi</label>
+                  <select name="exam_type[]" class="block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
+                    <option value="offline" <?= ($stg['type'] ?? '') === 'offline' ? 'selected' : '' ?>>Offline (Tatap Muka)</option>
+                    <option value="online" <?= ($stg['type'] ?? '') === 'online' ? 'selected' : '' ?>>Online (Virtual/CBT)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase">Tempat / Ruangan / Link Seleksi</label>
+                  <input type="text" name="exam_place[]" value="<?= htmlspecialchars($stg['place'] ?? '') ?>" placeholder="Contoh: Lab Komputer Gedung B, / zoom link" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
+                </div>
+                <div class="space-y-1">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase">Keterangan / Materi Seleksi</label>
+                  <input type="text" name="exam_description[]" value="<?= htmlspecialchars($stg['description'] ?? '') ?>" placeholder="Contoh: Membawa laptop sendiri dan kartu ujian" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
+                </div>
+              </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="space-y-1">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">Tanggal Ujian</label>
-                <input type="date" name="exam_date[]" value="<?= htmlspecialchars($stg['date']) ?>" required class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
-              </div>
-              <div class="space-y-1">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">Jam Pelaksanaan</label>
-                <input type="text" name="exam_time[]" value="<?= htmlspecialchars($stg['time'] ?? '') ?>" placeholder="Contoh: 09:00 - 11:00 WIB" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
-              </div>
-              <div class="space-y-1">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">Tipe Seleksi</label>
-                <select name="exam_type[]" class="block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
-                  <option value="offline" <?= ($stg['type'] ?? '') === 'offline' ? 'selected' : '' ?>>Offline (Tatap Muka)</option>
-                  <option value="online" <?= ($stg['type'] ?? '') === 'online' ? 'selected' : '' ?>>Online (Virtual/CBT)</option>
-                </select>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">Tempat / Ruangan / Link Seleksi</label>
-                <input type="text" name="exam_place[]" value="<?= htmlspecialchars($stg['place'] ?? '') ?>" placeholder="Contoh: Lab Komputer Gedung B, / zoom link" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
-              </div>
-              <div class="space-y-1">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">Keterangan / Materi Seleksi</label>
-                <input type="text" name="exam_description[]" value="<?= htmlspecialchars($stg['description'] ?? '') ?>" placeholder="Contoh: Membawa laptop sendiri dan kartu ujian" class="appearance-none block w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-slate-50 font-medium">
-              </div>
-            </div>
-          </div>
-        <?php endforeach; endif; ?>
+        <?php endforeach;
+        endif; ?>
       </div>
     </div>
 
     <div class="flex justify-between items-center border-t border-slate-100 pt-6 mt-8">
-      <a href="/admin/master?tab=wave" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors focus:outline-none">
+      <a href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors focus:outline-none">
         Batal
       </a>
       <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none cursor-pointer">
@@ -171,7 +183,7 @@
 </div>
 
 <script>
-  const documentTypesList = <?= json_encode($document_types) ?>;
+  const documentTypesList = <?= json_encode($document_types ?? []) ?>;
 
   function toggleProdiAccordion(prodiId) {
     const panel = document.getElementById(`config-panel-${prodiId}`);

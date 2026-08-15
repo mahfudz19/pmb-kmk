@@ -1,3 +1,13 @@
+<?php
+
+/**
+ * @var int $totalCount
+ * @var int $currentPage
+ * @var int $limit
+ * @var int $totalPages
+ */
+?>
+
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
   <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -36,43 +46,43 @@
                 </div>
               </td>
             </tr>
-          <?php else: foreach ($candidates as $c): ?>
-            <?php 
+            <?php else: foreach ($candidates as $c): ?>
+              <?php
               $isAllApproved = ($c['approved_count'] === $c['required_count'] && $c['required_count'] > 0);
-            ?>
-            <tr class="hover:bg-slate-50/30 transition-colors">
-              <td class="px-6 py-4">
-                <div class="font-bold text-slate-800"><?= htmlspecialchars((string)($c['full_name'] ?? '-')) ?></div>
-                <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars((string)($c['email'] ?? '-')) ?></div>
-              </td>
-              <td class="px-6 py-4 font-mono text-[11px]">
-                <div>NIK: <?= htmlspecialchars((string)($c['nik'] ?? '-')) ?></div>
-                <div>NISN: <?= htmlspecialchars((string)($c['nisn'] ?? '-')) ?></div>
-              </td>
-              <td class="px-6 py-4 text-center font-bold text-slate-700">
-                <?= $c['approved_count'] ?> / <?= $c['required_count'] ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?php if ($isAllApproved): ?>
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Lengkap</span>
-                <?php else: ?>
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Belum Lengkap</span>
-                <?php endif; ?>
-              </td>
-              <td class="px-6 py-4 text-center font-semibold text-slate-800">
-                <?= htmlspecialchars($c['status']) ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <a 
-                  data-spa 
-                  href="/admin/verifications/detail?id=<?= $c['id'] ?>"
-                  class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-full transition-colors cursor-pointer shadow-sm"
-                >
-                  Detail & Verifikasi
-                </a>
-              </td>
-            </tr>
-          <?php endforeach; endif; ?>
+              ?>
+              <tr class="hover:bg-slate-50/30 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="font-bold text-slate-800"><?= htmlspecialchars((string)($c['full_name'] ?? '-')) ?></div>
+                  <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars((string)($c['email'] ?? '-')) ?></div>
+                </td>
+                <td class="px-6 py-4 font-mono text-[11px]">
+                  <div>NIK: <?= htmlspecialchars((string)($c['nik'] ?? '-')) ?></div>
+                  <div>NISN: <?= htmlspecialchars((string)($c['nisn'] ?? '-')) ?></div>
+                </td>
+                <td class="px-6 py-4 text-center font-bold text-slate-700">
+                  <?= $c['approved_count'] ?> / <?= $c['required_count'] ?>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <?php if ($isAllApproved): ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Lengkap</span>
+                  <?php else: ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Belum Lengkap</span>
+                  <?php endif; ?>
+                </td>
+                <td class="px-6 py-4 text-center font-semibold text-slate-800">
+                  <?= htmlspecialchars($c['status']) ?>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <a
+                    data-spa
+                    href="<?= getBaseUrl('/admin/verifications/detail?id=' . $c['id']) ?>"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-full transition-colors cursor-pointer shadow-sm">
+                    Detail & Verifikasi
+                  </a>
+                </td>
+              </tr>
+          <?php endforeach;
+          endif; ?>
         </tbody>
       </table>
     </div>

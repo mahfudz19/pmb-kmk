@@ -1,8 +1,13 @@
 <?php
+
 /**
  * @var array $registrants
  * @var array $programs
  * @var array $filters
+ * @var int $totalCount
+ * @var int $currentPage
+ * @var int $limit
+ * @var int $totalPages
  */
 ?>
 
@@ -13,16 +18,16 @@
       <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen Pendaftar</h1>
       <p class="text-xs text-slate-500">Kelola, saring, koreksi, dan ekspor data administratif calon mahasiswa baru.</p>
     </div>
-    
+
     <!-- Export Actions -->
     <div class="flex items-center gap-2.5">
-      <?php 
-        $queryString = http_build_query($filters);
+      <?php
+      $queryString = http_build_query($filters);
       ?>
-      <a href="/admin/registrants/export/pdf?<?= $queryString ?>" class="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/registrants/export/pdf?' . $queryString) ?>" class="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm text-xs transition-colors">
         📄 Ekspor PDF
       </a>
-      <a href="/admin/registrants/export/csv?<?= $queryString ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/registrants/export/csv?' . $queryString) ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Ekspor Excel
       </a>
     </div>
@@ -40,8 +45,7 @@
           id="search"
           class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold"
           placeholder="Nama, Email, NIK, NISN..."
-          value="<?= htmlspecialchars($filters['search'] ?? '') ?>"
-        />
+          value="<?= htmlspecialchars($filters['search'] ?? '') ?>" />
       </div>
 
       <!-- Program Studi Filter -->
@@ -50,8 +54,7 @@
         <select
           name="program_id"
           id="program_id"
-          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700"
-        >
+          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
           <option value="">Semua Program Studi</option>
           <?php foreach ($programs as $prog): ?>
             <option value="<?= $prog['id'] ?>" <?= (string)($filters['program_id'] ?? '') === (string)$prog['id'] ? 'selected' : '' ?>>
@@ -67,8 +70,7 @@
         <select
           name="status"
           id="status"
-          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700"
-        >
+          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
           <option value="">Semua Status</option>
           <option value="Draft" <?= ($filters['status'] ?? '') === 'Draft' ? 'selected' : '' ?>>Draft</option>
           <option value="Submitted" <?= ($filters['status'] ?? '') === 'Submitted' ? 'selected' : '' ?>>Submitted</option>
@@ -83,7 +85,7 @@
         <button type="submit" class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm cursor-pointer">
           🔍 Saring
         </button>
-        <a href="/admin/registrants" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-colors text-center cursor-pointer">
+        <a href="<?= getBaseUrl('/admin/registrants') ?>" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-colors text-center cursor-pointer">
           🔄 Reset
         </a>
       </div>
@@ -150,10 +152,10 @@
                 <td class="py-4 px-6 text-slate-400 font-medium"><?= date('d-m-Y H:i', strtotime($r['created_at'])) ?></td>
                 <td class="py-4 px-6">
                   <div class="flex items-center justify-center gap-1.5">
-                    <a data-spa href="/admin/registrants/detail?id=<?= $r['id'] ?>" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
+                    <a data-spa href="<?= getBaseUrl('/admin/registrants/detail?id=' . $r['id']) ?>" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
                       🔎 Detail
                     </a>
-                    <a data-spa href="/admin/registrants/edit?id=<?= $r['id'] ?>" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-650 font-bold rounded-lg transition-colors cursor-pointer">
+                    <a data-spa href="<?= getBaseUrl('/admin/registrants/edit?id=' . $r['id']) ?>" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-650 font-bold rounded-lg transition-colors cursor-pointer">
                       ✏️ Koreksi
                     </a>
                   </div>

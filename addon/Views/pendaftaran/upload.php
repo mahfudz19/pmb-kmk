@@ -6,7 +6,7 @@
       <p class="mt-1 text-xs text-slate-500">Silakan unggah dokumen persyaratan akademik wajib di bawah ini.</p>
     </div>
     <div>
-      <a data-spa href="/dashboard" class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors">
+      <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors">
         ← Kembali ke Dashboard
       </a>
     </div>
@@ -24,19 +24,19 @@
       <?php else: ?>
         <div class="divide-y divide-slate-150 bg-white">
           <?php foreach ($document_types as $dt): ?>
-            <?php 
-              $docTypeId = $dt['document_type_id'] ?? null;
-              $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
-              $docDisplayName = htmlspecialchars($dt['name']);
-              
-              $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
-              $descParts = [];
-              foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
-                  if (!empty($pDesc)) {
-                      $descParts[] = $pName . ': ' . $pDesc;
-                  }
+            <?php
+            $docTypeId = $dt['document_type_id'] ?? null;
+            $uploaded = $docTypeId ? ($uploaded_docs[$docTypeId . '_global'] ?? null) : null;
+            $docDisplayName = htmlspecialchars($dt['name']);
+
+            $prodisStr = implode(', ', $dt['prodi_names'] ?? []);
+            $descParts = [];
+            foreach ($dt['descriptions'] ?? [] as $pName => $pDesc) {
+              if (!empty($pDesc)) {
+                $descParts[] = $pName . ': ' . $pDesc;
               }
-              $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
+            }
+            $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
             ?>
             <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:bg-slate-50/30 transition-colors">
               <!-- Left: Doc Type Info -->
@@ -87,41 +87,37 @@
               <div class="flex items-center gap-3 w-full md:w-auto">
                 <?php if ($uploaded): ?>
                   <!-- Actions for uploaded file -->
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onclick="openPreviewModal(<?= $uploaded['id'] ?>, '<?= strtolower(pathinfo($uploaded['file_path'], PATHINFO_EXTENSION)) ?>')"
-                    class="flex-grow md:flex-grow-0 px-4 py-2 border border-slate-200 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
+                    class="flex-grow md:flex-grow-0 px-4 py-2 border border-slate-200 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer">
                     👁️ Preview
                   </button>
 
                   <?php if ($uploaded['status'] !== 'Approved'): ?>
                     <!-- Can change file if not approved yet -->
-                    <button 
-                      type="button" 
-                      onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)" 
-                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full transition-colors cursor-pointer"
-                    >
+                    <button
+                      type="button"
+                      onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)"
+                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full transition-colors cursor-pointer">
                       🔄 Ganti Berkas
                     </button>
                   <?php else: ?>
                     <!-- Locked -->
-                    <button 
-                      type="button" 
-                      disabled 
-                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-full cursor-not-allowed"
-                    >
+                    <button
+                      type="button"
+                      disabled
+                      class="flex-grow md:flex-grow-0 px-4 py-2 bg-slate-100 text-slate-400 text-xs font-bold rounded-full cursor-not-allowed">
                       🔒 Terkunci
                     </button>
                   <?php endif; ?>
 
                 <?php else: ?>
                   <!-- Action for not uploaded file -->
-                  <button 
-                    type="button" 
-                    onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)" 
-                    class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors shadow-sm cursor-pointer"
-                  >
+                  <button
+                    type="button"
+                    onclick="triggerFileUpload(<?= $dt['document_type_id'] ?>, null)"
+                    class="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-colors shadow-sm cursor-pointer">
                     📤 Unggah Berkas
                   </button>
                 <?php endif; ?>
@@ -181,7 +177,7 @@
     if (fileInput.files.length === 0) return;
 
     const file = fileInput.files[0];
-    
+
     // Client-side validations
     if (file.size > 2 * 1024 * 1024) {
       alert('Ukuran file maksimal adalah 2MB');
@@ -243,7 +239,7 @@
 
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -254,7 +250,7 @@
   function closePreviewModal() {
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {

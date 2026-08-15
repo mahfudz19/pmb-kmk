@@ -81,7 +81,7 @@
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <a href="/admin/master/wave-detail?id=<?= htmlspecialchars($w['id']) ?>" class="inline-block text-xs font-bold text-indigo-650 hover:text-indigo-850 mr-2">Atur Detail</a>
+                      <a href="<?= getBaseUrl('/admin/master/wave-detail?id=' . htmlspecialchars($w['id'])) ?>" class="inline-block text-xs font-bold text-indigo-650 hover:text-indigo-850 mr-2">Atur Detail</a>
                       <button type="button" onclick="openEditModal('wave', <?= htmlspecialchars(json_encode($w)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
                       <button type="button" onclick="openDeleteModal('wave', <?= htmlspecialchars($w['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
                     </td>

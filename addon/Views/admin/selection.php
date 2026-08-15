@@ -1,5 +1,15 @@
 <?php
-  $activeTab = $_GET['tab'] ?? 'scoring';
+
+/**
+ * @var array $programs
+ * @var int $totalCount
+ * @var int $currentPage
+ * @var int $limit
+ * @var int $totalPages
+ * @var array<mixed, mixed> $waves_map
+ * @var array<mixed, array<mixed, mixed>> $exam_results_map
+ */
+$activeTab = $_GET['tab'] ?? 'scoring';
 ?>
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
@@ -49,8 +59,8 @@
                 </div>
               </td>
             </tr>
-          <?php else: foreach ($candidates as $c): ?>
-            <?php 
+            <?php else: foreach ($candidates as $c): ?>
+              <?php
               $passedProdi = '-';
               foreach ($programs as $p) {
                 if ($p['id'] == $c['passed_program_id']) {
@@ -58,67 +68,66 @@
                   break;
                 }
               }
-            ?>
-            <tr class="hover:bg-slate-50/30 transition-colors">
-              <td class="px-6 py-4">
-                <div class="font-bold text-slate-800"><?= htmlspecialchars($c['full_name']) ?></div>
-                <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($c['email']) ?></div>
-              </td>
-              <td class="px-6 py-4 space-y-1">
-                <div class="text-[10px] text-slate-600 font-semibold">1. <?= htmlspecialchars($c['program1_name'] ?? '-') ?></div>
-                <?php if (!empty($c['program2_name'])): ?>
-                  <div class="text-[10px] text-slate-500 font-medium">2. <?= htmlspecialchars($c['program2_name']) ?></div>
-                <?php endif; ?>
-                <?php if (!empty($c['program3_name'])): ?>
-                  <div class="text-[10px] text-slate-500 font-medium">3. <?= htmlspecialchars($c['program3_name']) ?></div>
-                <?php endif; ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?php if ($c['selection_status'] === 'Lulus'): ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Lulus</span>
-                <?php elseif ($c['selection_status'] === 'Cadangan'): ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Cadangan</span>
-                <?php elseif ($c['selection_status'] === 'Tidak Lulus'): ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-300 text-red-700">Tidak Lulus</span>
-                <?php else: ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Pending</span>
-                <?php endif; ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?php if ((int)$c['is_published'] === 1): ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">Terbit</span>
-                <?php else: ?>
-                  <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Draft</span>
-                <?php endif; ?>
-              </td>
-              <td class="px-6 py-4 font-semibold text-slate-750"><?= htmlspecialchars($passedProdi) ?></td>
-              <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button 
-                    type="button" 
-                    onclick="openExamStagesModal(<?= htmlspecialchars(json_encode($c)) ?>)"
-                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm"
-                  >
-                    🏆 Tahapan
-                  </button>
-                  <button 
-                    type="button" 
-                    onclick="openScoringModal(<?= htmlspecialchars(json_encode($c)) ?>)"
-                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm"
-                  >
-                    📝 Nilai
-                  </button>
-                  <form action="<?= getBaseUrl('/admin/selection/publish') ?>" method="POST" class="inline">
-                    <input type="hidden" name="registration_id" value="<?= $c['id'] ?>">
-                    <input type="hidden" name="is_published" value="<?= (int)$c['is_published'] === 1 ? '0' : '1' ?>">
-                    <button type="submit" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-750 rounded-full cursor-pointer transition-colors">
-                      <?= (int)$c['is_published'] === 1 ? '🔒 Tarik' : '📢 Publish' ?>
+              ?>
+              <tr class="hover:bg-slate-50/30 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="font-bold text-slate-800"><?= htmlspecialchars($c['full_name']) ?></div>
+                  <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($c['email']) ?></div>
+                </td>
+                <td class="px-6 py-4 space-y-1">
+                  <div class="text-[10px] text-slate-600 font-semibold">1. <?= htmlspecialchars($c['program1_name'] ?? '-') ?></div>
+                  <?php if (!empty($c['program2_name'])): ?>
+                    <div class="text-[10px] text-slate-500 font-medium">2. <?= htmlspecialchars($c['program2_name']) ?></div>
+                  <?php endif; ?>
+                  <?php if (!empty($c['program3_name'])): ?>
+                    <div class="text-[10px] text-slate-500 font-medium">3. <?= htmlspecialchars($c['program3_name']) ?></div>
+                  <?php endif; ?>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <?php if ($c['selection_status'] === 'Lulus'): ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Lulus</span>
+                  <?php elseif ($c['selection_status'] === 'Cadangan'): ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Cadangan</span>
+                  <?php elseif ($c['selection_status'] === 'Tidak Lulus'): ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-300 text-red-700">Tidak Lulus</span>
+                  <?php else: ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Pending</span>
+                  <?php endif; ?>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <?php if ((int)$c['is_published'] === 1): ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">Terbit</span>
+                  <?php else: ?>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-200 text-slate-500">Draft</span>
+                  <?php endif; ?>
+                </td>
+                <td class="px-6 py-4 font-semibold text-slate-750"><?= htmlspecialchars($passedProdi) ?></td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onclick="openExamStagesModal(<?= htmlspecialchars(json_encode($c)) ?>)"
+                      class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
+                      🏆 Tahapan
                     </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-          <?php endforeach; endif; ?>
+                    <button
+                      type="button"
+                      onclick="openScoringModal(<?= htmlspecialchars(json_encode($c)) ?>)"
+                      class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
+                      📝 Nilai
+                    </button>
+                    <form action="<?= getBaseUrl('/admin/selection/publish') ?>" method="POST" class="inline">
+                      <input type="hidden" name="registration_id" value="<?= $c['id'] ?>">
+                      <input type="hidden" name="is_published" value="<?= (int)$c['is_published'] === 1 ? '0' : '1' ?>">
+                      <button type="submit" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-750 rounded-full cursor-pointer transition-colors">
+                        <?= (int)$c['is_published'] === 1 ? '🔒 Tarik' : '📢 Publish' ?>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+          <?php endforeach;
+          endif; ?>
         </tbody>
       </table>
     </div>
@@ -285,7 +294,7 @@
 
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -296,7 +305,7 @@
   function closeScoringModal() {
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
@@ -335,7 +344,7 @@
 
     const modal = document.getElementById('exam-stages-modal');
     const card = document.getElementById('exam-stages-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -346,7 +355,7 @@
   function closeExamStagesModal() {
     const modal = document.getElementById('exam-stages-modal');
     const card = document.getElementById('exam-stages-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {

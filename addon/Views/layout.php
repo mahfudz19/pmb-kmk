@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\Core\View\PageMeta $meta
  * @var string $children
@@ -7,17 +8,17 @@ $userId = $_SESSION['auth.user_id'] ?? null;
 $unreadCount = 0;
 $notifications = [];
 if ($userId) {
-    try {
-        $db = \App\Core\Foundation\Application::getInstance()->getContainer()->resolve(\App\Core\Database\DatabaseManager::class)->connection();
-        $stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = :user_id OR user_id IS NULL ORDER BY created_at DESC LIMIT 5");
-        $stmt->execute(['user_id' => $userId]);
-        $notifications = $stmt->fetchAll();
+  try {
+    $db = \App\Core\Foundation\Application::getInstance()->getContainer()->resolve(\App\Core\Database\DatabaseManager::class)->connection();
+    $stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = :user_id OR user_id IS NULL ORDER BY created_at DESC LIMIT 5");
+    $stmt->execute(['user_id' => $userId]);
+    $notifications = $stmt->fetchAll();
 
-        $stmtCount = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE (user_id = :user_id OR user_id IS NULL) AND is_read = 0");
-        $stmtCount->execute(['user_id' => $userId]);
-        $unreadCount = (int)($stmtCount->fetch()['count'] ?? 0);
-    } catch (\Throwable $e) {
-    }
+    $stmtCount = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE (user_id = :user_id OR user_id IS NULL) AND is_read = 0");
+    $stmtCount->execute(['user_id' => $userId]);
+    $unreadCount = (int)($stmtCount->fetch()['count'] ?? 0);
+  } catch (\Throwable $e) {
+  }
 }
 $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
 ?>
@@ -106,6 +107,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
     .topbar-nav {
       display: none;
     }
+
     @media (min-width: 768px) {
       .topbar-nav {
         display: flex !important;
@@ -113,19 +115,23 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
         gap: 20px;
         margin-left: 24px;
       }
+
       .has-sidebar #sidebar-container {
         width: 16rem;
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
+
       .has-sidebar #app-content {
         margin-left: 16rem;
         transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
+
       .sidebar-collapsed #sidebar-container {
         width: 4rem !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
       }
+
       .sidebar-collapsed #app-content {
         margin-left: 4rem !important;
       }
@@ -140,131 +146,131 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
   </div>
 
   <?php
-    $isLoggedIn = (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true);
-    $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
-    $isAuthPage = str_contains($currentPath, '/login') || 
-                  str_contains($currentPath, '/register') || 
-                  str_contains($currentPath, '/verify-otp') || 
-                  str_contains($currentPath, '/otp-sent') || 
-                  str_contains($currentPath, '/resend-otp') || 
-                  str_contains($currentPath, '/password/forgot') || 
-                  str_contains($currentPath, '/password/reset');
-    $isDashboard = str_ends_with($currentPath, '/dashboard');
-    $isProfile = str_ends_with($currentPath, '/profile');
-    $isHistory = str_ends_with($currentPath, '/dashboard/history');
-    $isUsers = str_ends_with($currentPath, '/admin/users');
-    $isMaster = str_ends_with($currentPath, '/admin/master');
-    $isPayments = str_ends_with($currentPath, '/admin/payments');
-    $isVerifications = str_contains($currentPath, '/admin/verifications');
-    $isSelection = str_contains($currentPath, '/admin/selection');
-    $isAnnouncements = str_contains($currentPath, '/admin/announcements');
-    $activeTab = $_GET['tab'] ?? 'academic-year';
+  $isLoggedIn = (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true);
+  $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+  $isAuthPage = str_contains($currentPath, '/login') ||
+    str_contains($currentPath, '/register') ||
+    str_contains($currentPath, '/verify-otp') ||
+    str_contains($currentPath, '/otp-sent') ||
+    str_contains($currentPath, '/resend-otp') ||
+    str_contains($currentPath, '/password/forgot') ||
+    str_contains($currentPath, '/password/reset');
+  $isDashboard = str_ends_with($currentPath, '/dashboard');
+  $isProfile = str_ends_with($currentPath, '/profile');
+  $isHistory = str_ends_with($currentPath, '/dashboard/history');
+  $isUsers = str_ends_with($currentPath, '/admin/users');
+  $isMaster = str_ends_with($currentPath, '/admin/master');
+  $isPayments = str_ends_with($currentPath, '/admin/payments');
+  $isVerifications = str_contains($currentPath, '/admin/verifications');
+  $isSelection = str_contains($currentPath, '/admin/selection');
+  $isAnnouncements = str_contains($currentPath, '/admin/announcements');
+  $activeTab = $_GET['tab'] ?? 'academic-year';
 
-    $showHistoryMenu = false;
-    if ($isLoggedIn && $_SESSION['auth.user_role'] === 'user') {
-        $userId = $_SESSION['auth.user_id'] ?? null;
-        if ($userId) {
-            $container = App\Core\Foundation\Application::getInstance()->getContainer();
-            $registrationsModel = $container->resolve(Addon\Models\RegistrationModel::class);
-            $db = $registrationsModel->getDb();
-            $stmt = $db->prepare("SELECT id FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
-            $stmt->execute(['user_id' => $userId]);
-            $firstReg = $stmt->fetch();
-            if ($firstReg) {
-                $stmt = $db->prepare("SELECT count(*) FROM selection_results WHERE registration_id = :id AND is_published = 1 AND status IN ('Lulus', 'Tidak Lulus', 'Cadangan')");
-                $stmt->execute(['id' => $firstReg['id']]);
-                if ($stmt->fetchColumn() > 0) {
-                    $showHistoryMenu = true;
-                }
-            }
+  $showHistoryMenu = false;
+  if ($isLoggedIn && $_SESSION['auth.user_role'] === 'user') {
+    $userId = $_SESSION['auth.user_id'] ?? null;
+    if ($userId) {
+      $container = App\Core\Foundation\Application::getInstance()->getContainer();
+      $registrationsModel = $container->resolve(Addon\Models\RegistrationModel::class);
+      $db = $registrationsModel->getDb();
+      $stmt = $db->prepare("SELECT id FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
+      $stmt->execute(['user_id' => $userId]);
+      $firstReg = $stmt->fetch();
+      if ($firstReg) {
+        $stmt = $db->prepare("SELECT count(*) FROM selection_results WHERE registration_id = :id AND is_published = 1 AND status IN ('Lulus', 'Tidak Lulus', 'Cadangan')");
+        $stmt->execute(['id' => $firstReg['id']]);
+        if ($stmt->fetchColumn() > 0) {
+          $showHistoryMenu = true;
         }
+      }
     }
+  }
   ?>
 
   <!-- Header -->
   <?php if (!$isAuthPage): ?>
-  <header class="fixed top-0 left-0 right-0 z-40 h-14 bg-white/75 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between shadow-sm">
-    <div class="flex items-center gap-3">
-      <?php if ($hasSidebar): ?>
-        <button type="button" id="btn-mobile-toggle" onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer focus:outline-none">
-          <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-        <button type="button" id="btn-desktop-collapse" onclick="toggleDesktopSidebar()" class="hidden md:flex p-1.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer focus:outline-none">
-          <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
-      <?php endif; ?>
-      <a data-spa href="<?= getBaseUrl('/') ?>" class="flex items-center gap-2.5 transition-all active:scale-[0.98]">
-        <img src="<?= getBaseUrl('/logo_app/mazu-logo.svg') ?>" alt="Logo" class="h-7 w-auto" />
-      </a>
-      <?php if ($isLoggedIn && !$hasSidebar): ?>
-        <nav class="topbar-nav text-xs font-bold text-slate-600">
-          <a data-spa href="/dashboard" class="hover:text-indigo-650 transition-colors <?= $isDashboard ? 'text-indigo-650 font-extrabold' : '' ?>">Dashboard</a>
-          <a data-spa href="/profile" class="hover:text-indigo-650 transition-colors <?= $isProfile ? 'text-indigo-650 font-extrabold' : '' ?>">Profil Saya</a>
-          <?php if ($showHistoryMenu): ?>
-            <a data-spa href="/dashboard/history" class="hover:text-indigo-650 transition-colors <?= $isHistory ? 'text-indigo-650 font-extrabold' : '' ?>">Riwayat Pendaftaran</a>
-          <?php endif; ?>
-        </nav>
-      <?php endif; ?>
-    </div>
-
-    <div class="flex items-center gap-4">
-      <?php if ($isLoggedIn): ?>
-        <!-- Profile Dropdown -->
-        <div class="relative">
-          <button type="button" onclick="toggleUserDropdown(event)" class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-full md:rounded-xl transition-all cursor-pointer focus:outline-none">
-            <div class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs shadow-sm uppercase">
-              <?= substr($_SESSION['auth.user_name'] ?? 'U', 0, 1) ?>
-            </div>
-            <div class="hidden md:block text-left">
-              <div class="text-xs font-semibold text-slate-850 leading-tight max-w-[100px] truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></div>
-              <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></div>
-            </div>
-            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-450 hidden md:block transition-transform duration-200" id="dropdown-chevron"></i>
+    <header class="fixed top-0 left-0 right-0 z-40 h-14 bg-white/75 backdrop-blur-md border-b border-slate-200/80 px-4 md:px-6 flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <?php if ($hasSidebar): ?>
+          <button type="button" id="btn-mobile-toggle" onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer focus:outline-none">
+            <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
-
-          <!-- Dropdown Card -->
-          <div id="user-dropdown" class="dropdown-animate absolute right-0 mt-2 w-52 bg-white border border-slate-200/80 rounded-2xl shadow-lg py-1.5 text-xs text-slate-700 z-50">
-            <div class="px-4 py-2 border-b border-slate-100 md:hidden">
-              <p class="font-bold text-slate-855 truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></p>
-              <p class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></p>
-            </div>
-            <?php if (!$hasSidebar): ?>
-              <a data-spa href="/dashboard" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors md:hidden">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i> Dashboard
-              </a>
-            <?php endif; ?>
-            <a data-spa href="/profile" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
-              <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> Profil Saya
-            </a>
+          <button type="button" id="btn-desktop-collapse" onclick="toggleDesktopSidebar()" class="hidden md:flex p-1.5 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer focus:outline-none">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        <?php endif; ?>
+        <a data-spa href="<?= getBaseUrl('/') ?>" class="flex items-center gap-2.5 transition-all active:scale-[0.98]">
+          <img src="<?= getBaseUrl('/logo_app/mazu-logo.svg') ?>" alt="Logo" class="h-7 w-auto" />
+        </a>
+        <?php if ($isLoggedIn && !$hasSidebar): ?>
+          <nav class="topbar-nav text-xs font-bold text-slate-600">
+            <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="hover:text-indigo-650 transition-colors <?= $isDashboard ? 'text-indigo-650 font-extrabold' : '' ?>">Dashboard</a>
+            <a data-spa href="<?= getBaseUrl('/profile') ?>" class="hover:text-indigo-650 transition-colors <?= $isProfile ? 'text-indigo-650 font-extrabold' : '' ?>">Profil Saya</a>
             <?php if ($showHistoryMenu): ?>
-              <a data-spa href="/dashboard/history" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
-                <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Riwayat Pendaftaran
-              </a>
+              <a data-spa href="<?= getBaseUrl('/dashboard/history') ?>" class="hover:text-indigo-650 transition-colors <?= $isHistory ? 'text-indigo-650 font-extrabold' : '' ?>">Riwayat Pendaftaran</a>
             <?php endif; ?>
-            <div class="border-t border-slate-100 my-1"></div>
-            <form id="logout-form" action="<?= getBaseUrl('/logout') ?>" method="POST" onsubmit="openLogoutModal(event)">
-              <button type="submit" onclick="closeUserDropdown()" class="w-full text-left flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 text-red-600 font-bold transition-colors cursor-pointer border-none bg-transparent">
-                <i data-lucide="log-out" class="w-4 h-4 text-red-500"></i> Keluar
-              </button>
-            </form>
+          </nav>
+        <?php endif; ?>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <?php if ($isLoggedIn): ?>
+          <!-- Profile Dropdown -->
+          <div class="relative">
+            <button type="button" onclick="toggleUserDropdown(event)" class="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-full md:rounded-xl transition-all cursor-pointer focus:outline-none">
+              <div class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs shadow-sm uppercase">
+                <?= substr($_SESSION['auth.user_name'] ?? 'U', 0, 1) ?>
+              </div>
+              <div class="hidden md:block text-left">
+                <div class="text-xs font-semibold text-slate-850 leading-tight max-w-[100px] truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></div>
+                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-450 hidden md:block transition-transform duration-200" id="dropdown-chevron"></i>
+            </button>
+
+            <!-- Dropdown Card -->
+            <div id="user-dropdown" class="dropdown-animate absolute right-0 mt-2 w-52 bg-white border border-slate-200/80 rounded-2xl shadow-lg py-1.5 text-xs text-slate-700 z-50">
+              <div class="px-4 py-2 border-b border-slate-100 md:hidden">
+                <p class="font-bold text-slate-855 truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></p>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></p>
+              </div>
+              <?php if (!$hasSidebar): ?>
+                <a data-spa href="<?= getBaseUrl('/dashboard') ?>" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors md:hidden">
+                  <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i> Dashboard
+                </a>
+              <?php endif; ?>
+              <a data-spa href="<?= getBaseUrl('/profile') ?>" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
+                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i> Profil Saya
+              </a>
+              <?php if ($showHistoryMenu): ?>
+                <a data-spa href="<?= getBaseUrl('/dashboard/history') ?>" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
+                  <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Riwayat Pendaftaran
+                </a>
+              <?php endif; ?>
+              <div class="border-t border-slate-100 my-1"></div>
+              <form id="logout-form" action="<?= getBaseUrl('/logout') ?>" method="POST" onsubmit="openLogoutModal(event)">
+                <button type="submit" onclick="closeUserDropdown()" class="w-full text-left flex items-center gap-2.5 px-4 py-2 hover:bg-red-50 text-red-600 font-bold transition-colors cursor-pointer border-none bg-transparent">
+                  <i data-lucide="log-out" class="w-4 h-4 text-red-500"></i> Keluar
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
-      <?php else: ?>
-        <nav class="flex items-center gap-4 text-xs font-semibold">
-          <?php
+        <?php else: ?>
+          <nav class="flex items-center gap-4 text-xs font-semibold">
+            <?php
             $isLogin = str_ends_with($currentPath, '/login');
             $isRegister = str_ends_with($currentPath, '/register');
-          ?>
-          <?php if (!$isLogin): ?>
-            <a href="<?= getBaseUrl('/login') ?>" class="text-slate-600 hover:text-indigo-650 transition-colors">Login</a>
-          <?php endif; ?>
-          <?php if (!$isRegister): ?>
-            <a href="<?= getBaseUrl('/register') ?>" class="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow active:scale-[0.98]">Daftar</a>
-          <?php endif; ?>
-        </nav>
-      <?php endif; ?>
-    </div>
-  </header>
+            ?>
+            <?php if (!$isLogin): ?>
+              <a href="<?= getBaseUrl('/login') ?>" class="text-slate-600 hover:text-indigo-650 transition-colors">Login</a>
+            <?php endif; ?>
+            <?php if (!$isRegister): ?>
+              <a href="<?= getBaseUrl('/register') ?>" class="text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow active:scale-[0.98]">Daftar</a>
+            <?php endif; ?>
+          </nav>
+        <?php endif; ?>
+      </div>
+    </header>
   <?php endif; ?>
 
   <!-- Sidebar mobile drawer backdrop -->
@@ -291,7 +297,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
         <?php if (has_any_permission(['manage_users', 'verify_payment', 'verify_document', 'manage_selection', 'manage_settings'])): ?>
           <div class="space-y-1.5 border-t border-slate-100 pt-5">
             <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block pl-3 mb-1 sidebar-collapsed-hide">Administrasi</span>
-            
+
             <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection'])): ?>
               <a data-spa data-sidebar-link="registrants" href="<?= getBaseUrl('/admin/registrants') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
                 <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
@@ -364,25 +370,25 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
                 </button>
 
                 <div id="accordion-master-sublinks" class="accordion-content pl-4 border-l border-slate-100 ml-5 mt-1 space-y-0.5 sidebar-collapsed-hide">
-                  <a data-spa data-sidebar-sublink="wave" href="/admin/master?tab=wave" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="wave" href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="waves" class="w-3.5 h-3.5"></i> Gelombang
                   </a>
-                  <a data-spa data-sidebar-sublink="faculty" href="/admin/master?tab=faculty" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="faculty" href="<?= getBaseUrl('/admin/master?tab=faculty/') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="building" class="w-3.5 h-3.5"></i> Fakultas
                   </a>
-                  <a data-spa data-sidebar-sublink="study-program" href="/admin/master?tab=study-program" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="study-program" href="<?= getBaseUrl('/admin/master?tab=study-program') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Program Studi
                   </a>
-                  <a data-spa data-sidebar-sublink="document-type" href="/admin/master?tab=document-type" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="document-type" href="<?= getBaseUrl('/admin/master?tab=document-type') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Jenis Dokumen
                   </a>
-                  <a data-spa data-sidebar-sublink="payment-account" href="/admin/master?tab=payment-account" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="payment-account" href="<?= getBaseUrl('/admin/master?tab=payment-account') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Rekening Penerimaan
                   </a>
-                  <a data-spa data-sidebar-sublink="registration-fee" href="/admin/master?tab=registration-fee" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="registration-fee" href="<?= getBaseUrl('/admin/master?tab=registration-fee') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Biaya Formulir
                   </a>
-                  <a data-spa data-sidebar-sublink="nim-format" href="/admin/master?tab=nim-format" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
+                  <a data-spa data-sidebar-sublink="nim-format" href="<?= getBaseUrl('/admin/master?tab=nim-format') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="binary" class="w-3.5 h-3.5"></i> Format NIM
                   </a>
                 </div>
@@ -762,7 +768,9 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
           timerProgressBar: true
         });
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + (window.location.search.replace(/[?&]success=[^&]+/g, '').replace(/^&/, '?'));
-        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+        window.history.replaceState({
+          path: cleanUrl
+        }, '', cleanUrl);
       }
 
       if (errorMsg) {
@@ -777,7 +785,9 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
           timerProgressBar: true
         });
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + (window.location.search.replace(/[?&]error=[^&]+/g, '').replace(/^&/, '?'));
-        window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+        window.history.replaceState({
+          path: cleanUrl
+        }, '', cleanUrl);
       }
     }
     window.confirmAction = function(event, title, text) {
@@ -801,17 +811,53 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      try { lucide.createIcons(); } catch (e) { console.error(e); }
-      try { updateSidebarActiveState(); } catch (e) { console.error(e); }
-      try { initClientPagination(); } catch (e) { console.error(e); }
-      try { checkSweetAlertNotifications(); } catch (e) { console.error(e); }
+      try {
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        updateSidebarActiveState();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        initClientPagination();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        checkSweetAlertNotifications();
+      } catch (e) {
+        console.error(e);
+      }
     });
     window.addEventListener("spa:navigated", () => {
-      try { lucide.createIcons(); } catch (e) { console.error(e); }
-      try { updateSidebarActiveState(); } catch (e) { console.error(e); }
-      try { closeMobileSidebar(); } catch (e) { console.error(e); }
-      try { initClientPagination(); } catch (e) { console.error(e); }
-      try { checkSweetAlertNotifications(); } catch (e) { console.error(e); }
+      try {
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        updateSidebarActiveState();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        closeMobileSidebar();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        initClientPagination();
+      } catch (e) {
+        console.error(e);
+      }
+      try {
+        checkSweetAlertNotifications();
+      } catch (e) {
+        console.error(e);
+      }
     });
   </script>
 </body>

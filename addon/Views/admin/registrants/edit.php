@@ -1,30 +1,37 @@
 <?php
+
+/**
+ * @var null|array $registration
+ * @var mixed $waves
+ * @var mixed $study_programs
+ */
+
 $jsonData = json_decode(file_get_contents(MAZU_ENV_PATH . 'data.json'), true);
 $agamaList = $jsonData['agama'][0] ?? [];
 $negaraList = $jsonData['kewarganegaraan'][0] ?? [];
 $tinggalList = $jsonData['jenis_tinggal'][0] ?? [];
 $transportList = $jsonData['alat_transportasi'][0] ?? [];
 $pendidikanList = $jsonData['jenjang_pendidikan'][0] ?? [];
-usort($pendidikanList, function($a, $b) {
-    return ((int)($a['id_jenj_didik'] ?? 0)) <=> ((int)($b['id_jenj_didik'] ?? 0));
+usort($pendidikanList, function ($a, $b) {
+  return ((int)($a['id_jenj_didik'] ?? 0)) <=> ((int)($b['id_jenj_didik'] ?? 0));
 });
 
-$penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], function($item) {
-    return !empty($item['nm_penghasilan']);
+$penghasilanList = array_values(array_filter($jsonData['penghasilan'][0] ?? [], function ($item) {
+  return !empty($item['nm_penghasilan']);
 }));
-usort($penghasilanList, function($a, $b) {
-    return ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0));
+usort($penghasilanList, function ($a, $b) {
+  return ((int)($a['id_penghasilan'] ?? 0)) <=> ((int)($b['id_penghasilan'] ?? 0));
 });
 
 $pekerjaanList = $jsonData['pekerjaan'][0] ?? [];
-usort($pekerjaanList, function($a, $b) {
-    $nameA = $a['nm_pekerjaan'] ?? '';
-    $nameB = $b['nm_pekerjaan'] ?? '';
-    if ($nameA === 'Tidak bekerja') return -1;
-    if ($nameB === 'Tidak bekerja') return 1;
-    if ($nameA === 'Lainnya' || $nameA === 'Sudah Meninggal') return 1;
-    if ($nameB === 'Lainnya' || $nameB === 'Sudah Meninggal') return -1;
-    return strcasecmp($nameA, $nameB);
+usort($pekerjaanList, function ($a, $b) {
+  $nameA = $a['nm_pekerjaan'] ?? '';
+  $nameB = $b['nm_pekerjaan'] ?? '';
+  if ($nameA === 'Tidak bekerja') return -1;
+  if ($nameB === 'Tidak bekerja') return 1;
+  if ($nameA === 'Lainnya' || $nameA === 'Sudah Meninggal') return 1;
+  if ($nameB === 'Lainnya' || $nameB === 'Sudah Meninggal') return -1;
+  return strcasecmp($nameA, $nameB);
 });
 
 $wilayahList = $jsonData['wilayah'][0] ?? [];
@@ -34,7 +41,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
     <div class="space-y-1">
       <div class="flex items-center gap-2">
-        <a data-spa href="/admin/registrants/detail?id=<?= $registration['id'] ?>" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+        <a data-spa href="<?= getBaseUrl('/admin/registrants/detail?id=' . $registration['id']) ?>" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
           <span>← Kembali ke Detail Pendaftar</span>
         </a>
       </div>
@@ -60,7 +67,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">1. Biodata Pribadi</h3>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
               <label for="full_name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Lengkap</label>
@@ -132,7 +139,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">2. Alamat Rumah & Kontak</h3>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
             <div>
               <label for="citizenship" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kewarganegaraan</label>
@@ -241,7 +248,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">3. Riwayat Pendidikan Asal</h3>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
             <div>
               <label for="school_name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nama Sekolah</label>
@@ -287,7 +294,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">4. Data Orang Tua / Wali</h3>
-          
+
           <div class="space-y-3 pt-2">
             <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👨 Data Ayah</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
@@ -438,7 +445,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
       <div class="space-y-6">
         <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">Program Studi & Jalur</h3>
-          
+
           <div class="space-y-4 text-xs">
             <div>
               <label for="wave_id" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Gelombang Pendaftaran</label>
@@ -485,8 +492,8 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all cursor-pointer">
             💾 Simpan Perubahan
           </button>
-          
-          <a data-spa href="/admin/registrants/detail?id=<?= $registration['id'] ?>" class="w-full inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all text-center">
+
+          <a data-spa href="<?= getBaseUrl('/admin/registrants/detail?id=' . $registration['id']) ?>" class="w-full inline-flex items-center justify-center px-6 py-3 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all text-center">
             Batal
           </a>
         </div>
@@ -496,150 +503,150 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 </div>
 
 <script>
-(function() {
-  const waveStudyPrograms = <?= json_encode($wave_prodis ?? []) ?>;
-  const allStudyPrograms = <?= json_encode($study_programs) ?>;
-  const waveSelect = document.getElementById('wave_id');
-  const p1Select = document.getElementById('program1_id');
-  const p2Select = document.getElementById('program2_id');
-  const p3Select = document.getElementById('program3_id');
+  (function() {
+    const waveStudyPrograms = <?= json_encode($wave_prodis ?? []) ?>;
+    const allStudyPrograms = <?= json_encode($study_programs) ?>;
+    const waveSelect = document.getElementById('wave_id');
+    const p1Select = document.getElementById('program1_id');
+    const p2Select = document.getElementById('program2_id');
+    const p3Select = document.getElementById('program3_id');
 
-  function updateStudyPrograms() {
-    const selectedWaveId = waveSelect.value;
-    const allowedProdiIds = waveStudyPrograms[selectedWaveId] || [];
+    function updateStudyPrograms() {
+      const selectedWaveId = waveSelect.value;
+      const allowedProdiIds = waveStudyPrograms[selectedWaveId] || [];
 
-    const currentP1 = p1Select.value;
-    const currentP2 = p2Select.value;
-    const currentP3 = p3Select.value;
+      const currentP1 = p1Select.value;
+      const currentP2 = p2Select.value;
+      const currentP3 = p3Select.value;
 
-    p1Select.innerHTML = '<option value="">Pilih Program Studi 1</option>';
-    p2Select.innerHTML = '<option value="">Tidak Memilih Pilihan 2</option>';
-    p3Select.innerHTML = '<option value="">Tidak Memilih Pilihan 3</option>';
+      p1Select.innerHTML = '<option value="">Pilih Program Studi 1</option>';
+      p2Select.innerHTML = '<option value="">Tidak Memilih Pilihan 2</option>';
+      p3Select.innerHTML = '<option value="">Tidak Memilih Pilihan 3</option>';
 
-    allStudyPrograms.forEach(sp => {
-      if (allowedProdiIds.includes(parseInt(sp.id))) {
-        const opt1 = document.createElement('option');
-        opt1.value = sp.id;
-        opt1.textContent = sp.name;
-        if (sp.id == currentP1) opt1.selected = true;
-        p1Select.appendChild(opt1);
+      allStudyPrograms.forEach(sp => {
+        if (allowedProdiIds.includes(parseInt(sp.id))) {
+          const opt1 = document.createElement('option');
+          opt1.value = sp.id;
+          opt1.textContent = sp.name;
+          if (sp.id == currentP1) opt1.selected = true;
+          p1Select.appendChild(opt1);
 
-        const opt2 = document.createElement('option');
-        opt2.value = sp.id;
-        opt2.textContent = sp.name;
-        if (sp.id == currentP2) opt2.selected = true;
-        p2Select.appendChild(opt2);
+          const opt2 = document.createElement('option');
+          opt2.value = sp.id;
+          opt2.textContent = sp.name;
+          if (sp.id == currentP2) opt2.selected = true;
+          p2Select.appendChild(opt2);
 
-        const opt3 = document.createElement('option');
-        opt3.value = sp.id;
-        opt3.textContent = sp.name;
-        if (sp.id == currentP3) opt3.selected = true;
-        p3Select.appendChild(opt3);
+          const opt3 = document.createElement('option');
+          opt3.value = sp.id;
+          opt3.textContent = sp.name;
+          if (sp.id == currentP3) opt3.selected = true;
+          p3Select.appendChild(opt3);
+        }
+      });
+
+      if (p1Select.value && !allowedProdiIds.includes(parseInt(p1Select.value))) {
+        p1Select.value = "";
+      }
+      if (p2Select.value && !allowedProdiIds.includes(parseInt(p2Select.value))) {
+        p2Select.value = "";
+      }
+      if (p3Select.value && !allowedProdiIds.includes(parseInt(p3Select.value))) {
+        p3Select.value = "";
+      }
+    }
+
+    waveSelect.addEventListener('change', updateStudyPrograms);
+    p1Select.addEventListener('change', updateStudyPrograms);
+
+    updateStudyPrograms();
+  })();
+
+  const allWilayahDataEdit = <?= json_encode($wilayahList) ?>;
+  const initialDistrictValEdit = <?= json_encode($address['district'] ?? '') ?>;
+  const initialSchoolDistrictValEdit = <?= json_encode($education['school_address'] ?? '') ?>;
+
+  function filterEditDistricts(query) {
+    const select = document.getElementById('district');
+    const term = (query || '').toLowerCase().trim();
+    const currentVal = select.value || initialDistrictValEdit;
+
+    select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan</option>';
+
+    let matches = 0;
+    for (let i = 0; i < allWilayahDataEdit.length; i++) {
+      const item = allWilayahDataEdit[i];
+      const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
+      if (!term || fullText.includes(term)) {
+        const opt = document.createElement('option');
+        opt.value = item.kecamatan;
+        opt.setAttribute('data-id-wil', item.id_wil);
+        opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
+        if (item.kecamatan === currentVal) {
+          opt.selected = true;
+          document.getElementById('district_id_wil').value = item.id_wil;
+        }
+        select.appendChild(opt);
+        matches++;
+        if (matches >= 50) break;
+      }
+    }
+  }
+
+  function filterEditSchoolDistricts(query) {
+    const select = document.getElementById('school_address');
+    const term = (query || '').toLowerCase().trim();
+    const currentVal = select.value || initialSchoolDistrictValEdit;
+
+    select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan Sekolah</option>';
+
+    let matches = 0;
+    for (let i = 0; i < allWilayahDataEdit.length; i++) {
+      const item = allWilayahDataEdit[i];
+      const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
+      if (!term || fullText.includes(term)) {
+        const opt = document.createElement('option');
+        opt.value = item.kecamatan;
+        opt.setAttribute('data-id-wil', item.id_wil);
+        opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
+        if (item.kecamatan === currentVal) {
+          opt.selected = true;
+          document.getElementById('school_address_id_wil').value = item.id_wil;
+        }
+        select.appendChild(opt);
+        matches++;
+        if (matches >= 50) break;
+      }
+    }
+  }
+
+  function onDistrictSelectChange(selectEl) {
+    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+    const idWil = selectedOpt.getAttribute('data-id-wil') || '';
+    document.getElementById('district_id_wil').value = idWil;
+  }
+
+  function onSchoolDistrictSelectChange(selectEl) {
+    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+    const idWil = selectedOpt.getAttribute('data-id-wil') || '';
+    document.getElementById('school_address_id_wil').value = idWil;
+  }
+
+  const kpsSelectEdit = document.getElementById('kps_receiver');
+  const kpsNumberWrapperEdit = document.getElementById('kps_number_wrapper');
+  const kpsNumberInputEdit = document.getElementById('kps_number');
+
+  if (kpsSelectEdit) {
+    kpsSelectEdit.addEventListener('change', function() {
+      if (this.value === 'ya') {
+        kpsNumberWrapperEdit.classList.remove('hidden');
+      } else {
+        kpsNumberWrapperEdit.classList.add('hidden');
+        kpsNumberInputEdit.value = '';
       }
     });
-
-    if (p1Select.value && !allowedProdiIds.includes(parseInt(p1Select.value))) {
-      p1Select.value = "";
-    }
-    if (p2Select.value && !allowedProdiIds.includes(parseInt(p2Select.value))) {
-      p2Select.value = "";
-    }
-    if (p3Select.value && !allowedProdiIds.includes(parseInt(p3Select.value))) {
-      p3Select.value = "";
-    }
   }
 
-  waveSelect.addEventListener('change', updateStudyPrograms);
-  p1Select.addEventListener('change', updateStudyPrograms);
-  
-  updateStudyPrograms();
-})();
-
-const allWilayahDataEdit = <?= json_encode($wilayahList) ?>;
-const initialDistrictValEdit = <?= json_encode($address['district'] ?? '') ?>;
-const initialSchoolDistrictValEdit = <?= json_encode($education['school_address'] ?? '') ?>;
-
-function filterEditDistricts(query) {
-  const select = document.getElementById('district');
-  const term = (query || '').toLowerCase().trim();
-  const currentVal = select.value || initialDistrictValEdit;
-
-  select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan</option>';
-
-  let matches = 0;
-  for (let i = 0; i < allWilayahDataEdit.length; i++) {
-    const item = allWilayahDataEdit[i];
-    const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
-    if (!term || fullText.includes(term)) {
-      const opt = document.createElement('option');
-      opt.value = item.kecamatan;
-      opt.setAttribute('data-id-wil', item.id_wil);
-      opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
-      if (item.kecamatan === currentVal) {
-        opt.selected = true;
-        document.getElementById('district_id_wil').value = item.id_wil;
-      }
-      select.appendChild(opt);
-      matches++;
-      if (matches >= 50) break;
-    }
-  }
-}
-
-function filterEditSchoolDistricts(query) {
-  const select = document.getElementById('school_address');
-  const term = (query || '').toLowerCase().trim();
-  const currentVal = select.value || initialSchoolDistrictValEdit;
-
-  select.innerHTML = '<option value="" disabled' + (!currentVal ? ' selected' : '') + '>Pilih Kecamatan Sekolah</option>';
-
-  let matches = 0;
-  for (let i = 0; i < allWilayahDataEdit.length; i++) {
-    const item = allWilayahDataEdit[i];
-    const fullText = (item.kecamatan + ' ' + (item.kabupaten || '') + ' ' + (item.provinsi || '')).toLowerCase();
-    if (!term || fullText.includes(term)) {
-      const opt = document.createElement('option');
-      opt.value = item.kecamatan;
-      opt.setAttribute('data-id-wil', item.id_wil);
-      opt.textContent = item.kecamatan + (item.kabupaten ? ' (' + item.kabupaten + ')' : '');
-      if (item.kecamatan === currentVal) {
-        opt.selected = true;
-        document.getElementById('school_address_id_wil').value = item.id_wil;
-      }
-      select.appendChild(opt);
-      matches++;
-      if (matches >= 50) break;
-    }
-  }
-}
-
-function onDistrictSelectChange(selectEl) {
-  const selectedOpt = selectEl.options[selectEl.selectedIndex];
-  const idWil = selectedOpt.getAttribute('data-id-wil') || '';
-  document.getElementById('district_id_wil').value = idWil;
-}
-
-function onSchoolDistrictSelectChange(selectEl) {
-  const selectedOpt = selectEl.options[selectEl.selectedIndex];
-  const idWil = selectedOpt.getAttribute('data-id-wil') || '';
-  document.getElementById('school_address_id_wil').value = idWil;
-}
-
-const kpsSelectEdit = document.getElementById('kps_receiver');
-const kpsNumberWrapperEdit = document.getElementById('kps_number_wrapper');
-const kpsNumberInputEdit = document.getElementById('kps_number');
-
-if (kpsSelectEdit) {
-  kpsSelectEdit.addEventListener('change', function() {
-    if (this.value === 'ya') {
-      kpsNumberWrapperEdit.classList.remove('hidden');
-    } else {
-      kpsNumberWrapperEdit.classList.add('hidden');
-      kpsNumberInputEdit.value = '';
-    }
-  });
-}
-
-filterEditDistricts('');
-filterEditSchoolDistricts('');
+  filterEditDistricts('');
+  filterEditSchoolDistricts('');
 </script>

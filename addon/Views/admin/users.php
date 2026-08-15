@@ -1,3 +1,9 @@
+<?php
+
+/**
+ * @var array $users
+ */
+?>
 <div class="w-full py-2">
 
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
@@ -35,23 +41,22 @@
                 <?php endif; ?>
               </td>
               <td class="px-6 py-4 text-sm text-slate-600 max-w-xs truncate">
-                <?php 
-                  $perms = json_decode($u['permissions'] ?? '[]', true);
-                  if (empty($perms)) {
-                    echo '<span class="text-slate-400 text-xs italic">Tanpa akses</span>';
-                  } elseif (in_array('*', $perms, true)) {
-                    echo '<span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-200">Akses Penuh (*)</span>';
-                  } else {
-                    echo implode(', ', array_map(fn($p) => htmlspecialchars($p), $perms));
-                  }
+                <?php
+                $perms = json_decode($u['permissions'] ?? '[]', true);
+                if (empty($perms)) {
+                  echo '<span class="text-slate-400 text-xs italic">Tanpa akses</span>';
+                } elseif (in_array('*', $perms, true)) {
+                  echo '<span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-200">Akses Penuh (*)</span>';
+                } else {
+                  echo implode(', ', array_map(fn($p) => htmlspecialchars($p), $perms));
+                }
                 ?>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                 <button
                   type="button"
                   onclick="openEditModal(<?= htmlspecialchars(json_encode($u)) ?>)"
-                  class="inline-flex items-center justify-center px-4 py-1.5 border border-slate-200 rounded-full shadow-sm text-xs font-bold text-slate-700 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer"
-                >
+                  class="inline-flex items-center justify-center px-4 py-1.5 border border-slate-200 rounded-full shadow-sm text-xs font-bold text-slate-700 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer">
                   Edit Akses
                 </button>
               </td>
@@ -91,8 +96,7 @@
           name="role"
           id="edit-role"
           onchange="togglePermissionCheckboxes(this.value)"
-          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all bg-slate-50"
-        >
+          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all bg-slate-50">
           <option value="user">User (Pendaftar)</option>
           <option value="admin">Admin (Administrator)</option>
         </select>

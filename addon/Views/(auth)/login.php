@@ -42,7 +42,7 @@
   <div>
     <div class="flex justify-between items-center">
       <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
-      <a data-spa tabindex="-1" href="/password/forgot" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Lupa password?</a>
+      <a data-spa tabindex="-1" href="<?= getBaseUrl('/password/forgot') ?>" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Lupa password?</a>
     </div>
     <div class="relative mt-1">
       <input
@@ -94,7 +94,7 @@
 <div class="mt-6 border-t border-slate-200 pt-6 text-center">
   <p class="text-sm text-slate-500">
     Belum memiliki akun?
-    <a data-spa href="/register" class="font-semibold text-indigo-600 hover:text-indigo-500">Daftar Sekarang</a>
+    <a data-spa href="<?= getBaseUrl('/register') ?>" class="font-semibold text-indigo-600 hover:text-indigo-500">Daftar Sekarang</a>
   </p>
 </div>
 

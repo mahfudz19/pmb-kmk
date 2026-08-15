@@ -8,17 +8,17 @@
     </div>
 
     <?php
-      $codeVal = (int)($code ?? 403);
-      if ($codeVal === 404) {
-          $title = 'Halaman Tidak Ditemukan';
-          $desc = 'Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan.';
-      } elseif ($codeVal === 419) {
-          $title = 'Sesi Keamanan Kedaluwarsa';
-          $desc = 'Sesi keamanan Anda telah habis atau terjadi mismatch token CSRF. Silakan muat ulang halaman.';
-      } else {
-          $title = 'Akses Tidak Diizinkan';
-          $desc = 'Maaf, akun Anda tidak memiliki hak akses (permissions) yang memadai untuk membuka halaman ini.';
-      }
+    $codeVal = (int)($code ?? 403);
+    if ($codeVal === 404) {
+      $title = 'Halaman Tidak Ditemukan';
+      $desc = 'Maaf, halaman yang Anda cari tidak tersedia atau telah dipindahkan.';
+    } elseif ($codeVal === 419) {
+      $title = 'Sesi Keamanan Kedaluwarsa';
+      $desc = 'Sesi keamanan Anda telah habis atau terjadi mismatch token CSRF. Silakan muat ulang halaman.';
+    } else {
+      $title = 'Akses Tidak Diizinkan';
+      $desc = 'Maaf, akun Anda tidak memiliki hak akses (permissions) yang memadai untuk membuka halaman ini.';
+    }
     ?>
     <!-- Error Headers -->
     <div class="space-y-2">
@@ -40,9 +40,8 @@
     <!-- Action Buttons -->
     <div class="pt-2">
       <a
-        href="/dashboard"
-        class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all cursor-pointer hover:-translate-y-0.5"
-      >
+        href="<?= getBaseUrl('/dashboard') ?>"
+        class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all cursor-pointer hover:-translate-y-0.5">
         Kembali ke Dashboard
       </a>
     </div>

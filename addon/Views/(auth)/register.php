@@ -131,7 +131,7 @@
 <div class="mt-6 border-t border-slate-200 pt-6 text-center">
   <p class="text-sm text-slate-500">
     Sudah memiliki akun?
-    <a data-spa href="/login" class="font-semibold text-indigo-600 hover:text-indigo-500">Login</a>
+    <a data-spa href="<?= getBaseUrl('/login') ?>" class="font-semibold text-indigo-600 hover:text-indigo-500">Login</a>
   </p>
 </div>
 

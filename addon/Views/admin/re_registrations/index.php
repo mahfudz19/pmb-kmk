@@ -1,6 +1,11 @@
 <?php
+
 /**
  * @var array $list
+ * @var int $totalCount
+ * @var int $currentPage
+ * @var int $limit
+ * @var int $totalPages
  */
 ?>
 
@@ -17,7 +22,7 @@
     <div class="p-6 border-b border-slate-100">
       <h3 class="text-sm font-bold text-slate-800">Daftar Antrean Daftar Ulang</h3>
     </div>
-    
+
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
@@ -43,7 +48,8 @@
               </td>
             </tr>
           <?php else: ?>
-            <?php $no = ($currentPage - 1) * $limit + 1; foreach ($list as $row): ?>
+            <?php $no = ($currentPage - 1) * $limit + 1;
+            foreach ($list as $row): ?>
               <tr class="hover:bg-slate-50/50 transition-colors">
                 <td class="py-4 px-6 text-center text-slate-400 font-bold"><?= $no++ ?></td>
                 <td class="py-4 px-6">
@@ -68,7 +74,7 @@
                 <td class="py-4 px-6 text-slate-400 font-medium"><?= $row['created_at'] ? date('d-m-Y H:i', strtotime($row['created_at'])) : '-' ?></td>
                 <td class="py-4 px-6 text-center">
                   <?php if ($row['re_reg_id']): ?>
-                    <a data-spa href="/admin/re-registrations/detail?registration_id=<?= $row['registration_id'] ?>" class="inline-flex items-center justify-center px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
+                    <a data-spa href="<?= getBaseUrl('/admin/re-registrations/detail?registration_id=' . $row['registration_id']) ?>" class="inline-flex items-center justify-center px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition-colors cursor-pointer">
                       🔎 Tinjau
                     </a>
                   <?php else: ?>

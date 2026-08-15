@@ -1,3 +1,10 @@
+<?php
+
+/**
+ * @var array $history
+ * @var bool $all_finalized
+ */
+?>
 <div class="w-full py-2 space-y-6">
   <div class="flex items-center justify-between border-b border-slate-100 pb-4">
     <div class="flex items-center gap-3">
@@ -46,22 +53,22 @@
               <td class="py-4 pl-4 text-right align-middle">
                 <div class="flex justify-end gap-1.5">
                   <?php if ($index === 0 && (!$h['selection'] || (int)$h['selection']['is_published'] !== 1 || !in_array($h['selection']['status'], ['Lulus', 'Tidak Lulus', 'Cadangan']))): ?>
-                    <a data-spa href="/dashboard" class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold rounded-lg cursor-pointer transition-all shadow-sm">
+                    <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold rounded-lg cursor-pointer transition-all shadow-sm">
                       ➔ Lanjutkan
                     </a>
                   <?php endif; ?>
                   <?php if ($h['registration']['status'] !== 'Draft'): ?>
-                    <a href="/pendaftaran/formulir?registration_id=<?= $h['registration']['id'] ?>" download class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[9px] font-bold text-slate-700 rounded-lg cursor-pointer transition-all shadow-sm">
+                    <a href="<?= getBaseUrl('/pendaftaran/formulir?registration_id=' . $h['registration']['id']) ?>" download class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[9px] font-bold text-slate-700 rounded-lg cursor-pointer transition-all shadow-sm">
                       📄 Formulir
                     </a>
                   <?php endif; ?>
                   <?php if (in_array($h['registration']['status'], ['Verified', 'Released'])): ?>
-                    <a href="/pendaftaran/kartu-ujian?registration_id=<?= $h['registration']['id'] ?>" download class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[9px] font-bold text-slate-700 rounded-lg cursor-pointer transition-all shadow-sm">
+                    <a href="<?= getBaseUrl('/pendaftaran/kartu-ujian?registration_id=' . $h['registration']['id']) ?>" download class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[9px] font-bold text-slate-700 rounded-lg cursor-pointer transition-all shadow-sm">
                       🪪 Kartu Ujian
                     </a>
                   <?php endif; ?>
                   <?php if ($h['selection'] && (int)$h['selection']['is_published'] === 1 && ($h['selection']['status'] === 'Lulus' || $h['selection']['status'] === 'Cadangan')): ?>
-                    <a href="/pendaftaran/kelulusan/download?registration_id=<?= $h['registration']['id'] ?>" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-emerald-250 text-emerald-700 hover:bg-emerald-50 text-[9px] font-bold rounded-lg cursor-pointer transition-all shadow-sm">
+                    <a href="<?= getBaseUrl('/pendaftaran/kelulusan/download?registration_id=' . $h['registration']['id']) ?>" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-emerald-250 text-emerald-700 hover:bg-emerald-50 text-[9px] font-bold rounded-lg cursor-pointer transition-all shadow-sm">
                       🎓 Kelulusan
                     </a>
                   <?php endif; ?>

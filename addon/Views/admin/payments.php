@@ -1,3 +1,12 @@
+<?php
+
+/**
+ * @var int $totalCount
+ * @var int $currentPage
+ * @var int $limit
+ * @var int $totalPages
+ */
+?>
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
   <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
@@ -38,63 +47,62 @@
                 </div>
               </td>
             </tr>
-          <?php else: foreach ($payments as $p): ?>
-            <tr class="hover:bg-slate-50/30 transition-colors">
-              <td class="px-6 py-4">
-                <div class="font-bold text-slate-800"><?= htmlspecialchars($p['full_name']) ?></div>
-                <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($p['email']) ?></div>
-              </td>
-              <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['bank_name']) ?></td>
-              <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['account_name']) ?></td>
-              <td class="px-6 py-4 font-bold text-slate-900 text-right">Rp <?= number_format($p['amount'], 0, ',', '.') ?></td>
-              <td class="px-6 py-4"><?= htmlspecialchars($p['payment_date']) ?></td>
-              <td class="px-6 py-4 text-center">
-                <button 
-                  type="button" 
-                  onclick="openPreviewModal(<?= $p['id'] ?>, '<?= strtolower(pathinfo($p['file_path'], PATHINFO_EXTENSION)) ?>')"
-                  class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-indigo-650 rounded-full transition-colors cursor-pointer"
-                >
-                  👁️ Lihat Bukti
-                </button>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <?php if ($p['status'] === 'Pending'): ?>
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Pending</span>
-                <?php elseif ($p['status'] === 'Approved'): ?>
-                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Disetujui</span>
-                <?php elseif ($p['status'] === 'Rejected'): ?>
-                  <div class="space-y-0.5">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-300 text-red-700">Ditolak</span>
-                    <?php if (!empty($p['rejection_reason'])): ?>
-                      <p class="text-[9px] text-red-650 max-w-[120px] truncate mx-auto" title="<?= htmlspecialchars($p['rejection_reason']) ?>">Alasan: <?= htmlspecialchars($p['rejection_reason']) ?></p>
+            <?php else: foreach ($payments as $p): ?>
+              <tr class="hover:bg-slate-50/30 transition-colors">
+                <td class="px-6 py-4">
+                  <div class="font-bold text-slate-800"><?= htmlspecialchars($p['full_name']) ?></div>
+                  <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($p['email']) ?></div>
+                </td>
+                <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['bank_name']) ?></td>
+                <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['account_name']) ?></td>
+                <td class="px-6 py-4 font-bold text-slate-900 text-right">Rp <?= number_format($p['amount'], 0, ',', '.') ?></td>
+                <td class="px-6 py-4"><?= htmlspecialchars($p['payment_date']) ?></td>
+                <td class="px-6 py-4 text-center">
+                  <button
+                    type="button"
+                    onclick="openPreviewModal(<?= $p['id'] ?>, '<?= strtolower(pathinfo($p['file_path'], PATHINFO_EXTENSION)) ?>')"
+                    class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-indigo-650 rounded-full transition-colors cursor-pointer">
+                    👁️ Lihat Bukti
+                  </button>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <?php if ($p['status'] === 'Pending'): ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Pending</span>
+                  <?php elseif ($p['status'] === 'Approved'): ?>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Disetujui</span>
+                  <?php elseif ($p['status'] === 'Rejected'): ?>
+                    <div class="space-y-0.5">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-300 text-red-700">Ditolak</span>
+                      <?php if (!empty($p['rejection_reason'])): ?>
+                        <p class="text-[9px] text-red-650 max-w-[120px] truncate mx-auto" title="<?= htmlspecialchars($p['rejection_reason']) ?>">Alasan: <?= htmlspecialchars($p['rejection_reason']) ?></p>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <?php if ($p['status'] === 'Pending'): ?>
+                      <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" onsubmit="return confirmAction(event, 'Setujui Pembayaran', 'Apakah Anda yakin ingin menyetujui bukti pembayaran ini?')">
+                        <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
+                        <input type="hidden" name="status" value="Approved">
+                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
+                          Setujui
+                        </button>
+                      </form>
+                      <button
+                        type="button"
+                        onclick="openRejectModal(<?= $p['id'] ?>)"
+                        class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
+                        Tolak
+                      </button>
+                    <?php else: ?>
+                      <span class="text-[10px] text-slate-400 font-semibold italic">Selesai</span>
                     <?php endif; ?>
                   </div>
-                <?php endif; ?>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <?php if ($p['status'] === 'Pending'): ?>
-                    <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" onsubmit="return confirmAction(event, 'Setujui Pembayaran', 'Apakah Anda yakin ingin menyetujui bukti pembayaran ini?')">
-                      <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
-                      <input type="hidden" name="status" value="Approved">
-                      <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
-                        Setujui
-                      </button>
-                    </form>
-                    <button 
-                      type="button" 
-                      onclick="openRejectModal(<?= $p['id'] ?>)"
-                      class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm"
-                    >
-                      Tolak
-                    </button>
-                  <?php else: ?>
-                    <span class="text-[10px] text-slate-400 font-semibold italic">Selesai</span>
-                  <?php endif; ?>
-                </div>
-              </td>
-            </tr>
-          <?php endforeach; endif; ?>
+                </td>
+              </tr>
+          <?php endforeach;
+          endif; ?>
         </tbody>
       </table>
     </div>
@@ -190,7 +198,7 @@
 
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -201,7 +209,7 @@
   function closePreviewModal() {
     const modal = document.getElementById('preview-modal');
     const card = document.getElementById('preview-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
@@ -215,7 +223,7 @@
 
     const modal = document.getElementById('reject-modal');
     const card = document.getElementById('reject-modal-card');
-    
+
     modal.classList.remove('hidden');
     setTimeout(() => {
       card.classList.remove('scale-95', 'opacity-0');
@@ -226,7 +234,7 @@
   function closeRejectModal() {
     const modal = document.getElementById('reject-modal');
     const card = document.getElementById('reject-modal-card');
-    
+
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var array $registration
  * @var array $selection
@@ -13,7 +14,7 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
     <div class="space-y-1">
       <div class="flex items-center gap-2">
-        <a data-spa href="/dashboard" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
+        <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
           <span>← Kembali ke Dashboard</span>
         </a>
       </div>
@@ -38,10 +39,10 @@
             <span class="text-sm font-extrabold text-indigo-650">Rp <?= number_format($tuition_fee, 0, ',', '.') ?></span>
           </div>
         </div>
-        <?php 
-          $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
-          $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
-          if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)): 
+        <?php
+        $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
+        $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
+        if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)):
         ?>
           <div class="pt-2 border-t border-slate-100">
             <a href="<?= htmlspecialchars($archivePath) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
@@ -105,8 +106,8 @@
             </div>
           <?php endif; ?>
 
-          <?php 
-            $isApproved = $re_registration && $re_registration['status'] === 'Approved'; 
+          <?php
+          $isApproved = $re_registration && $re_registration['status'] === 'Approved';
           ?>
 
           <div class="space-y-4">
@@ -117,7 +118,7 @@
               <div class="space-y-1">
                 <label class="block text-xs font-bold text-slate-700">Bukti Pembayaran UKT Semester 1 <span class="text-red-500">*</span></label>
                 <?php if ($re_registration && $re_registration['payment_path']): ?>
-                  <a href="/re-registrations/view?id=<?= $re_registration['id'] ?>&file=payment" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
+                  <a href="<?= getBaseUrl('/re-registrations/view?id=' . $re_registration['id'] . '&file=payment') ?>" target="_blank" class="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-650 hover:underline">
                     👁️ Lihat Bukti Terunggah
                   </a>
                 <?php endif; ?>
@@ -141,22 +142,23 @@
         </div>
       </form>
 
-      <?php 
-        $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
-        $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
-        if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)): 
-          $archiveExt = strtolower(pathinfo($archivePath, PATHINFO_EXTENSION));
-          if ($archiveExt === 'pdf'):
+      <?php
+      $archivePath = $wave_study_program['reregistration_fee_archive'] ?? '';
+      $fullArchivePath = defined('MAZU_PUBLIC_PATH') && !empty($archivePath) ? MAZU_PUBLIC_PATH . ltrim($archivePath, '/') : '';
+      if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)):
+        $archiveExt = strtolower(pathinfo($archivePath, PATHINFO_EXTENSION));
+        if ($archiveExt === 'pdf'):
       ?>
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-3">
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Brosur & Panduan UKT (PDF)</h3>
-          <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
-            <object data="<?= htmlspecialchars($archivePath) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
-              <iframe src="<?= htmlspecialchars($archivePath) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
-            </object>
+          <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Brosur & Panduan UKT (PDF)</h3>
+            <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
+              <object data="<?= htmlspecialchars($archivePath) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
+                <iframe src="<?= htmlspecialchars($archivePath) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
+              </object>
+            </div>
           </div>
-        </div>
-      <?php endif; endif; ?>
+      <?php endif;
+      endif; ?>
     </div>
   </div>
 </div>

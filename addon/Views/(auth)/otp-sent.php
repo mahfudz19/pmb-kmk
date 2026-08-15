@@ -36,10 +36,9 @@
 
 <div class="space-y-3">
   <a
-    href="/verify-otp?email=<?= urlencode($email ?? '') ?>"
+    href="<?= getBaseUrl('/verify-otp?email=' . urlencode($email ?? '')) ?>"
     class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5"
-    data-spa
-  >
+    data-spa>
     Buka Halaman Verifikasi
   </a>
 
@@ -63,7 +62,7 @@
 </div>
 
 <div class="text-center pt-2">
-  <a data-spa href="/register" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors">
+  <a data-spa href="<?= getBaseUrl('/register') ?>" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors">
     ← Kembali ke Register
   </a>
 </div>

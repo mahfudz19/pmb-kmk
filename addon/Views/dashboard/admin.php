@@ -1,16 +1,22 @@
 <?php
+
+/**
+ * @var array{total_applicants: mixed, total_payments: mixed, total_verifications: mixed, total_accepted: mixed} $stats
+ */
+
 if (!function_exists('time_ago')) {
-    function time_ago($timestamp) {
-        $time = strtotime($timestamp);
-        $diff = time() - $time;
-        if ($diff < 60) return 'Baru saja';
-        $mins = round($diff / 60);
-        if ($mins < 60) return $mins . ' menit yang lalu';
-        $hours = round($diff / 3600);
-        if ($hours < 24) return $hours . ' jam yang lalu';
-        $days = round($diff / 86400);
-        return $days . ' hari yang lalu';
-    }
+  function time_ago($timestamp)
+  {
+    $time = strtotime($timestamp);
+    $diff = time() - $time;
+    if ($diff < 60) return 'Baru saja';
+    $mins = round($diff / 60);
+    if ($mins < 60) return $mins . ' menit yang lalu';
+    $hours = round($diff / 3600);
+    if ($hours < 24) return $hours . ' jam yang lalu';
+    $days = round($diff / 86400);
+    return $days . ' hari yang lalu';
+  }
 }
 ?>
 <!-- Include Chart.js CDN -->
@@ -90,25 +96,25 @@ if (!function_exists('time_ago')) {
     <div class="space-y-8">
       <!-- Quick Actions -->
       <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
-        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 font-extrabold">Aksi Cepat Admin</h3>
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Aksi Cepat Admin</h3>
         <div class="grid grid-cols-1 gap-3">
           <?php if (has_permission('manage_users')): ?>
-            <a data-spa href="/admin/users" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>🔑</span> Kelola Hak Akses Pengguna
             </a>
           <?php endif; ?>
           <?php if (has_permission('verify_payment')): ?>
-            <a data-spa href="/admin/payments" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>💳</span> Verifikasi Bukti Transfer
             </a>
           <?php endif; ?>
           <?php if (has_permission('verify_document')): ?>
-            <a data-spa href="/admin/verifications" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/verifications') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>📂</span> Verifikasi Berkas Akademik
             </a>
           <?php endif; ?>
           <?php if (has_permission('manage_settings')): ?>
-            <a data-spa href="/admin/master" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/master') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>⚙️</span> Kelola Data Master
             </a>
           <?php endif; ?>
@@ -117,7 +123,7 @@ if (!function_exists('time_ago')) {
 
       <!-- Recent Log Activity -->
       <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
-        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 font-extrabold">Aktivitas Terbaru</h3>
+        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Aktivitas Terbaru</h3>
         <div class="space-y-4">
           <?php if (empty($recent_activities)): ?>
             <div class="text-center py-6 text-slate-400 text-xs font-semibold">
@@ -164,11 +170,31 @@ if (!function_exists('time_ago')) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: {
+            display: false
+          }
         },
         scales: {
-          y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          y: {
+            grid: {
+              color: '#f1f5f9'
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
         }
       }
     });
@@ -195,11 +221,31 @@ if (!function_exists('time_ago')) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: {
+            display: false
+          }
         },
         scales: {
-          y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          y: {
+            grid: {
+              color: '#f1f5f9'
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
         }
       }
     });

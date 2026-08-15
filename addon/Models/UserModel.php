@@ -221,5 +221,4 @@ class UserModel extends Model
 
         return in_array('*', $permissions, true) || in_array($permission, $permissions, true);
     }
-
 }

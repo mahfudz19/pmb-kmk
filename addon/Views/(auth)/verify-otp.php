@@ -135,7 +135,7 @@
     <span class="resend-countdown"></span>
   </button>
 
-  <a data-spa href="/register" class="inline-block text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors">
+  <a data-spa href="<?= getBaseUrl('/register') ?>" class="inline-block text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors">
     ← Kembali ke Register
   </a>
 </div>

@@ -37,7 +37,7 @@
 </form>
 
 <div class="text-center pt-2">
-  <a data-spa href="/login" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+  <a data-spa href="<?= getBaseUrl('/login') ?>" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
     Kembali ke Login
   </a>
 </div>
