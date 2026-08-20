@@ -204,7 +204,7 @@ class AuthController
             $this->loginSession($user);
 
             // Send login notification email
-            // $this->sendLoginNotification($user);
+            $this->sendLoginNotification($user);
 
             return $response->redirect('/dashboard')->hard();
         } catch (\Throwable $th) {

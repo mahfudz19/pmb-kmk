@@ -471,7 +471,7 @@ foreach ($waves as $w) {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         const formData = new FormData();
         formData.append('current_step', stepNum);
-        await fetch('/pendaftaran/step', {
+        await fetch('<?= getBaseUrl('/pendaftaran/step') ?>', {
           method: 'POST',
           headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -492,7 +492,7 @@ foreach ($waves as $w) {
 
       try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const response = await fetch('/pendaftaran/save', {
+        const response = await fetch('<?= getBaseUrl('/pendaftaran/save') ?>', {
           method: 'POST',
           headers: {
             'X-Requested-With': 'XMLHttpRequest',
