@@ -49,31 +49,45 @@ class RegistrantController
         $search = $request->input('search');
         $programId = $request->input('program_id');
         $status = $request->input('status');
+        $waveId = $request->input('wave_id');
 
         $query = "
-            SELECT r.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 
+            SELECT r.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name, w.name as wave_name
             FROM registrations r 
             LEFT JOIN registration_programs rp ON r.id = rp.registration_id 
             LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id 
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
             LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
+            LEFT JOIN waves w ON r.wave_id = w.id
             WHERE 1=1
         ";
         $params = [];
 
         if (!empty($search)) {
-            $query .= " AND (r.full_name LIKE :search OR r.email LIKE :search OR r.nik LIKE :search OR r.nisn LIKE :search)";
-            $params['search'] = '%' . $search . '%';
+            $query .= " AND (r.full_name LIKE :search1 OR r.email LIKE :search2 OR r.nik LIKE :search3 OR r.nisn LIKE :search4)";
+            $searchValue = '%' . $search . '%';
+            $params['search1'] = $searchValue;
+            $params['search2'] = $searchValue;
+            $params['search3'] = $searchValue;
+            $params['search4'] = $searchValue;
         }
 
         if (!empty($programId)) {
-            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id OR rp.program3_id = :program_id)";
-            $params['program_id'] = (int) $programId;
+            $query .= " AND (rp.program1_id = :program_id1 OR rp.program2_id = :program_id2 OR rp.program3_id = :program_id3)";
+            $progVal = (int) $programId;
+            $params['program_id1'] = $progVal;
+            $params['program_id2'] = $progVal;
+            $params['program_id3'] = $progVal;
         }
 
         if (!empty($status)) {
             $query .= " AND r.status = :status";
             $params['status'] = $status;
+        }
+
+        if (!empty($waveId)) {
+            $query .= " AND r.wave_id = :wave_id";
+            $params['wave_id'] = (int) $waveId;
         }
 
         $query .= " ORDER BY r.created_at DESC";
@@ -92,6 +106,7 @@ class RegistrantController
         $search = $request->input('search');
         $programId = $request->input('program_id');
         $status = $request->input('status');
+        $waveId = $request->input('wave_id');
 
         $query = "
             SELECT COUNT(DISTINCT r.id) as count
@@ -102,18 +117,30 @@ class RegistrantController
         $params = [];
 
         if (!empty($search)) {
-            $query .= " AND (r.full_name LIKE :search OR r.email LIKE :search OR r.nik LIKE :search OR r.nisn LIKE :search)";
-            $params['search'] = '%' . $search . '%';
+            $query .= " AND (r.full_name LIKE :search1 OR r.email LIKE :search2 OR r.nik LIKE :search3 OR r.nisn LIKE :search4)";
+            $searchValue = '%' . $search . '%';
+            $params['search1'] = $searchValue;
+            $params['search2'] = $searchValue;
+            $params['search3'] = $searchValue;
+            $params['search4'] = $searchValue;
         }
 
         if (!empty($programId)) {
-            $query .= " AND (rp.program1_id = :program_id OR rp.program2_id = :program_id OR rp.program3_id = :program_id)";
-            $params['program_id'] = (int) $programId;
+            $query .= " AND (rp.program1_id = :program_id1 OR rp.program2_id = :program_id2 OR rp.program3_id = :program_id3)";
+            $progVal = (int) $programId;
+            $params['program_id1'] = $progVal;
+            $params['program_id2'] = $progVal;
+            $params['program_id3'] = $progVal;
         }
 
         if (!empty($status)) {
             $query .= " AND r.status = :status";
             $params['status'] = $status;
+        }
+
+        if (!empty($waveId)) {
+            $query .= " AND r.wave_id = :wave_id";
+            $params['wave_id'] = (int) $waveId;
         }
 
         $stmt = $db->prepare($query);
@@ -145,9 +172,14 @@ class RegistrantController
         $stmt->execute();
         $programsList = $stmt->fetchAll();
 
+        $stmtWaves = $db->prepare("SELECT * FROM waves ORDER BY id DESC");
+        $stmtWaves->execute();
+        $wavesList = $stmtWaves->fetchAll();
+
         return $response->renderPage([
             'registrants' => $registrants,
             'programs' => $programsList,
+            'waves' => $wavesList,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
@@ -155,7 +187,8 @@ class RegistrantController
             'filters' => [
                 'search' => $request->input('search'),
                 'program_id' => $request->input('program_id'),
-                'status' => $request->input('status')
+                'status' => $request->input('status'),
+                'wave_id' => $request->input('wave_id')
             ]
         ], [
             'path' => '/admin/registrants/index',
@@ -172,12 +205,20 @@ class RegistrantController
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+valid');
         }
 
-        $registration = $this->registrations->find($regId);
+        $db = $this->registrations->getDb();
+
+        $stmt = $db->prepare("
+            SELECT r.*, w.name as wave_name
+            FROM registrations r
+            LEFT JOIN waves w ON r.wave_id = w.id
+            WHERE r.id = :id LIMIT 1
+        ");
+        $stmt->execute(['id' => $regId]);
+        $registration = $stmt->fetch();
+
         if (!$registration) {
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+ditemukan');
         }
-
-        $db = $this->registrations->getDb();
         
         $stmt = $db->prepare("
             SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 

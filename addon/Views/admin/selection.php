@@ -24,15 +24,26 @@ $activeTab = $_GET['tab'] ?? 'scoring';
   <div id="tab-content-scoring" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi Calon Mahasiswa</h3>
-      <div class="flex gap-2">
-        <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Publish Semua', 'Apakah Anda yakin ingin menerbitkan semua hasil kelulusan?')">
-          <input type="hidden" name="is_published" value="1">
-          <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">📢 Publish Semua</button>
+      <div class="flex flex-wrap items-center gap-4">
+        <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/selection') ?>" class="flex items-center gap-2">
+          <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
+          <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
+            <option value="">Semua Gelombang</option>
+            <?php foreach ($waves as $w): ?>
+              <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
         </form>
-        <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Unpublish Semua', 'Apakah Anda yakin ingin menarik kembali semua pengumuman kelulusan?')">
-          <input type="hidden" name="is_published" value="0">
-          <button type="submit" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">🔒 Unpublish Semua</button>
-        </form>
+        <div class="flex gap-2">
+          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Publish Semua', 'Apakah Anda yakin ingin menerbitkan semua hasil kelulusan?')">
+            <input type="hidden" name="is_published" value="1">
+            <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">📢 Publish Semua</button>
+          </form>
+          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Unpublish Semua', 'Apakah Anda yakin ingin menarik kembali semua pengumuman kelulusan?')">
+            <input type="hidden" name="is_published" value="0">
+            <button type="submit" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">🔒 Unpublish Semua</button>
+          </form>
+        </div>
       </div>
     </div>
 
@@ -73,6 +84,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
                 <td class="px-6 py-4">
                   <div class="font-bold text-slate-800"><?= htmlspecialchars($c['full_name']) ?></div>
                   <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($c['email']) ?></div>
+                  <span class="inline-flex mt-1 px-1.5 py-0.2 text-[9px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 rounded"><?= htmlspecialchars($c['wave_name'] ?? '-') ?></span>
                 </td>
                 <td class="px-6 py-4 space-y-1">
                   <div class="text-[10px] text-slate-600 font-semibold">1. <?= htmlspecialchars($c['program1_name'] ?? '-') ?></div>
@@ -106,15 +118,9 @@ $activeTab = $_GET['tab'] ?? 'scoring';
                   <div class="flex items-center justify-center gap-2">
                     <button
                       type="button"
-                      onclick="openExamStagesModal(<?= htmlspecialchars(json_encode($c)) ?>)"
-                      class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
-                      🏆 Tahapan
-                    </button>
-                    <button
-                      type="button"
                       onclick="openScoringModal(<?= htmlspecialchars(json_encode($c)) ?>)"
                       class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
-                      📝 Nilai
+                      📝 Penilaian
                     </button>
                     <form action="<?= getBaseUrl('/admin/selection/publish') ?>" method="POST" class="inline">
                       <input type="hidden" name="registration_id" value="<?= $c['id'] ?>">
@@ -179,7 +185,13 @@ $activeTab = $_GET['tab'] ?? 'scoring';
     <form action="<?= getBaseUrl('/admin/selection/save') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="score-registration-id" name="registration_id">
 
-      <div class="grid grid-cols-2 gap-4 pt-3">
+      <!-- Penilaian Tahapan Ujian -->
+      <div class="space-y-2">
+        <label class="block font-bold text-slate-600">Hasil Tahapan Ujian</label>
+        <div id="modal-exam-stages-list" class="space-y-2"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100">
         <div class="space-y-1">
           <label for="status" class="block font-bold text-slate-600">Keputusan Seleksi <span class="text-red-550">*</span></label>
           <select id="status" name="status" required class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 font-bold">
@@ -208,28 +220,6 @@ $activeTab = $_GET['tab'] ?? 'scoring';
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
         <button type="button" onclick="closeScoringModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors cursor-pointer">Batal</button>
         <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Simpan Penilaian</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Exam Stages Grading Modal -->
-<div id="exam-stages-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeExamStagesModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="exam-stages-modal-card">
-    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-      <h3 class="text-sm font-bold text-slate-900" id="exam-stages-modal-title">Penilaian Tahapan Ujian</h3>
-      <button type="button" onclick="closeExamStagesModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
-    </div>
-
-    <form action="<?= getBaseUrl('/admin/selection/exam-stage/save') ?>" method="POST" class="space-y-4 text-xs">
-      <input type="hidden" id="exam-stage-registration-id" name="registration_id">
-
-      <div id="modal-exam-stages-list" class="space-y-3"></div>
-
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" onclick="closeExamStagesModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors cursor-pointer">Batal</button>
-        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Simpan Penilaian Ujian</button>
       </div>
     </form>
   </div>
@@ -292,6 +282,32 @@ $activeTab = $_GET['tab'] ?? 'scoring';
     const selectedPassedId = c.passed_program_id !== null ? c.passed_program_id : '';
     passedSelect.value = selectedPassedId;
 
+    // Load exam stages dynamically inside the single modal
+    const stagesList = document.getElementById('modal-exam-stages-list');
+    stagesList.innerHTML = '';
+
+    const stages = wavesMap[c.wave_id] || [];
+    if (stages.length > 0) {
+      stages.forEach(stg => {
+        const stageNum = stg.stage_number;
+        const currentStatus = (examResultsMap[c.id] && examResultsMap[c.id][stageNum]) || 'Pending';
+
+        const row = document.createElement('div');
+        row.className = 'flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-150 text-xs mb-2';
+        row.innerHTML = `
+          <span class="font-semibold text-slate-700">Tahap ${stageNum}: ${stg.description || 'Ujian'}</span>
+          <select name="stages[${stageNum}]" class="px-3 py-2 border border-slate-200 rounded-xl text-xs bg-white font-semibold text-slate-700 focus:outline-none cursor-pointer">
+            <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="Lulus" ${currentStatus === 'Lulus' ? 'selected' : ''}>Lolos</option>
+            <option value="Tidak Lulus" ${currentStatus === 'Tidak Lulus' ? 'selected' : ''}>Gagal</option>
+          </select>
+        `;
+        stagesList.appendChild(row);
+      });
+    } else {
+      stagesList.innerHTML = '<div class="text-center text-xs text-slate-400 py-3 italic">Belum ada tahapan seleksi yang dikonfigurasi.</div>';
+    }
+
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
 
@@ -305,56 +321,6 @@ $activeTab = $_GET['tab'] ?? 'scoring';
   function closeScoringModal() {
     const modal = document.getElementById('scoring-modal');
     const card = document.getElementById('scoring-modal-card');
-
-    card.classList.remove('scale-100', 'opacity-100');
-    card.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-    }, 200);
-  }
-
-  function openExamStagesModal(c) {
-    document.getElementById('exam-stage-registration-id').value = c.id;
-    document.getElementById('exam-stages-modal-title').innerText = `Tahapan Ujian: ${c.full_name}`;
-
-    const stagesList = document.getElementById('modal-exam-stages-list');
-    stagesList.innerHTML = '';
-
-    const stages = wavesMap[c.wave_id] || [];
-    if (stages.length > 0) {
-      stages.forEach(stg => {
-        const stageNum = stg.stage_number;
-        const currentStatus = (examResultsMap[c.id] && examResultsMap[c.id][stageNum]) || 'Pending';
-
-        const row = document.createElement('div');
-        row.className = 'flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-150 text-xs';
-        row.innerHTML = `
-          <span class="font-semibold text-slate-700">Tahap ${stageNum}: ${stg.description || 'Ujian'}</span>
-          <select name="stages[${stageNum}]" class="px-2.5 py-1.5 border border-slate-200 rounded-lg text-[10px] bg-white font-semibold text-slate-700 focus:outline-none">
-            <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
-            <option value="Lulus" ${currentStatus === 'Lulus' ? 'selected' : ''}>Lolos</option>
-            <option value="Tidak Lulus" ${currentStatus === 'Tidak Lulus' ? 'selected' : ''}>Gagal</option>
-          </select>
-        `;
-        stagesList.appendChild(row);
-      });
-    } else {
-      stagesList.innerHTML = '<div class="text-center text-xs text-slate-400 py-3 italic">Belum ada tahapan seleksi yang dikonfigurasi.</div>';
-    }
-
-    const modal = document.getElementById('exam-stages-modal');
-    const card = document.getElementById('exam-stages-modal-card');
-
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-      card.classList.remove('scale-95', 'opacity-0');
-      card.classList.add('scale-100', 'opacity-100');
-    }, 10);
-  }
-
-  function closeExamStagesModal() {
-    const modal = document.getElementById('exam-stages-modal');
-    const card = document.getElementById('exam-stages-modal-card');
 
     card.classList.remove('scale-100', 'opacity-100');
     card.classList.add('scale-95', 'opacity-0');

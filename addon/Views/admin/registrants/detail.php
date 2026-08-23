@@ -63,12 +63,16 @@
                 <strong class="text-emerald-700 font-extrabold text-sm"><?= htmlspecialchars($registration['nim']) ?></strong>
               <?php endif; ?>
               <div>
+                <span class="text-slate-400 font-medium block">Gelombang PMB</span>
+                <span class="inline-flex mt-0.5 px-1.5 py-0.2 text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-755 rounded"><?= htmlspecialchars($registration['wave_name'] ?? '-') ?></span>
+              </div>
+              <div>
                 <span class="text-slate-400 font-medium block">NIK / Citizen Number</span>
                 <strong class="text-slate-800 font-bold"><?= htmlspecialchars($registration['nik']) ?></strong>
               </div>
               <div>
                 <span class="text-slate-400 font-medium block">Nomor Induk Siswa Nasional (NISN)</span>
-                <strong class="text-slate-800 font-bold"><?= htmlspecialchars($registration['nisn']) ?></strong>
+                <strong class="text-slate-800 font-bold"><?= !empty($registration['nisn']) ? htmlspecialchars($registration['nisn']) : '-' ?></strong>
               </div>
               <div>
                 <span class="text-slate-400 font-medium block">Tempat, Tanggal Lahir</span>

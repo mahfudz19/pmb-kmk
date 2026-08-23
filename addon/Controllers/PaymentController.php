@@ -13,7 +13,8 @@ class PaymentController
 {
     public function __construct(
         private RegistrationModel $registrations,
-        private RegistrationPaymentModel $payments
+        private RegistrationPaymentModel $payments,
+        private \Addon\Models\WaveModel $waves
     ) {}
 
     public function uploadPayment(Request $request, Response $response): RedirectResponse
@@ -156,12 +157,15 @@ class PaymentController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
+        $waveId = $request->input('wave_id');
+        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $totalCount = $this->payments->getPaymentsCount();
+        $totalCount = $this->payments->getPaymentsCount($waveIdFilter);
         $totalPages = (int) ceil($totalCount / $limit);
         if ($totalPages < 1) $totalPages = 1;
         if ($page > $totalPages) {
@@ -169,10 +173,12 @@ class PaymentController
             $offset = ($page - 1) * $limit;
         }
 
-        $paymentsList = $this->payments->getPaginatedPayments($limit, $offset);
+        $paymentsList = $this->payments->getPaginatedPayments($limit, $offset, $waveIdFilter);
 
         return $response->renderPage([
             'payments' => $paymentsList,
+            'waves' => $this->waves->all(),
+            'selectedWaveId' => $waveIdFilter,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,

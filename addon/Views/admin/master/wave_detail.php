@@ -21,6 +21,33 @@
   <form id="wave-detail-form" method="POST" action="<?= getBaseUrl('/admin/master/wave-detail/save') ?>" enctype="multipart/form-data" class="space-y-6">
     <input type="hidden" name="wave_id" value="<?= htmlspecialchars($wave['id']) ?>">
 
+    <!-- Wave General Fee Configuration Card -->
+    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">💰 Biaya Pendaftaran Gelombang</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Konfigurasikan biaya formulir awal pendaftaran beserta dokumen rincian/brosur biaya untuk gelombang ini.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        <div class="space-y-1.5">
+          <label for="registration_fee_total" class="block text-xs font-bold text-slate-450 uppercase tracking-wider">Nominal Biaya Formulir (Rp)</label>
+          <input type="number" id="registration_fee_total" name="registration_fee_total" value="<?= htmlspecialchars($wave['registration_fee_total'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-bold" placeholder="Contoh: 100000 (Kosongkan/isi 0 jika gratis)">
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="registration_fee_archive" class="block text-xs font-bold text-slate-455 uppercase tracking-wider">Upload PDF Brosur / Rincian Biaya (Gelombang)</label>
+          <input type="file" id="registration_fee_archive" accept="application/pdf,image/*" name="registration_fee_archive" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50">
+          <?php if (!empty($wave['registration_fee_archive'])): ?>
+            <p class="text-[10px] text-indigo-650 font-bold mt-1.5 flex items-center gap-1.5">
+              <a href="<?= getBaseUrl(htmlspecialchars($wave['registration_fee_archive'])) ?>" target="_blank" class="hover:underline">📄 Lihat Brosur Saat Ini</a>
+            </p>
+          <?php endif; ?>
+        </div>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6">
       <?php foreach ($study_programs as $sp):
         $isConfigured = isset($mapped_programs[$sp['id']]);
@@ -221,6 +248,28 @@
     }
   }
 
+  function filterDocumentOptions(prodiId) {
+    const container = document.getElementById(`document-rows-container-${prodiId}`);
+    if (!container) return;
+    const selects = container.querySelectorAll(`select[name="doc_type_ids_${prodiId}[]"]`);
+    const selectedValues = Array.from(selects).map(s => s.value).filter(val => val !== '');
+
+    selects.forEach(select => {
+      const curVal = select.value;
+      Array.from(select.options).forEach(opt => {
+        if (opt.value === '') return;
+        const selectedElsewhere = selectedValues.includes(opt.value) && opt.value !== curVal;
+        if (selectedElsewhere) {
+          opt.disabled = true;
+          opt.style.display = 'none';
+        } else {
+          opt.disabled = false;
+          opt.style.display = '';
+        }
+      });
+    });
+  }
+
   function updateDocDescription(select) {
     const selectedOpt = select.options[select.selectedIndex];
     const desc = selectedOpt.getAttribute('data-description') || '';
@@ -228,6 +277,11 @@
     const inputDesc = row.querySelector('input[name^="doc_descriptions_"]');
     if (inputDesc) {
       inputDesc.value = desc;
+    }
+    const nameAttr = select.getAttribute('name');
+    const match = nameAttr.match(/doc_type_ids_(\d+)\[\]/);
+    if (match) {
+      filterDocumentOptions(match[1]);
     }
   }
 
@@ -262,20 +316,22 @@
       </div>
     `;
     container.appendChild(row);
+    filterDocumentOptions(prodiId);
   }
 
   function removeDocumentRow(button) {
     const row = button.closest('.document-row');
     const container = row.parentNode;
+    const prodiId = container.id.replace('document-rows-container-', '');
     row.remove();
 
     if (container.children.length === 1) {
-      const prodiId = container.id.replace('document-rows-container-', '');
       const placeholder = document.createElement('div');
       placeholder.className = `text-center text-[10px] text-slate-400 py-3 font-semibold empty-docs-placeholder-${prodiId}`;
       placeholder.textContent = "Tidak ada dokumen tambahan. Klik tambah jika ingin mewajibkan dokumen khusus.";
       container.appendChild(placeholder);
     }
+    filterDocumentOptions(prodiId);
   }
 
   function addExamRow() {
@@ -346,4 +402,11 @@
       container.appendChild(placeholder);
     }
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const chks = document.querySelectorAll('input[name="prodi_ids[]"]');
+    chks.forEach(chk => {
+      filterDocumentOptions(chk.value);
+    });
+  });
 </script>

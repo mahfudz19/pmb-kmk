@@ -34,6 +34,10 @@
             <strong class="text-slate-800 font-bold text-sm"><?= htmlspecialchars($registration['full_name']) ?></strong>
           </div>
           <div>
+            <span class="text-[10px] text-slate-400 block font-medium">Gelombang PMB</span>
+            <span class="inline-flex mt-0.5 px-1.5 py-0.2 text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-755 rounded"><?= htmlspecialchars($wave_name ?? '-') ?></span>
+          </div>
+          <div>
             <span class="text-[10px] text-slate-400 block font-medium">Email</span>
             <span class="text-slate-700 font-semibold"><?= htmlspecialchars($registration['email']) ?></span>
           </div>

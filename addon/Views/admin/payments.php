@@ -18,8 +18,17 @@
 
   <!-- Payments Table -->
   <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
-    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+    <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Daftar Transaksi Masuk</h3>
+      <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-2">
+        <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
+        <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
+          <option value="">Semua Gelombang</option>
+          <?php foreach ($waves as $w): ?>
+            <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </form>
     </div>
 
     <div class="overflow-x-auto">
@@ -52,6 +61,7 @@
                 <td class="px-6 py-4">
                   <div class="font-bold text-slate-800"><?= htmlspecialchars($p['full_name']) ?></div>
                   <div class="text-[10px] text-slate-400 font-medium"><?= htmlspecialchars($p['email']) ?></div>
+                  <span class="inline-flex mt-1 px-1.5 py-0.2 text-[9px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 rounded"><?= htmlspecialchars($p['wave_name'] ?? '-') ?></span>
                 </td>
                 <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['bank_name']) ?></td>
                 <td class="px-6 py-4 font-semibold"><?= htmlspecialchars($p['account_name']) ?></td>

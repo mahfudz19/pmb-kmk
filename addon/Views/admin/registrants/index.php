@@ -3,6 +3,7 @@
 /**
  * @var array $registrants
  * @var array $programs
+ * @var array $waves
  * @var array $filters
  * @var int $totalCount
  * @var int $currentPage
@@ -35,9 +36,9 @@
 
   <!-- Search & Filter Card -->
   <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
-    <form action="<?= getBaseUrl('/admin/registrants') ?>" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <form action="<?= getBaseUrl('/admin/registrants') ?>" method="GET" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;">
       <!-- Search Input -->
-      <div>
+      <div style="flex: 2; min-width: 220px;">
         <label for="search" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Cari Pendaftar</label>
         <input
           type="text"
@@ -45,15 +46,34 @@
           id="search"
           class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold"
           placeholder="Nama, Email, NIK, NISN..."
-          value="<?= htmlspecialchars($filters['search'] ?? '') ?>" />
+          value="<?= htmlspecialchars($filters['search'] ?? '') ?>"
+          onchange="this.form.submit()" />
+      </div>
+
+      <!-- Wave Filter -->
+      <div style="flex: 1; min-width: 150px;">
+        <label for="wave_id" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Gelombang</label>
+        <select
+          name="wave_id"
+          id="wave_id"
+          onchange="this.form.submit()"
+          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
+          <option value="">Semua Gelombang</option>
+          <?php foreach ($waves as $w): ?>
+            <option value="<?= $w['id'] ?>" <?= (string)($filters['wave_id'] ?? '') === (string)$w['id'] ? 'selected' : '' ?>>
+              <?= htmlspecialchars($w['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <!-- Program Studi Filter -->
-      <div>
+      <div style="flex: 1.2; min-width: 170px;">
         <label for="program_id" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Program Studi</label>
         <select
           name="program_id"
           id="program_id"
+          onchange="this.form.submit()"
           class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
           <option value="">Semua Program Studi</option>
           <?php foreach ($programs as $prog): ?>
@@ -65,11 +85,12 @@
       </div>
 
       <!-- Status Filter -->
-      <div>
+      <div style="flex: 1; min-width: 140px;">
         <label for="status" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Status Pendaftaran</label>
         <select
           name="status"
           id="status"
+          onchange="this.form.submit()"
           class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
           <option value="">Semua Status</option>
           <option value="Draft" <?= ($filters['status'] ?? '') === 'Draft' ? 'selected' : '' ?>>Draft</option>
@@ -78,16 +99,6 @@
           <option value="Rejected" <?= ($filters['status'] ?? '') === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
           <option value="Released" <?= ($filters['status'] ?? '') === 'Released' ? 'selected' : '' ?>>Released</option>
         </select>
-      </div>
-
-      <!-- Submit & Reset -->
-      <div class="flex items-end gap-2">
-        <button type="submit" class="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm cursor-pointer">
-          🔍 Saring
-        </button>
-        <a href="<?= getBaseUrl('/admin/registrants') ?>" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition-colors text-center cursor-pointer">
-          🔄 Reset
-        </a>
       </div>
     </form>
   </div>
@@ -98,9 +109,7 @@
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-slate-100 text-[10px] font-bold text-slate-450 uppercase bg-slate-50/50">
-            <th class="py-4 px-6 w-12 text-center">No</th>
             <th class="py-4 px-6">Nama Lengkap</th>
-            <th class="py-4 px-6">Identitas</th>
             <th class="py-4 px-6">Pilihan Program Studi</th>
             <th class="py-4 px-6 text-center">Status</th>
             <th class="py-4 px-6">Tanggal Daftar</th>
@@ -110,7 +119,7 @@
         <tbody class="divide-y divide-slate-100 text-xs text-slate-600">
           <?php if (empty($registrants)): ?>
             <tr>
-              <td colspan="7" class="text-center py-12">
+              <td colspan="5" class="text-center py-12">
                 <div class="flex flex-col items-center justify-center space-y-3">
                   <div class="text-slate-300 text-5xl">📁</div>
                   <h3 class="text-sm font-bold text-slate-700">Data Pendaftar Kosong</h3>
@@ -121,14 +130,10 @@
           <?php else: ?>
             <?php foreach ($registrants as $r): ?>
               <tr class="hover:bg-slate-50/70 border-b border-slate-100 transition-colors">
-                <td class="py-4 px-6 text-slate-400 font-semibold"><?= htmlspecialchars((string)(get_registration_number($r) ?? '-')) ?></td>
                 <td class="py-4 px-6 font-bold text-slate-800">
                   <div><?= htmlspecialchars((string)($r['full_name'] ?? '-')) ?></div>
                   <div class="text-[10px] text-slate-400 font-medium tracking-wide"><?= htmlspecialchars((string)($r['email'] ?? '-')) ?></div>
-                </td>
-                <td class="py-4 px-6 text-slate-500 font-medium text-xs">
-                  <div>NIK: <span class="font-bold text-slate-700"><?= htmlspecialchars((string)($r['nik'] ?? '-')) ?></span></div>
-                  <div>NISN: <span class="font-bold text-slate-700"><?= htmlspecialchars((string)($r['nisn'] ?? '-')) ?></span></div>
+                  <span class="inline-flex mt-1 px-1.5 py-0.2 text-[9px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 rounded"><?= htmlspecialchars($r['wave_name'] ?? '-') ?></span>
                 </td>
                 <td class="py-4 px-6 space-y-0.5">
                   <div class="font-semibold text-slate-700"><span class="text-[9px] text-slate-400 font-bold">1:</span> <?= htmlspecialchars((string)($r['program1_name'] ?? '-')) ?></div>
@@ -174,8 +179,11 @@
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> pendaftar
       </div>
       <div class="flex items-center gap-1.5">
-        <?php if ($currentPage > 1): ?>
-          <a data-spa href="?page=<?= $currentPage - 1 ?><?= !empty($filters['search']) ? '&search=' . urlencode($filters['search']) : '' ?><?= !empty($filters['program_id']) ? '&program_id=' . $filters['program_id'] : '' ?><?= !empty($filters['status']) ? '&status=' . $filters['status'] : '' ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
+        <?php 
+        $paginationParams = http_build_query(array_merge($filters, ['page' => $currentPage - 1]));
+        if ($currentPage > 1): 
+        ?>
+          <a data-spa href="?<?= $paginationParams ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Sebelumnya</span>
         <?php endif; ?>
@@ -184,16 +192,20 @@
         $startPage = max(1, $currentPage - 2);
         $endPage = min($totalPages, $currentPage + 2);
         for ($i = $startPage; $i <= $endPage; $i++):
+          $pageParams = http_build_query(array_merge($filters, ['page' => $i]));
         ?>
           <?php if ($i == $currentPage): ?>
             <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 border border-indigo-600 shadow-sm"><?= $i ?></span>
           <?php else: ?>
-            <a data-spa href="?page=<?= $i ?><?= !empty($filters['search']) ? '&search=' . urlencode($filters['search']) : '' ?><?= !empty($filters['program_id']) ? '&program_id=' . $filters['program_id'] : '' ?><?= !empty($filters['status']) ? '&status=' . $filters['status'] : '' ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
+            <a data-spa href="?<?= $pageParams ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
           <?php endif; ?>
         <?php endfor; ?>
 
-        <?php if ($currentPage < $totalPages): ?>
-          <a data-spa href="?page=<?= $currentPage + 1 ?><?= !empty($filters['search']) ? '&search=' . urlencode($filters['search']) : '' ?><?= !empty($filters['program_id']) ? '&program_id=' . $filters['program_id'] : '' ?><?= !empty($filters['status']) ? '&status=' . $filters['status'] : '' ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
+        <?php 
+        $nextPaginationParams = http_build_query(array_merge($filters, ['page' => $currentPage + 1]));
+        if ($currentPage < $totalPages): 
+        ?>
+          <a data-spa href="?<?= $nextPaginationParams ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Selanjutnya</span>
         <?php endif; ?>

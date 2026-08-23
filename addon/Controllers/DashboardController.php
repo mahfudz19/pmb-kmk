@@ -273,13 +273,8 @@ class DashboardController
             } else if ($registration['status'] === 'Draft') {
                 $state = 'draft';
             } else if ($registration['status'] === 'Submitted') {
-                if (!$payment) {
-                    $state = 'belum_bayar';
-                } else if ($payment['status'] === 'Pending') {
-                    $state = 'verifikasi_pembayaran';
-                } else if ($payment['status'] === 'Rejected') {
-                    $state = 'belum_bayar';
-                } else if ($payment['status'] === 'Approved') {
+                $hasFee = $wave && !empty($wave['registration_fee_total']) && (float)$wave['registration_fee_total'] > 0;
+                if (!$hasFee || ($payment && $payment['status'] === 'Approved')) {
                     $allRequiredUploaded = true;
                     $allRequiredApproved = true;
 
@@ -321,6 +316,14 @@ class DashboardController
                                 $state = 'lolos';
                             }
                         }
+                    }
+                } else {
+                    if (!$payment) {
+                        $state = 'belum_bayar';
+                    } else if ($payment['status'] === 'Pending') {
+                        $state = 'verifikasi_pembayaran';
+                    } else if ($payment['status'] === 'Rejected') {
+                        $state = 'belum_bayar';
                     }
                 }
             }
@@ -519,32 +522,7 @@ class DashboardController
         return $response->redirect('/pendaftaran')->hard();
     }
 
-    public function cancelRegistration(Request $request, Response $response): RedirectResponse
-    {
-        if (!$this->session->get('is_logged_in')) {
-            return $response->redirect('/login');
-        }
 
-        $userId = $this->session->get('auth.user_id');
-        $registration = $this->registrations->findByUserId($userId);
-
-        if (!$registration) {
-            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak ditemukan.'));
-        }
-
-        $payment = $this->payments->findByRegistrationId($registration['id']);
-        if ($payment && $payment['status'] === 'Approved') {
-            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak dapat dibatalkan karena pembayaran biaya formulir sudah diverifikasi oleh admin.'));
-        }
-
-        if (in_array($registration['status'], ['Verified', 'Released'])) {
-            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran tidak dapat dibatalkan karena berkas pendaftaran Anda sudah diproses.'));
-        }
-
-        $this->registrations->deleteById($registration['id']);
-
-        return $response->redirect('/dashboard?success=' . urlencode('Pendaftaran Anda berhasil dibatalkan.'));
-    }
 
     public function simulateState(Request $request, Response $response): RedirectResponse
     {
@@ -644,11 +622,16 @@ class DashboardController
                 }
             }
 
+            $stmt = $db->prepare("SELECT * FROM re_registrations WHERE registration_id = :id LIMIT 1");
+            $stmt->execute(['id' => $hr['id']]);
+            $reReg = $stmt->fetch() ?: null;
+
             $history[] = [
                 'registration' => $hr,
                 'wave' => $w,
                 'selection' => $sel,
-                'passed_program_name' => $passedProdi
+                'passed_program_name' => $passedProdi,
+                're_registration' => $reReg
             ];
         }
 

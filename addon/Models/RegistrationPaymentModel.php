@@ -47,29 +47,44 @@ class RegistrationPaymentModel extends Model
         return $stmt->fetchAll();
     }
 
-    public function getPaginatedPayments(int $limit, int $offset): array
+    public function getPaginatedPayments(int $limit, int $offset, ?int $waveId = null): array
     {
-        $stmt = $this->db->prepare("
-            SELECT rp.*, r.full_name, u.email 
+        $sql = "
+            SELECT rp.*, r.full_name, u.email, w.name as wave_name
             FROM {$this->table} rp
             JOIN registrations r ON rp.registration_id = r.id
             JOIN users u ON r.user_id = u.id
+            LEFT JOIN waves w ON r.wave_id = w.id
+        ";
+        $params = [];
+        if ($waveId !== null) {
+            $sql .= " WHERE r.wave_id = :wave_id ";
+            $params['wave_id'] = $waveId;
+        }
+        $sql .= "
             ORDER BY rp.created_at DESC
             LIMIT " . $limit . " OFFSET " . $offset . "
-        ");
-        $stmt->execute();
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
-    public function getPaymentsCount(): int
+    public function getPaymentsCount(?int $waveId = null): int
     {
-        $stmt = $this->db->prepare("
+        $sql = "
             SELECT COUNT(*) as count
             FROM {$this->table} rp
             JOIN registrations r ON rp.registration_id = r.id
             JOIN users u ON r.user_id = u.id
-        ");
-        $stmt->execute();
+        ";
+        $params = [];
+        if ($waveId !== null) {
+            $sql .= " WHERE r.wave_id = :wave_id ";
+            $params['wave_id'] = $waveId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return (int) ($stmt->fetch()['count'] ?? 0);
     }
 }

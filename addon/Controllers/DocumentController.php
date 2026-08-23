@@ -244,6 +244,9 @@ class DocumentController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
+        $waveId = $request->input('wave_id');
+        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
@@ -251,13 +254,20 @@ class DocumentController
 
         $db = $this->registrations->getDb();
         
+        $params = [];
+        $whereSql = " WHERE r.status != 'Draft' ";
+        if ($waveIdFilter !== null) {
+            $whereSql .= " AND r.wave_id = :wave_id ";
+            $params['wave_id'] = $waveIdFilter;
+        }
+
         $stmtCount = $db->prepare("
             SELECT COUNT(*) as count 
             FROM registrations r
             JOIN users u ON r.user_id = u.id
-            WHERE r.status != 'Draft'
+            $whereSql
         ");
-        $stmtCount->execute();
+        $stmtCount->execute($params);
         $totalCount = (int) ($stmtCount->fetch()['count'] ?? 0);
 
         $totalPages = (int) ceil($totalCount / $limit);
@@ -268,14 +278,15 @@ class DocumentController
         }
 
         $stmt = $db->prepare("
-            SELECT r.*, u.email 
+            SELECT r.*, u.email, w.name as wave_name
             FROM registrations r
             JOIN users u ON r.user_id = u.id
-            WHERE r.status != 'Draft'
+            LEFT JOIN waves w ON r.wave_id = w.id
+            $whereSql
             ORDER BY r.updated_at DESC
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
-        $stmt->execute();
+        $stmt->execute($params);
         $candidates = $stmt->fetchAll();
 
         foreach ($candidates as &$c) {
@@ -326,8 +337,14 @@ class DocumentController
             $c['approved_count'] = $approvedCount;
         }
 
+        $stmtWaves = $db->prepare("SELECT * FROM waves");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
+
         return $response->renderPage([
             'candidates' => $candidates,
+            'waves' => $waves,
+            'selectedWaveId' => $waveIdFilter,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
@@ -352,9 +369,10 @@ class DocumentController
         }
 
         $stmt = $this->registrations->getDb()->prepare("
-            SELECT r.*, u.email 
+            SELECT r.*, u.email, w.name as wave_name
             FROM registrations r
             JOIN users u ON r.user_id = u.id
+            LEFT JOIN waves w ON r.wave_id = w.id
             WHERE r.id = :id LIMIT 1
         ");
         $stmt->execute(['id' => $regId]);

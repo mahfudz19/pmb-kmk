@@ -86,7 +86,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
             <div>
               <label for="nisn" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">NISN</label>
-              <input type="text" name="nisn" id="nisn" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" required>
+              <input type="text" name="nisn" id="nisn" class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 font-semibold" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>">
             </div>
 
             <div>

@@ -71,7 +71,7 @@
       </span>
       <div>
         <h4 class="text-xs font-bold text-slate-800 leading-tight">Pembayaran</h4>
-        <span class="text-[10px] text-slate-400 font-medium block">Biaya Formulir</span>
+        <span class="text-[10px] text-slate-400 font-medium block">Biaya Formulir<?= (empty($wave['registration_fee_total']) || (float)$wave['registration_fee_total'] <= 0) ? ' (Gratis)' : '' ?></span>
       </div>
     </div>
 
@@ -127,6 +127,7 @@
       <span class="text-[10px] text-slate-400 font-medium block">Hasil Kelulusan PMB</span>
     </div>
   </div>
+</div>
 </div>
 <?php endif; ?>
 
@@ -210,12 +211,6 @@
         <a data-spa href="<?= getBaseUrl('/pendaftaran') ?>" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl shadow-md text-sm font-semibold transition-all">
           Lanjutkan Pengisian Formulir
         </a>
-        <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
-          <?= csrf_field() ?>
-          <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl shadow-sm text-sm border border-red-200 transition-all cursor-pointer">
-            ❌ Batalkan Pendaftaran
-          </button>
-        </form>
       </div>
     </div>
 
@@ -233,12 +228,6 @@
           <a data-spa href="<?= getBaseUrl('/pendaftaran') ?>" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-indigo-100">
             ✏️ Ubah Data Formulir
           </a>
-          <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
-            <?= csrf_field() ?>
-            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs transition-colors shadow-sm border border-red-100 cursor-pointer">
-              ❌ Batal
-            </button>
-          </form>
         </div>
       </div>
 
@@ -255,29 +244,29 @@
           <div class="space-y-2.5">
             <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
               <span class="text-slate-500">Bank Tujuan</span>
-              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['bank_name'] ?? 'BANK MANDIRI') ?></strong>
+              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['bank_name'] ?? '-') ?></strong>
             </div>
             <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
               <span class="text-slate-500">Nomor Rekening</span>
-              <strong class="text-slate-800 tracking-wider"><?= htmlspecialchars($active_payment_account['account_number'] ?? '123-000-456-7890') ?></strong>
+              <strong class="text-slate-800 tracking-wider"><?= htmlspecialchars($active_payment_account['account_number'] ?? '-') ?></strong>
             </div>
             <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
               <span class="text-slate-500">Atas Nama</span>
-              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['account_holder'] ?? 'PANITIA PMB KMK') ?></strong>
+              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['account_holder'] ?? '-') ?></strong>
             </div>
             <div class="flex justify-between items-center text-xs">
               <span class="text-slate-500">Jumlah Nominal</span>
-              <?php $feeAmount = (float)get_setting('registration_fee_total', '100000'); ?>
+              <?php $feeAmount = (float)($wave['registration_fee_total'] ?? 0); ?>
               <strong class="text-indigo-650 font-extrabold text-sm">Rp <?= number_format($feeAmount, 0, ',', '.') ?>,-</strong>
             </div>
           </div>
 
           <?php
-          $feeArchive = get_setting('registration_fee_archive', '');
+          $feeArchive = $wave['registration_fee_archive'] ?? '';
           if (!empty($feeArchive)):
           ?>
             <div class="pt-2">
-              <a href="<?= htmlspecialchars($feeArchive) ?>" download class="block text-center px-4 py-2.5 bg-white hover:bg-slate-50 text-indigo-700 border border-slate-200 shadow-sm font-bold rounded-xl text-xs transition-colors">
+              <a href="<?= getBaseUrl(htmlspecialchars($feeArchive)) ?>" download class="block text-center px-4 py-2.5 bg-white hover:bg-slate-50 text-indigo-700 border border-slate-200 shadow-sm font-bold rounded-xl text-xs transition-colors">
                 📄 Unduh Rincian Biaya (PDF)
               </a>
             </div>
@@ -347,12 +336,6 @@
           <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
           Menunggu Konfirmasi Keuangan
         </div>
-        <form action="<?= getBaseUrl('/dashboard/cancel-registration') ?>" method="POST" onsubmit="return confirmCancelRegistration(event)">
-          <?= csrf_field() ?>
-          <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl text-xs border border-red-100 transition-all cursor-pointer">
-            ❌ Batalkan Pendaftaran
-          </button>
-        </form>
       </div>
     </div>
 
@@ -391,22 +374,22 @@
                   }
                   $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
                   ?>
-                  <div class="p-4 flex justify-between items-center">
-                    <div>
+                  <div class="p-4 flex justify-between items-center gap-4">
+                    <div class="min-w-0 flex-1">
                       <span class="text-sm font-semibold text-slate-800"><?= $docDisplayName ?></span>
                       <span class="text-[10px] text-slate-400 block">Prodi: <span class="text-indigo-700 font-semibold"><?= $prodisStr ?></span><?= $descStr ?></span>
                     </div>
-                    <div>
+                    <div class="shrink-0">
                       <?php if ($uploaded): ?>
                         <?php if ($uploaded['status'] === 'Pending'): ?>
-                          <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Menunggu Verifikasi</span>
+                          <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-100 whitespace-nowrap">Menunggu Verifikasi</span>
                         <?php elseif ($uploaded['status'] === 'Approved'): ?>
-                          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Disetujui</span>
+                          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-100 whitespace-nowrap">Disetujui</span>
                         <?php elseif ($uploaded['status'] === 'Rejected'): ?>
-                          <span class="text-xs font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100">Ditolak</span>
+                          <span class="text-xs font-semibold text-red-700 bg-red-50 px-2.5 py-1 rounded-xl border border-red-100 whitespace-nowrap">Ditolak</span>
                         <?php endif; ?>
                       <?php else: ?>
-                        <span class="text-xs font-semibold text-red-650 bg-red-50 px-2 py-0.5 rounded border border-red-100">Belum Ada</span>
+                        <span class="text-xs font-semibold text-red-650 bg-red-50 px-2.5 py-1 rounded-xl border border-red-100 whitespace-nowrap">Belum Ada</span>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -627,30 +610,5 @@
       return false;
     }
     return true;
-  }
-
-  function confirmCancelRegistration(event) {
-    event.preventDefault();
-    const form = event.target;
-    Swal.fire({
-      title: 'Batalkan Pendaftaran?',
-      text: 'Apakah Anda yakin ingin membatalkan pendaftaran gelombang ini? Semua data pendaftaran ini akan dihapus secara permanen. PENTING: Biaya pendaftaran yang telah ditransfer tidak dapat dikembalikan (non-refundable).',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Ya, Batalkan!',
-      cancelButtonText: 'Kembali',
-      customClass: {
-        popup: 'rounded-3xl',
-        confirmButton: 'rounded-xl text-xs font-bold px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white',
-        cancelButton: 'rounded-xl text-xs font-bold px-6 py-2.5 bg-slate-500 hover:bg-slate-600 text-white'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        form.submit();
-      }
-    });
-    return false;
   }
 </script>

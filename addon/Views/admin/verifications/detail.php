@@ -23,6 +23,7 @@
           <span>👤</span> Data Pribadi & Kontak
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <p class="text-slate-500"><strong class="text-slate-700">Gelombang PMB:</strong> <span class="font-bold text-indigo-750 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded"><?= htmlspecialchars($candidate['wave_name'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Nama Lengkap:</strong> <span class="font-medium"><?= htmlspecialchars($candidate['full_name'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">NIK (No. KTP):</strong> <span class="font-medium"><?= htmlspecialchars($candidate['nik'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">NISN:</strong> <span class="font-medium"><?= htmlspecialchars($candidate['nisn'] ?? '-') ?></span></p>

@@ -18,11 +18,6 @@ foreach ($waveProdiList as $wp) {
   $waveProdis[$wp['wave_id']][] = (int)$wp['study_program_id'];
 }
 
-$isAddressFilled = !empty($address['district']) && !empty($address['subdistrict']) && !empty($address['address']) && !empty($registration['email']);
-$isParentsFilled = !empty($parents['father_name']) || !empty($parents['mother_name']) || !empty($parents['guardian_name']);
-$isEducationFilled = !empty($education['school_name']) && !empty($education['school_major']) && !empty($education['graduation_year']) && !empty($education['diploma_number']) && !empty($education['school_address']);
-$isProfileComplete = $isAddressFilled && $isParentsFilled && $isEducationFilled;
-
 $selectedWave = null;
 foreach ($waves as $w) {
   if ($w['id'] == ($registration['wave_id'] ?? null)) {
@@ -159,8 +154,8 @@ foreach ($waves as $w) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-1">
-              <label for="nisn" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">NISN <span class="text-red-550">*</span></label>
-              <input type="text" id="nisn" name="nisn" maxlength="10" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium" placeholder="10 digit NISN">
+              <label for="nisn" class="block text-xs font-bold text-slate-500 uppercase tracking-wide">NISN</label>
+              <input type="text" id="nisn" name="nisn" maxlength="10" value="<?= htmlspecialchars($registration['nisn'] ?? '') ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-medium" placeholder="10 digit NISN (Opsional)">
             </div>
 
             <div class="space-y-1">
@@ -252,28 +247,6 @@ foreach ($waves as $w) {
             <span>📝</span> Konfirmasi & Submit Pendaftaran
           </h3>
 
-          <div class="bg-amber-50 border border-amber-250 p-5 rounded-2xl space-y-3">
-            <h4 class="text-xs font-extrabold text-amber-800 uppercase tracking-wider">⚠️ PERINGATAN PENTING</h4>
-            <p class="text-xs text-amber-900 leading-relaxed font-semibold">Sebelum mengunci pendaftaran, pastikan Anda telah melengkapi seluruh data profil Anda di halaman <a href="<?= getBaseUrl('/profile') ?>" target="_blank" class="text-indigo-650 hover:underline"><strong>Profil Saya</strong></a> (termasuk Alamat Lengkap, Data Orang Tua/Wali, Kebutuhan Khusus, dan Riwayat Pendidikan). Data profil yang tidak lengkap dapat menyebabkan pendaftaran Anda ditolak.</p>
-
-            <div class="bg-white/50 p-4 rounded-xl border border-amber-200/50 space-y-2 mt-2">
-              <h5 class="text-[10px] font-extrabold text-slate-700 uppercase">Status Kelengkapan Profil Anda:</h5>
-              <ul class="text-xs space-y-1 font-semibold">
-                <li class="flex items-center gap-2">
-                  <span><?= $isAddressFilled ? '✅' : '❌' ?></span>
-                  <span class="<?= $isAddressFilled ? 'text-emerald-700' : 'text-red-700' ?>">Alamat Lengkap & Kontak (<?= $isAddressFilled ? 'Lengkap' : 'Belum Lengkap' ?>)</span>
-                </li>
-                <li class="flex items-center gap-2">
-                  <span><?= $isParentsFilled ? '✅' : '❌' ?></span>
-                  <span class="<?= $isParentsFilled ? 'text-emerald-700' : 'text-red-700' ?>">Data Orang Tua / Wali (<?= $isParentsFilled ? 'Lengkap' : 'Belum Lengkap' ?>)</span>
-                </li>
-                <li class="flex items-center gap-2">
-                  <span><?= $isEducationFilled ? '✅' : '❌' ?></span>
-                  <span class="<?= $isEducationFilled ? 'text-emerald-700' : 'text-red-700' ?>">Riwayat Pendidikan (<?= $isEducationFilled ? 'Lengkap' : 'Belum Lengkap' ?>)</span>
-                </li>
-              </ul>
-            </div>
-          </div>
 
           <div class="bg-slate-50 p-6 rounded-2xl border border-slate-150 space-y-4">
             <h4 class="text-xs font-extrabold text-slate-750 uppercase tracking-wider">🔍 Ringkasan Formulir</h4>
@@ -331,15 +304,9 @@ foreach ($waves as $w) {
               Selanjutnya
             </button>
 
-            <?php if ($isProfileComplete): ?>
-              <button type="submit" id="btn-submit" class="hidden px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
-                Kunci & Finalisasi Pendaftaran
-              </button>
-            <?php else: ?>
-              <a href="<?= getBaseUrl('/profile') ?>" id="btn-locked" class="hidden px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none text-center">
-                Lengkapi Profil
-              </a>
-            <?php endif; ?>
+            <button type="submit" id="btn-submit" class="hidden px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none">
+              Kunci & Finalisasi Pendaftaran
+            </button>
           </div>
         </div>
       </form>
@@ -438,16 +405,12 @@ foreach ($waves as $w) {
       if (step === maxSteps) {
         document.getElementById('btn-next').classList.add('hidden');
         const submitBtn = document.getElementById('btn-submit');
-        const lockedBtn = document.getElementById('btn-locked');
         if (submitBtn) submitBtn.classList.remove('hidden');
-        if (lockedBtn) lockedBtn.classList.remove('hidden');
         buildReviewSummary();
       } else {
         document.getElementById('btn-next').classList.remove('hidden');
         const submitBtn = document.getElementById('btn-submit');
-        const lockedBtn = document.getElementById('btn-locked');
         if (submitBtn) submitBtn.classList.add('hidden');
-        if (lockedBtn) lockedBtn.classList.add('hidden');
       }
 
       document.getElementById('step-error-alert').classList.add('hidden');
@@ -563,7 +526,7 @@ foreach ($waves as $w) {
         const hp = document.getElementById('hp').value.trim();
         const info = document.getElementById('info_source').value;
         const citizenship = document.getElementById('citizenship').value;
-        if (!name || !nik || !nisn || !place || !date || !gender || !religion || !hp || !info || !citizenship) {
+        if (!name || !nik || !place || !date || !gender || !religion || !hp || !info || !citizenship) {
           showErrorAlert('Harap lengkapi semua data pribadi wajib');
           return false;
         }
@@ -573,7 +536,7 @@ foreach ($waves as $w) {
           return false;
         }
 
-        if (nisn.length !== 10 || isNaN(nisn)) {
+        if (nisn !== '' && (nisn.length !== 10 || isNaN(nisn))) {
           showErrorAlert('NISN harus berupa 10 digit angka');
           return false;
         }

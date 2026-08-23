@@ -64,6 +64,16 @@ class RegistrationController
 
         $registration = $this->registrations->findByUserId($userId);
 
+        if ($registration && $registration['wave_id']) {
+            $db = $this->registrations->getDb();
+            $stmtWave = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+            $stmtWave->execute(['id' => $registration['wave_id']]);
+            $w = $stmtWave->fetch() ?: null;
+            if (!$w || (int)$w['is_active'] !== 1) {
+                return $response->redirect('/dashboard?error=' . urlencode('Gelombang pendaftaran yang Anda ikuti saat ini tidak aktif atau sudah ditutup.'));
+            }
+        }
+
         if ($registration && in_array($registration['status'], ['Verified', 'Released'])) {
             return $response->redirect('/dashboard?error=Pendaftaran+Anda+sudah+diverifikasi+dan+tidak+dapat+diubah.');
         }
@@ -121,6 +131,23 @@ class RegistrationController
         }
 
         $regId = $registration ? $registration['id'] : null;
+
+        $targetWaveId = null;
+        if ($step === 1) {
+            $targetWaveId = $request->input('wave_id') ?: ($registration['wave_id'] ?? null);
+        } else {
+            $targetWaveId = $registration['wave_id'] ?? null;
+        }
+
+        if ($targetWaveId) {
+            $stmtWave = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+            $stmtWave->execute(['id' => $targetWaveId]);
+            $w = $stmtWave->fetch() ?: null;
+            if (!$w || (int)$w['is_active'] !== 1) {
+                $response->setStatusCode(400);
+                return $response->json(['success' => false, 'message' => 'Gelombang pendaftaran yang Anda pilih saat ini tidak aktif atau sudah ditutup.']);
+            }
+        }
 
         if ($step === 1) {
             $waveId = $request->input('wave_id') ?: ($registration['wave_id'] ?? null);
@@ -189,7 +216,7 @@ class RegistrationController
             $infoSource = $request->input('info_source');
             $citizenship = $request->input('citizenship');
 
-            if (!$fullName || !$nik || !$nisn || !$birthPlace || !$birthDate || !$gender || !$religion || !$phone || !$infoSource || !$citizenship) {
+            if (!$fullName || !$nik || !$birthPlace || !$birthDate || !$gender || !$religion || !$phone || !$infoSource || !$citizenship) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'Harap isi semua kolom wajib pada data pribadi']);
             }
@@ -199,7 +226,7 @@ class RegistrationController
                 return $response->json(['success' => false, 'message' => 'NIK harus berupa angka dan berjumlah 16 digit']);
             }
 
-            if (!is_numeric($nisn) || strlen($nisn) !== 10) {
+            if (!empty($nisn) && (!is_numeric($nisn) || strlen($nisn) !== 10)) {
                 $response->setStatusCode(400);
                 return $response->json(['success' => false, 'message' => 'NISN harus berupa angka dan berjumlah 10 digit']);
             }
@@ -301,26 +328,21 @@ class RegistrationController
             return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi semua pilihan PMB dan program studi wajib sebelum memfinalisasi pendaftaran.'));
         }
 
+        $stmtWave = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+        $stmtWave->execute(['id' => $waveId]);
+        $w = $stmtWave->fetch() ?: null;
+        if (!$w || (int)$w['is_active'] !== 1) {
+            return $response->redirect('/pendaftaran?error=' . urlencode('Gelombang pendaftaran tidak aktif atau sudah ditutup.'));
+        }
+
         $prodiIds = array_filter([$prog1Id, $prog2Id, $prog3Id]);
         if (count($prodiIds) !== count(array_unique($prodiIds))) {
             return $response->redirect('/pendaftaran?error=' . urlencode('Pilihan program studi tidak boleh ada yang sama.'));
         }
 
-        $address = $this->addresses->findByRegistrationId($regId);
-        $parents = $this->parents->findByRegistrationId($regId);
-        $education = $this->educations->findByRegistrationId($regId);
-
         $email = ($registration['email'] ?? '') ?: ($user['email'] ?? '');
-        if (!$address || empty($address['district']) || empty($address['subdistrict']) || empty($address['address']) || empty($registration['nik']) || empty($registration['nisn']) || empty($registration['phone']) || empty($email)) {
-            return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi Alamat Lengkap dan Data Kontak di menu Profil Saya terlebih dahulu.'));
-        }
-
-        if (!$parents || (empty($parents['father_name']) && empty($parents['mother_name']) && empty($parents['guardian_name']))) {
-            return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi Data Orang Tua / Wali di menu Profil Saya terlebih dahulu.'));
-        }
-
-        if (!$education || empty($education['school_name']) || empty($education['school_major']) || empty($education['graduation_year']) || empty($education['diploma_number']) || empty($education['school_address'])) {
-            return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi Riwayat Pendidikan (Nama Sekolah, Jurusan, Alamat Sekolah, Kelulusan) di menu Profil Saya terlebih dahulu.'));
+        if (empty($registration['nik']) || empty($registration['phone']) || empty($email)) {
+            return $response->redirect('/pendaftaran?error=' . urlencode('Harap lengkapi Data Pribadi di formulir terlebih dahulu.'));
         }
 
         $this->registrations->updateById($regId, [

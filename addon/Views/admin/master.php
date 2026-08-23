@@ -18,7 +18,6 @@
             'study-program' => ['Program Studi (Jurusan)', 'Kelola daftar jurusan perkuliahan serta alokasi fakultasnya.'],
             'document-type' => ['Jenis Dokumen Persyaratan', 'Kelola scan berkas wajib yang harus di-upload pendaftar.'],
             'payment-account' => ['Rekening Penerimaan', 'Kelola nomor rekening bank institusi untuk pembayaran biaya formulir & daftar ulang.'],
-            'registration-fee' => ['Biaya Formulir PMB', 'Kelola nominal biaya formulir pendaftaran global beserta brosur rincian biaya.'],
             'nim-format' => ['Format Custom NIM', 'Definisikan format generate Nomor Induk Mahasiswa otomatis setelah pembayaran disetujui.']
           ];
           $activeTitle = $titles[$tab] ?? ['Data Master', 'Kelola setelan sistem.'];
@@ -27,16 +26,14 @@
           <p class="mt-1 text-xs text-slate-500"><?= htmlspecialchars($activeTitle[1]) ?></p>
         </div>
 
-        <?php if ($tab !== 'registration-fee'): ?>
-          <div>
-            <button
-              type="button"
-              onclick="openCreateModal()"
-              class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-all shadow-sm cursor-pointer">
-              + Tambah Data
-            </button>
-          </div>
-        <?php endif; ?>
+        <div>
+          <button
+            type="button"
+            onclick="openCreateModal()"
+            class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-full transition-all shadow-sm cursor-pointer">
+            + Tambah Data
+          </button>
+        </div>
       </div>
 
       <!-- Panel Table -->
@@ -47,6 +44,7 @@
               <tr>
                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Gelombang</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Biaya Formulir</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Tanggal Mulai</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Tanggal Selesai</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
@@ -56,7 +54,7 @@
             <tbody class="divide-y divide-slate-100 bg-white">
               <?php if (empty($waves)): ?>
                 <tr>
-                  <td colspan="6" class="text-center py-12 empty-row-placeholder">
+                  <td colspan="7" class="text-center py-12 empty-row-placeholder">
                     <div class="flex flex-col items-center justify-center space-y-3">
                       <div class="text-slate-350 text-4xl">🌊</div>
                       <h3 class="text-xs font-bold text-slate-700">Gelombang Pendaftaran Kosong</h3>
@@ -71,6 +69,16 @@
                       <?= htmlspecialchars($w['name']) ?>
                       <?php if (!empty($w['academic_year'])): ?>
                         <span class="text-[10px] text-indigo-650 font-bold ml-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full"><?= htmlspecialchars($w['academic_year']) ?></span>
+                      <?php endif; ?>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-750">
+                      <?php if (empty($w['registration_fee_total']) || (float)$w['registration_fee_total'] <= 0): ?>
+                        <span class="text-emerald-600 font-bold text-xs bg-emerald-50 px-2 py-1 rounded-lg">Gratis</span>
+                      <?php else: ?>
+                        <span>Rp<?= number_format((float)$w['registration_fee_total'], 0, ',', '.') ?></span>
+                        <?php if (!empty($w['registration_fee_archive'])): ?>
+                          <a href="<?= getBaseUrl(htmlspecialchars($w['registration_fee_archive'])) ?>" target="_blank" class="block text-[10px] text-indigo-650 hover:underline mt-0.5">📂 Brosur</a>
+                        <?php endif; ?>
                       <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600"><?= htmlspecialchars($w['start_date']) ?></td>
@@ -293,7 +301,6 @@
                       <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold <?= $nf['is_active'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-650' ?>">
                         <?= $nf['is_active'] ? 'AKTIF' : 'TIDAK AKTIF' ?>
                       </span>
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                       <button type="button" onclick="openEditModal('nim-format', <?= htmlspecialchars(json_encode($nf)) ?>)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer">Edit</button>
                       <button type="button" onclick="openDeleteModal('nim-format', <?= htmlspecialchars($nf['id']) ?>)" class="text-xs font-bold text-red-650 hover:text-red-800 cursor-pointer">Hapus</button>
@@ -303,35 +310,6 @@
               endif; ?>
             </tbody>
           </table>
-        <?php elseif ($tab === 'registration-fee'): ?>
-          <form action="<?= getBaseUrl('/admin/master/registration-fee/save') ?>" method="POST" enctype="multipart/form-data" class="p-8 space-y-6 max-w-2xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div class="space-y-1">
-                <label for="registration_fee_total" class="block text-sm font-semibold text-slate-700">Nominal Biaya Formulir (Rp) <span class="text-red-550">*</span></label>
-                <?php $feeVal = (float)get_setting('registration_fee_total', '100000'); ?>
-                <input type="number" id="registration_fee_total" name="registration_fee_total" required value="<?= htmlspecialchars($feeVal) ?>" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 font-bold" placeholder="Contoh: 100000">
-              </div>
-
-              <div class="space-y-1">
-                <label for="registration_fee_archive" class="block text-sm font-semibold text-slate-700">Upload PDF Brosur / Rincian Biaya (Global)</label>
-                <input type="file" id="registration_fee_archive" accept="application/pdf" name="registration_fee_archive" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-750 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50">
-                <?php
-                $archiveVal = get_setting('registration_fee_archive', '');
-                if (!empty($archiveVal)):
-                ?>
-                  <p class="text-[10px] text-indigo-650 font-bold mt-1.5 flex items-center gap-1.5">
-                    <a href="<?= htmlspecialchars($archiveVal) ?>" target="_blank" class="hover:underline">📄 Lihat Brosur/Rincian Saat Ini</a>
-                  </p>
-                <?php endif; ?>
-              </div>
-            </div>
-
-            <div class="flex justify-start">
-              <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer">
-                Simpan Setelan Biaya
-              </button>
-            </div>
-          </form>
         <?php endif; ?>
       </div>
     </div>
@@ -344,10 +322,10 @@
   <div class="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 transform scale-95 opacity-0 transition-all duration-200" id="master-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-4">
       <h3 class="text-lg font-bold text-slate-900" id="modal-title">Tambah Data</h3>
-      <button type="button" onclick="closeMasterModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none text-2xl font-semibold">&times;</button>
+      <button type="button" onclick="closeMasterModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-2xl font-semibold">&times;</button>
     </div>
 
-    <form id="modal-form" method="POST" action="<?= getBaseUrl('/admin/master/create') ?>" class="space-y-4">
+    <form id="modal-form" method="POST" action="<?= getBaseUrl('/admin/master/create') ?>" enctype="multipart/form-data" class="space-y-4">
       <input type="hidden" name="type" value="<?= htmlspecialchars($tab) ?>">
       <input type="hidden" name="id" id="form-id">
 
@@ -433,7 +411,8 @@
         </div>
       </div>
 
-      <!-- Dynamic Field: Checkbox is_active -->
+      <!-- Dynamic Field: registration_fee_total (Wave) -->
+
       <div class="flex items-center gap-3 modal-field hidden" id="field-active">
         <input type="checkbox" id="input-active" name="is_active" value="1" class="h-4 w-4 rounded text-indigo-650 border-slate-300 focus:ring-indigo-500">
         <label for="input-active" class="text-sm font-bold text-slate-750 cursor-pointer">Status Aktif / Buka</label>
@@ -480,14 +459,11 @@
 </div>
 
 <script>
-  const activeTab = '<?= htmlspecialchars($tab) ?>';
-
   function openCreateModal() {
     document.getElementById('modal-title').textContent = 'Tambah Data';
     document.getElementById('modal-form').action = "<?= getBaseUrl('/admin/master/create') ?>";
     document.getElementById('form-id').value = '';
 
-    // Clear inputs
     if (document.getElementById('input-academic-year')) document.getElementById('input-academic-year').value = '';
     document.getElementById('input-name').value = '';
     document.getElementById('input-description').value = '';
@@ -502,7 +478,7 @@
     document.getElementById('input-active').checked = true;
     document.getElementById('input-required').checked = true;
 
-    showFieldsForTab(activeTab);
+    showFieldsForTab(document.querySelector('#modal-form input[name="type"]').value);
     showModal('master-modal', 'master-modal-card');
   }
 

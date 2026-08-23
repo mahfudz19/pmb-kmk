@@ -1,8 +1,8 @@
 <?php
-
 /**
  * @var array $stats
  */
+$activeTab = $_GET['tab'] ?? 'stats';
 ?>
 
 <div class="space-y-6">
@@ -11,34 +11,44 @@
       <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Laporan & Statistik PMB</h1>
       <p class="text-xs text-slate-500">Analisis data statistik pendaftar, laporan keuangan penerimaan, hasil seleksi ujian, dan rekapitulasi daftar ulang.</p>
     </div>
+    <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/reports') ?>" class="flex items-center gap-2">
+      <input type="hidden" name="tab" id="filter-tab" value="<?= htmlspecialchars($activeTab) ?>">
+      <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
+      <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
+        <option value="">Semua Gelombang</option>
+        <?php foreach ($waves as $w): ?>
+          <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </form>
   </div>
 
   <!-- Tab Buttons -->
   <div class="border-b border-slate-200">
     <nav class="flex space-x-6" aria-label="Tabs">
-      <button onclick="switchTab('tab-stats', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-indigo-600 text-indigo-600 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-stats', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'stats' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         📈 Statistik Pendaftar
       </button>
-      <button onclick="switchTab('tab-finance', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-finance', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'finance' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         💰 Laporan Keuangan
       </button>
-      <button onclick="switchTab('tab-selection', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-selection', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'selection' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         🎓 Hasil Seleksi
       </button>
-      <button onclick="switchTab('tab-rereg', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-rereg', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'rereg' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         ✅ Daftar Ulang
       </button>
-      <button onclick="switchTab('tab-notifications', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-notifications', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'notifications' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         🔔 Riwayat Notifikasi
       </button>
-      <button onclick="switchTab('tab-audit', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
+      <button onclick="switchTab('tab-audit', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'audit' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
         🛡️ Log Aktivitas
       </button>
     </nav>
   </div>
 
   <!-- Tab 1: Statistik Pendaftar -->
-  <div id="tab-stats" class="tab-content space-y-6">
+  <div id="tab-stats" class="tab-content space-y-6 <?= $activeTab === 'stats' ? '' : 'hidden' ?>">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Total Pendaftar</span>
@@ -127,10 +137,10 @@
   </div>
 
   <!-- Tab 2: Laporan Keuangan -->
-  <div id="tab-finance" class="tab-content space-y-6 hidden">
+  <div id="tab-finance" class="tab-content space-y-6 <?= $activeTab === 'finance' ? '' : 'hidden' ?>">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Ringkasan Penerimaan Keuangan</h3>
-      <a href="<?= getBaseUrl('/admin/reports/export/finance') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/finance' . ($selectedWaveId !== null ? '?wave_id=' . $selectedWaveId : '')) ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Keuangan (CSV)
       </a>
     </div>
@@ -204,10 +214,10 @@
   </div>
 
   <!-- Tab 3: Hasil Seleksi -->
-  <div id="tab-selection" class="tab-content space-y-6 hidden">
+  <div id="tab-selection" class="tab-content space-y-6 <?= $activeTab === 'selection' ? '' : 'hidden' ?>">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Statistik Hasil Ujian & Seleksi</h3>
-      <a href="<?= getBaseUrl('/admin/reports/export/selection') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/selection' . ($selectedWaveId !== null ? '?wave_id=' . $selectedWaveId : '')) ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Seleksi (CSV)
       </a>
     </div>
@@ -289,10 +299,10 @@
   </div>
 
   <!-- Tab 4: Daftar Ulang -->
-  <div id="tab-rereg" class="tab-content space-y-6 hidden">
+  <div id="tab-rereg" class="tab-content space-y-6 <?= $activeTab === 'rereg' ? '' : 'hidden' ?>">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Rekapitulasi Daftar Ulang Mahasiswa Baru</h3>
-      <a href="<?= getBaseUrl('/admin/reports/export/re-registrations') ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
+      <a href="<?= getBaseUrl('/admin/reports/export/re-registrations' . ($selectedWaveId !== null ? '?wave_id=' . $selectedWaveId : '')) ?>" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm text-xs transition-colors">
         🟢 Unduh Laporan Daftar Ulang (CSV)
       </a>
     </div>
@@ -362,7 +372,7 @@
   </div>
 
   <!-- Tab 5: Riwayat Notifikasi -->
-  <div id="tab-notifications" class="tab-content space-y-6 hidden">
+  <div id="tab-notifications" class="tab-content space-y-6 <?= $activeTab === 'notifications' ? '' : 'hidden' ?>">
     <div class="flex items-center justify-between gap-4">
       <h3 class="text-md font-extrabold text-slate-800">Riwayat Pengiriman Notifikasi</h3>
     </div>
@@ -418,7 +428,7 @@
   </div>
 
   <!-- Tab 6: Log Aktivitas -->
-  <div id="tab-audit" class="tab-content hidden space-y-6">
+  <div id="tab-audit" class="tab-content space-y-6 <?= $activeTab === 'audit' ? '' : 'hidden' ?>">
     <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Audit Log Aktivitas Sistem</h3>
@@ -476,5 +486,9 @@
 
     btnEl.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
     btnEl.classList.add('border-indigo-600', 'text-indigo-600');
+
+    const tabName = tabId.replace('tab-', '');
+    const tabInput = document.getElementById('filter-tab');
+    if (tabInput) tabInput.value = tabName;
   }
 </script>

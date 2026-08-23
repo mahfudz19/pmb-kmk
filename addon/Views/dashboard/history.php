@@ -21,10 +21,11 @@
       <table class="w-full text-left border-collapse text-xs">
         <thead>
           <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-            <th class="pb-3 pr-4 w-[25%]">Gelombang</th>
-            <th class="pb-3 px-4 w-[30%]">Program Studi Kelulusan</th>
-            <th class="pb-3 px-4 w-[20%]">Status Seleksi</th>
-            <th class="pb-3 pl-4 text-right w-[25%]">Aksi</th>
+            <th class="pb-3 pr-4 w-[20%]">Gelombang</th>
+            <th class="pb-3 px-4 w-[25%]">Program Studi Kelulusan</th>
+            <th class="pb-3 px-4 w-[15%]">Status Seleksi</th>
+            <th class="pb-3 px-4 w-[20%]">Status Daftar Ulang</th>
+            <th class="pb-3 pl-4 text-right w-[20%]">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-50">
@@ -48,6 +49,23 @@
                   <?php endif; ?>
                 <?php else: ?>
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Dalam Proses</span>
+                <?php endif; ?>
+              </td>
+              <td class="py-4 px-4 align-middle">
+                <?php if ($h['selection'] && (int)$h['selection']['is_published'] === 1 && ($h['selection']['status'] === 'Lulus' || $h['selection']['status'] === 'Cadangan')): ?>
+                  <?php if (empty($h['re_registration'])): ?>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-650 border border-slate-200">Belum Daftar Ulang</span>
+                  <?php else: ?>
+                    <?php if ($h['re_registration']['status'] === 'Pending'): ?>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-100">Menunggu Verifikasi</span>
+                    <?php elseif ($h['re_registration']['status'] === 'Approved'): ?>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Disetujui</span>
+                    <?php elseif ($h['re_registration']['status'] === 'Rejected'): ?>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-700 border border-red-100">Ditolak</span>
+                    <?php endif; ?>
+                  <?php endif; ?>
+                <?php else: ?>
+                  <span class="text-slate-400 font-medium">-</span>
                 <?php endif; ?>
               </td>
               <td class="py-4 pl-4 text-right align-middle">

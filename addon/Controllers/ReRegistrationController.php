@@ -175,6 +175,9 @@ class ReRegistrationController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
+        $waveId = $request->input('wave_id');
+        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
@@ -182,13 +185,20 @@ class ReRegistrationController
 
         $db = $this->reRegistrations->getDb();
 
+        $params = [];
+        $whereSql = " WHERE sr.status = 'Lulus' AND sr.is_published = 1 ";
+        if ($waveIdFilter !== null) {
+            $whereSql .= " AND r.wave_id = :wave_id ";
+            $params['wave_id'] = $waveIdFilter;
+        }
+
         $stmtCount = $db->prepare("
             SELECT COUNT(*) as count
             FROM registrations r
             INNER JOIN selection_results sr ON r.id = sr.registration_id
-            WHERE sr.status = 'Lulus' AND sr.is_published = 1
+            $whereSql
         ");
-        $stmtCount->execute();
+        $stmtCount->execute($params);
         $totalCount = (int) ($stmtCount->fetch()['count'] ?? 0);
 
         $totalPages = (int) ceil($totalCount / $limit);
@@ -199,20 +209,27 @@ class ReRegistrationController
         }
 
         $stmt = $db->prepare("
-            SELECT r.id as registration_id, r.full_name, r.email, sr.passed_program_id, sp.name as program_name, rr.id as re_reg_id, rr.status, rr.payment_amount, rr.created_at
+            SELECT r.id as registration_id, r.full_name, r.email, sr.passed_program_id, sp.name as program_name, rr.id as re_reg_id, rr.status, rr.payment_amount, rr.created_at, w.name as wave_name
             FROM registrations r
             INNER JOIN selection_results sr ON r.id = sr.registration_id
             LEFT JOIN re_registrations rr ON r.id = rr.registration_id
             LEFT JOIN study_programs sp ON sr.passed_program_id = sp.id
-            WHERE sr.status = 'Lulus' AND sr.is_published = 1
+            LEFT JOIN waves w ON r.wave_id = w.id
+            $whereSql
             ORDER BY rr.id DESC, r.full_name ASC
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
-        $stmt->execute();
+        $stmt->execute($params);
         $list = $stmt->fetchAll();
+
+        $stmtWaves = $db->prepare("SELECT * FROM waves");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
 
         return $response->renderPage([
             'list' => $list,
+            'waves' => $waves,
+            'selectedWaveId' => $waveIdFilter,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
@@ -256,6 +273,11 @@ class ReRegistrationController
         ]);
         $waveStudyProgram = $stmt->fetch() ?: null;
 
+        $stmt = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $registration['wave_id']]);
+        $waveObj = $stmt->fetch();
+        $waveName = $waveObj ? $waveObj['name'] : '-';
+
         $expectedTuition = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : $this->getTuitionFee($passedProgramId);
 
         return $response->renderPage([
@@ -264,7 +286,8 @@ class ReRegistrationController
             'program_name' => $programName,
             'expected_tuition' => $expectedTuition,
             're_registration' => $reReg,
-            'wave_study_program' => $waveStudyProgram
+            'wave_study_program' => $waveStudyProgram,
+            'wave_name' => $waveName
         ], [
             'path' => '/admin/re_registrations/detail',
             'meta' => ['title' => 'Detail Verifikasi Daftar Ulang | ' . env('APP_NAME')]

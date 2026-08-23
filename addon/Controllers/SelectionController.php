@@ -27,6 +27,9 @@ class SelectionController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
+        $waveId = $request->input('wave_id');
+        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
@@ -34,14 +37,22 @@ class SelectionController
 
         $db = $this->registrations->getDb();
 
+        $params = [];
+        $whereSql = " WHERE r.status != 'Draft' ";
+        if ($waveIdFilter !== null) {
+            $whereSql .= " AND r.wave_id = :wave_id ";
+            $params['wave_id'] = $waveIdFilter;
+        }
+
         $stmtCount = $db->prepare("
             SELECT COUNT(*) as count 
             FROM registrations r
             JOIN users u ON r.user_id = u.id
-            WHERE r.status != 'Draft'
+            $whereSql
         ");
-        $stmtCount->execute();
+        $stmtCount->execute($params);
         $totalCount = (int) ($stmtCount->fetch()['count'] ?? 0);
+        $stmtCount->closeCursor();
 
         $totalPages = (int) ceil($totalCount / $limit);
         if ($totalPages < 1) $totalPages = 1;
@@ -51,7 +62,7 @@ class SelectionController
         }
 
         $stmt = $db->prepare("
-            SELECT r.*, u.email, 
+            SELECT r.*, u.email, w.name as wave_name,
                    rp.program1_id, rp.program2_id, rp.program3_id,
                    sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name,
                    sr.test_score, sr.interview_score, sr.interview_notes, 
@@ -64,17 +75,18 @@ class SelectionController
             LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
             LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
             LEFT JOIN selection_results sr ON r.id = sr.registration_id
-            WHERE r.status != 'Draft'
+            LEFT JOIN waves w ON r.wave_id = w.id
+            $whereSql
             ORDER BY r.updated_at DESC
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
-        $stmt->execute();
+        $stmt->execute($params);
         $candidates = $stmt->fetchAll() ?: [];
         $stmt->closeCursor();
 
         $programs = $this->studyPrograms->all();
 
-        $stmtWaves = $db->prepare("SELECT id, exam_stages FROM waves");
+        $stmtWaves = $db->prepare("SELECT id, exam_stages, name FROM waves");
         $stmtWaves->execute();
         $waves = $stmtWaves->fetchAll() ?: [];
         $stmtWaves->closeCursor();
@@ -98,6 +110,8 @@ class SelectionController
         return $response->renderPage([
             'candidates' => $candidates,
             'programs' => $programs,
+            'waves' => $waves,
+            'selectedWaveId' => $waveIdFilter,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
@@ -120,6 +134,7 @@ class SelectionController
         $status = $request->input('status');
         $passedProgramId = $request->input('passed_program_id') !== '' ? (int) $request->input('passed_program_id') : null;
         $notes = $request->input('notes') ?: null;
+        $stages = $request->input('stages');
 
         if (!$regId || !in_array($status, ['Pending', 'Lulus', 'Cadangan', 'Tidak Lulus'], true)) {
             return $response->redirect('/admin/selection?error=Masukan+penilaian+tidak+valid');
@@ -145,6 +160,37 @@ class SelectionController
             $this->selectionResults->updateById($existing['id'], $data);
         } else {
             $this->selectionResults->insert($data);
+        }
+
+        $db = $this->registrations->getDb();
+        if (is_array($stages)) {
+            foreach ($stages as $stageIndex => $stageStatus) {
+                if (in_array($stageStatus, ['Lulus', 'Tidak Lulus', 'Pending'], true)) {
+                    $stmt = $db->prepare("SELECT * FROM registration_exam_results WHERE registration_id = :reg_id AND stage_index = :stage_index LIMIT 1");
+                    $stmt->execute([
+                        'reg_id' => $regId,
+                        'stage_index' => $stageIndex
+                    ]);
+                    $existingStage = $stmt->fetch();
+                    if ($existingStage) {
+                        $stmt = $db->prepare("UPDATE registration_exam_results SET status = :status, updated_at = :now WHERE id = :id");
+                        $stmt->execute([
+                            'status' => $stageStatus,
+                            'now' => date('Y-m-d H:i:s'),
+                            'id' => $existingStage['id']
+                        ]);
+                    } else {
+                        $stmt = $db->prepare("INSERT INTO registration_exam_results (registration_id, stage_index, study_program_id, status, created_at, updated_at) VALUES (:reg_id, :stage_index, NULL, :status, :created_at, :updated_at)");
+                        $stmt->execute([
+                            'reg_id' => $regId,
+                            'stage_index' => $stageIndex,
+                            'status' => $stageStatus,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
         }
 
         return $response->redirect('/admin/selection?success=Data+penilaian+dan+kelulusan+berhasil+disimpan');

@@ -382,7 +382,26 @@ class MasterController
                 ];
             }
         }
-        $this->waves->updateById($waveId, ['exam_stages' => json_encode($examStages)]);
+        $registration_fee_total = $request->input('registration_fee_total') !== null && $request->input('registration_fee_total') !== '' ? (int)$request->input('registration_fee_total') : 0;
+        $waveUpdateData = [
+            'exam_stages' => json_encode($examStages),
+            'registration_fee_total' => $registration_fee_total
+        ];
+
+        if (isset($_FILES['registration_fee_archive']) && $_FILES['registration_fee_archive']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['registration_fee_archive'];
+            $uploadDir = MAZU_ENV_PATH . 'public/uploads/fees/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = 'wave_fee_' . uniqid() . '.' . $ext;
+            if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+                $waveUpdateData['registration_fee_archive'] = '/uploads/fees/' . $filename;
+            }
+        }
+
+        $this->waves->updateById($waveId, $waveUpdateData);
 
         log_activity('CONFIGURE_WAVE_STUDY_PROGRAMS', "Mengkonfigurasi detail program studi dan tahapan ujian pada gelombang ID {$waveId}.");
         return $response->redirect("/admin/master?tab=wave&success=Konfigurasi+gelombang+berhasil+disimpan");

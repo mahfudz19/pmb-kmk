@@ -385,9 +385,6 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
                   <a data-spa data-sidebar-sublink="payment-account" href="<?= getBaseUrl('/admin/master?tab=payment-account') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Rekening Penerimaan
                   </a>
-                  <a data-spa data-sidebar-sublink="registration-fee" href="<?= getBaseUrl('/admin/master?tab=registration-fee') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="dollar-sign" class="w-3.5 h-3.5"></i> Biaya Formulir
-                  </a>
                   <a data-spa data-sidebar-sublink="nim-format" href="<?= getBaseUrl('/admin/master?tab=nim-format') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
                     <i data-lucide="binary" class="w-3.5 h-3.5"></i> Format NIM
                   </a>
