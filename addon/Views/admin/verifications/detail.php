@@ -16,13 +16,13 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
     <!-- Left: Applicant Details Summary (Data Pribadi s.d Prodi Pilihan) -->
-    <div class="lg:col-span-2 space-y-8">
+    <div class="lg:col-span-1 space-y-8">
       <!-- 1. Biodata Card -->
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80">
+        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 p-3 flex items-center gap-2">
           <span>👤</span> Data Pribadi & Kontak
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
           <p class="text-slate-500"><strong class="text-slate-700">Gelombang PMB:</strong> <span class="font-bold text-indigo-750 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded"><?= htmlspecialchars($candidate['wave_name'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Nama Lengkap:</strong> <span class="font-medium"><?= htmlspecialchars($candidate['full_name'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">NIK (No. KTP):</strong> <span class="font-medium"><?= htmlspecialchars($candidate['nik'] ?? '-') ?></span></p>
@@ -33,27 +33,23 @@
           <p class="text-slate-500"><strong class="text-slate-700">No. HP / WA:</strong> <span class="font-medium"><?= htmlspecialchars($candidate['phone'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Email:</strong> <span class="font-medium"><?= htmlspecialchars($candidate['email'] ?? '-') ?></span></p>
         </div>
-      </div>
 
-      <!-- 2. Address Card -->
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <!-- 2. Address Card -->
+        <h3 class="text-sm font-bold text-slate-800 border-b border-t border-slate-100 p-3 flex items-center gap-2">
           <span>📍</span> Alamat Tinggal
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
           <p class="text-slate-500"><strong class="text-slate-700">Kecamatan:</strong> <span class="font-medium"><?= htmlspecialchars($address['district'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Kelurahan:</strong> <span class="font-medium"><?= htmlspecialchars($address['subdistrict'] ?? '-') ?></span></p>
           <p class="text-slate-500"><strong class="text-slate-700">Kode Pos:</strong> <span class="font-medium"><?= htmlspecialchars($address['postal_code'] ?? '-') ?></span></p>
           <p class="text-slate-500 md:col-span-2"><strong class="text-slate-700">Alamat Lengkap:</strong> <span class="font-medium"><?= htmlspecialchars($address['address'] ?? '-') ?></span></p>
         </div>
-      </div>
 
-      <!-- 3. Parents Card -->
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <!-- 3. Parents Card -->
+        <h3 class="text-sm font-bold text-slate-800 border-b border-t border-slate-100 p-3 flex items-center gap-2">
           <span>👨‍👩‍👦</span> Data Orang Tua / Wali
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
           <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
             <h4 class="font-bold text-indigo-750">👨 Data Ayah</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama:</strong> <?= htmlspecialchars($parents['father_name'] ?? '-') ?></p>
@@ -80,14 +76,12 @@
             </div>
           <?php endif; ?>
         </div>
-      </div>
 
-      <!-- 4. Education & Choices Card -->
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <!-- 4. Education & Choices Card -->
+        <h3 class="text-sm font-bold text-slate-800 border-b border-t border-slate-100 p-3 flex items-center gap-2">
           <span>🏫</span> Pendidikan & Pilihan PMB
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
           <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
             <h4 class="font-bold text-indigo-750">🎓 Pendidikan Asal</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama Sekolah:</strong> <?= htmlspecialchars($education['school_name'] ?? '-') ?></p>
@@ -108,9 +102,9 @@
     </div>
 
     <!-- Right: Document Verification Area -->
-    <div class="space-y-8">
+    <div class="lg:col-span-2 space-y-8">
       <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
-        <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+        <h3 class="text-sm font-bold text-slate-800 border-b border-t border-slate-100 p-3 flex items-center gap-2">
           <span>📎</span> Berkas Dokumen Persyaratan
         </h3>
 

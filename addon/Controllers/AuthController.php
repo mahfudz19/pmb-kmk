@@ -204,7 +204,7 @@ class AuthController
             $this->loginSession($user);
 
             // Send login notification email
-            $this->sendLoginNotification($user);
+            // $this->sendLoginNotification($user);
 
             return $response->redirect('/dashboard')->hard();
         } catch (\Throwable $th) {
@@ -288,7 +288,7 @@ class AuthController
             $this->emailVerifications->createOtp($userId, $email, $otpCode, 15);
 
             // Send email with OTP
-            $this->emailService->sendOtpVerification($email, $name, $otpCode, 15);
+            // $this->emailService->sendOtpVerification($email, $name, $otpCode, 15);
 
             // Store user ID in session for OTP verification
             $this->session->set('auth.pending_user_id', $userId);
