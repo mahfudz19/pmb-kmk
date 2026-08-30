@@ -74,6 +74,45 @@ class ReRegistrationController
         $activePaymentAccount = $stmt->fetch() ?: null;
 
         $reReg = $this->reRegistrations->findByRegistrationId($registration['id']);
+        if (!$reReg) {
+            $stmtFind999 = $db->prepare("SELECT id FROM re_registrations WHERE id_payment = 999 LIMIT 1");
+            $stmtFind999->execute();
+            $has999 = $stmtFind999->fetch();
+            $stmtFind999->closeCursor();
+
+            $nextIdPayment = 1;
+            if (!$has999) {
+                $stmtMax = $db->prepare("SELECT MAX(id_payment) as max_id FROM re_registrations");
+                $stmtMax->execute();
+                $maxRow = $stmtMax->fetch();
+                $stmtMax->closeCursor();
+                
+                $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
+                $nextIdPayment = $maxVal + 1;
+                if ($nextIdPayment >= 1000) {
+                    $nextIdPayment = 1;
+                }
+            }
+
+            $finalAmount = $tuitionFee + $nextIdPayment;
+
+            $newReRegId = $this->reRegistrations->insert([
+                'registration_id' => $registration['id'],
+                'skl_path' => null,
+                'health_path' => null,
+                'statement_path' => null,
+                'payment_path' => null,
+                'payment_amount' => $finalAmount,
+                'status' => 'Pending',
+                'id_payment' => $nextIdPayment,
+                'payment_type' => 'manual',
+                'rejection_reason' => null,
+                'verified_by' => null,
+                'verified_at' => null,
+                'dynamic_documents' => json_encode([])
+            ]);
+            $reReg = $this->reRegistrations->find($newReRegId);
+        }
 
         return $response->renderPage([
             'registration' => $registration,
@@ -158,7 +197,32 @@ class ReRegistrationController
         $waveStudyProgram = $stmt->fetch() ?: null;
         $tuitionFee = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : 0.0;
 
-        $data['payment_amount'] = $tuitionFee;
+        if (!$reReg) {
+            $stmtFind999 = $db->prepare("SELECT id FROM re_registrations WHERE id_payment = 999 LIMIT 1");
+            $stmtFind999->execute();
+            $has999 = $stmtFind999->fetch();
+            $stmtFind999->closeCursor();
+
+            $nextIdPayment = 1;
+            if (!$has999) {
+                $stmtMax = $db->prepare("SELECT MAX(id_payment) as max_id FROM re_registrations");
+                $stmtMax->execute();
+                $maxRow = $stmtMax->fetch();
+                $stmtMax->closeCursor();
+                
+                $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
+                $nextIdPayment = $maxVal + 1;
+                if ($nextIdPayment >= 1000) {
+                    $nextIdPayment = 1;
+                }
+            }
+            $idPayment = $nextIdPayment;
+        } else {
+            $idPayment = (int)($reReg['id_payment'] ?? 1);
+        }
+
+        $data['id_payment'] = $idPayment;
+        $data['payment_amount'] = $tuitionFee + $idPayment;
 
         if ($reReg) {
             $this->reRegistrations->updateById($reReg['id'], $data);
@@ -279,6 +343,27 @@ class ReRegistrationController
         $waveName = $waveObj ? $waveObj['name'] : '-';
 
         $expectedTuition = $waveStudyProgram ? (float)$waveStudyProgram['reregistration_fee_total'] : $this->getTuitionFee($passedProgramId);
+        if ($reReg && !empty($reReg['payment_amount'])) {
+            $expectedTuition = (float)$reReg['payment_amount'];
+        } else if ($reReg && !empty($reReg['id_payment'])) {
+            $expectedTuition += (int)$reReg['id_payment'];
+        }
+
+        $stmtAddr = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :id LIMIT 1");
+        $stmtAddr->execute(['id' => $regId]);
+        $addr = $stmtAddr->fetch() ?: null;
+
+        $stmtParent = $db->prepare("SELECT * FROM registration_parents WHERE registration_id = :id LIMIT 1");
+        $stmtParent->execute(['id' => $regId]);
+        $parent = $stmtParent->fetch() ?: null;
+
+        $stmtEdu = $db->prepare("SELECT * FROM registration_educations WHERE registration_id = :id LIMIT 1");
+        $stmtEdu->execute(['id' => $regId]);
+        $edu = $stmtEdu->fetch() ?: null;
+
+        $profileAddrCompleted = ($addr && !empty($addr['province']) && !empty($addr['city']) && !empty($addr['district']) && !empty($addr['subdistrict']) && !empty($addr['address']));
+        $profileParentCompleted = ($parent && !empty($parent['father_name']) && !empty($parent['mother_name']));
+        $profileEduCompleted = ($edu && !empty($edu['school_name']) && !empty($edu['school_major']) && !empty($edu['graduation_year']));
 
         return $response->renderPage([
             'registration' => $registration,
@@ -287,7 +372,10 @@ class ReRegistrationController
             'expected_tuition' => $expectedTuition,
             're_registration' => $reReg,
             'wave_study_program' => $waveStudyProgram,
-            'wave_name' => $waveName
+            'wave_name' => $waveName,
+            'profile_addr_completed' => $profileAddrCompleted,
+            'profile_parent_completed' => $profileParentCompleted,
+            'profile_edu_completed' => $profileEduCompleted
         ], [
             'path' => '/admin/re_registrations/detail',
             'meta' => ['title' => 'Detail Verifikasi Daftar Ulang | ' . env('APP_NAME')]
@@ -320,6 +408,28 @@ class ReRegistrationController
         }
 
         $db = $this->registrations->getDb();
+
+        if ($status === 'Approved') {
+            $stmtAddr = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :id LIMIT 1");
+            $stmtAddr->execute(['id' => $registration['id']]);
+            $addr = $stmtAddr->fetch() ?: null;
+
+            $stmtParent = $db->prepare("SELECT * FROM registration_parents WHERE registration_id = :id LIMIT 1");
+            $stmtParent->execute(['id' => $registration['id']]);
+            $parent = $stmtParent->fetch() ?: null;
+
+            $stmtEdu = $db->prepare("SELECT * FROM registration_educations WHERE registration_id = :id LIMIT 1");
+            $stmtEdu->execute(['id' => $registration['id']]);
+            $edu = $stmtEdu->fetch() ?: null;
+
+            $profileAddrCompleted = ($addr && !empty($addr['province']) && !empty($addr['city']) && !empty($addr['district']) && !empty($addr['subdistrict']) && !empty($addr['address']));
+            $profileParentCompleted = ($parent && !empty($parent['father_name']) && !empty($parent['mother_name']));
+            $profileEduCompleted = ($edu && !empty($edu['school_name']) && !empty($edu['school_major']) && !empty($edu['graduation_year']));
+
+            if (!$profileAddrCompleted || !$profileParentCompleted || !$profileEduCompleted) {
+                return $response->redirect('/admin/re-registrations/detail?registration_id=' . $registration['id'] . '&error=Gagal+menyetujui.+Profil+pendaftar+belum+lengkap');
+            }
+        }
 
         if (!empty($nim)) {
             $stmt = $db->prepare("SELECT id FROM registrations WHERE nim = :nim AND id != :id LIMIT 1");
@@ -504,5 +614,33 @@ class ReRegistrationController
         );
 
         return $nim;
+    }
+
+    public function changePaymentType(Request $request, Response $response): Response
+    {
+        $userId = $_SESSION['auth.user_id'] ?? null;
+        if (!$userId) {
+            $response->setStatusCode(401);
+            return $response->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $registration = $this->registrations->findByUserId($userId);
+        if (!$registration) {
+            $response->setStatusCode(404);
+            return $response->json(['success' => false, 'message' => 'Registration not found']);
+        }
+
+        $type = $request->input('payment_type');
+        if (!in_array($type, ['manual', 'va'], true)) {
+            $response->setStatusCode(400);
+            return $response->json(['success' => false, 'message' => 'Invalid payment type']);
+        }
+
+        $reReg = $this->reRegistrations->findByRegistrationId($registration['id']);
+        if ($reReg) {
+            $this->reRegistrations->updateById($reReg['id'], ['payment_type' => $type]);
+        }
+
+        return $response->json(['success' => true]);
     }
 }

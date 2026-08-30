@@ -87,41 +87,41 @@
 
         <?php if ($re_registration): ?>
           <!-- Decision / Verification Form -->
+          <?php 
+          $isProfileComplete = ($profile_addr_completed && $profile_parent_completed && $profile_edu_completed);
+          ?>
+
+          <?php if (!$isProfileComplete): ?>
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs space-y-2 text-amber-800">
+              <div class="flex items-center gap-2 font-bold">
+                <span>⚠️</span>
+                <span>Peringatan: Profil Pendaftar Belum Lengkap!</span>
+              </div>
+              <p class="leading-relaxed font-medium">
+                Verifikasi daftar ulang tidak dapat disetujui karena pendaftar belum melengkapi data berikut:
+              </p>
+              <ul class="list-disc pl-5 my-1.5 space-y-1 font-semibold">
+                <?php if (!$profile_addr_completed): ?>
+                  <li>Data Alamat & Kontak</li>
+                <?php endif; ?>
+                <?php if (!$profile_parent_completed): ?>
+                  <li>Data Orang Tua / Wali</li>
+                <?php endif; ?>
+                <?php if (!$profile_edu_completed): ?>
+                  <li>Data Riwayat Pendidikan</li>
+                <?php endif; ?>
+              </ul>
+              <p class="text-[10px] text-amber-600 font-bold pt-1">
+                Tombol "Setujui" dinonaktifkan sementara sampai pendaftar melengkapi profil mereka.
+              </p>
+            </div>
+          <?php endif; ?>
+
           <form action="<?= getBaseUrl('/admin/re-registrations/verify') ?>" method="POST" class="border-t border-slate-100 pt-6 space-y-4">
             <input type="hidden" name="id" value="<?= $re_registration['id'] ?>">
+            <input type="hidden" name="status" value="Approved">
 
             <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Keputusan Verifikasi</h3>
-
-            <div class="grid grid-cols-2 gap-4">
-              <label class="relative flex items-center justify-center p-4 border rounded-2xl cursor-pointer hover:bg-slate-50/50 transition-colors border-slate-200">
-                <input type="radio" name="status" value="Approved" class="sr-only peer" onclick="toggleRejectionBox(false)" <?= $re_registration['status'] === 'Approved' ? 'checked' : '' ?> required>
-                <div class="text-center peer-checked:text-emerald-700">
-                  <span class="block text-lg">✅</span>
-                  <span class="block text-xs font-bold mt-1 text-slate-650">Setujui Daftar Ulang</span>
-                </div>
-                <div class="absolute inset-0 border-2 rounded-2xl border-transparent peer-checked:border-emerald-500 pointer-events-none"></div>
-              </label>
-
-              <label class="relative flex items-center justify-center p-4 border rounded-2xl cursor-pointer hover:bg-slate-50/50 transition-colors border-slate-200">
-                <input type="radio" name="status" value="Rejected" class="sr-only peer" onclick="toggleRejectionBox(true)" <?= $re_registration['status'] === 'Rejected' ? 'checked' : '' ?>>
-                <div class="text-center peer-checked:text-rose-700">
-                  <span class="block text-lg">❌</span>
-                  <span class="block text-xs font-bold mt-1 text-slate-650">Tolak Daftar Ulang</span>
-                </div>
-                <div class="absolute inset-0 border-2 rounded-2xl border-transparent peer-checked:border-rose-500 pointer-events-none"></div>
-              </label>
-            </div>
-
-            <!-- Rejection Reason Textarea -->
-            <div id="rejection-reason-container" class="<?= $re_registration['status'] === 'Rejected' ? '' : 'hidden' ?> space-y-2">
-              <label for="rejection_reason" class="block text-xs font-bold text-slate-700">Alasan Penolakan <span class="text-red-500">*</span></label>
-              <textarea
-                name="rejection_reason"
-                id="rejection_reason"
-                rows="3"
-                class="block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50"
-                placeholder="Tulis alasan penolakan berkas atau bukti bayar di sini..."><?= htmlspecialchars($re_registration['rejection_reason'] ?? '') ?></textarea>
-            </div>
 
             <!-- NIM Input Section -->
             <div class="space-y-2 border-t border-slate-100 pt-4">
@@ -133,17 +133,18 @@
                   id="nim"
                   class="block flex-1 px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
                   placeholder="Masukkan NIM manual atau klik generate..."
-                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>" />
-                <!-- <button type="button" onclick="autoGenerateNim()" class="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1">
-                  🔄 Generate
-                </button> -->
+                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
+                  <?= !$isProfileComplete ? 'disabled' : '' ?> />
               </div>
               <p class="text-[10px] text-slate-400">Kosongkan jika NIM belum ditentukan (di dashboard mahasiswa akan berstatus PENDING).</p>
             </div>
 
             <div class="pt-3 flex justify-end">
-              <button type="submit" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-full shadow-md text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 cursor-pointer">
-                💾 Simpan Hasil Verifikasi
+              <button 
+                type="submit" 
+                <?= !$isProfileComplete ? 'disabled' : '' ?> 
+                class="inline-flex items-center justify-center px-6 py-2.5 border border-slate-250 rounded-full shadow-sm text-xs font-bold transition-all <?= $isProfileComplete ? 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 cursor-pointer' : 'bg-slate-100 text-slate-400 cursor-not-allowed' ?>">
+                💾 Setujui & Simpan Verifikasi
               </button>
             </div>
           </form>
@@ -152,38 +153,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  function toggleRejectionBox(show) {
-    const box = document.getElementById('rejection-reason-container');
-    const textarea = document.getElementById('rejection_reason');
-    if (show) {
-      box.classList.remove('hidden');
-      textarea.setAttribute('required', 'required');
-    } else {
-      box.classList.add('hidden');
-      textarea.removeAttribute('required');
-    }
-  }
-
-  async function autoGenerateNim() {
-    const button = document.querySelector('button[onclick="autoGenerateNim()"]');
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '⌛ Generating...';
-    try {
-      const response = await fetch('<?= getBaseUrl('/admin/re-registrations/generate-nim?registration_id=' . $registration['id']) ?>');
-      const data = await response.json();
-      if (data.nim) {
-        document.getElementById('nim').value = data.nim;
-      } else {
-        alert('Gagal membuat NIM: ' + (data.error || 'Terjadi kesalahan'));
-      }
-    } catch (e) {
-      alert('Gagal terhubung ke server');
-    } finally {
-      button.disabled = false;
-      button.innerHTML = originalText;
-    }
-  }
-</script>

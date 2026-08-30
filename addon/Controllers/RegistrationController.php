@@ -54,59 +54,7 @@ class RegistrationController
 
     public function showForm(Request $request, Response $response): View|RedirectResponse
     {
-        $userId = $_SESSION['auth.user_id'] ?? null;
-        if (!$userId) {
-            return $response->redirect('/login');
-        }
-
-        $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        $response->setHeader('Pragma', 'no-cache');
-
-        $registration = $this->registrations->findByUserId($userId);
-
-        if ($registration && $registration['wave_id']) {
-            $db = $this->registrations->getDb();
-            $stmtWave = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
-            $stmtWave->execute(['id' => $registration['wave_id']]);
-            $w = $stmtWave->fetch() ?: null;
-            if (!$w || (int)$w['is_active'] !== 1) {
-                return $response->redirect('/dashboard?error=' . urlencode('Gelombang pendaftaran yang Anda ikuti saat ini tidak aktif atau sudah ditutup.'));
-            }
-        }
-
-        if ($registration && in_array($registration['status'], ['Verified', 'Released'])) {
-            return $response->redirect('/dashboard?error=Pendaftaran+Anda+sudah+diverifikasi+dan+tidak+dapat+diubah.');
-        }
-
-        $regId = $registration ? $registration['id'] : null;
-
-        if ($registration) {
-            $registration['birth_date'] = $this->convertDateToUi($registration['birth_date'] ?? '');
-        }
-
-        $parents = $regId ? $this->parents->findByRegistrationId($regId) : null;
-        if ($parents) {
-            $parents['father_birth_date'] = $this->convertDateToUi($parents['father_birth_date'] ?? '');
-            $parents['mother_birth_date'] = $this->convertDateToUi($parents['mother_birth_date'] ?? '');
-            $parents['guardian_birth_date'] = $this->convertDateToUi($parents['guardian_birth_date'] ?? '');
-        }
-
-        $data = [
-            'registration' => $registration,
-            'address' => $regId ? $this->addresses->findByRegistrationId($regId) : null,
-            'parents' => $parents,
-            'special_needs' => $regId ? $this->specialNeeds->findByRegistrationId($regId) : null,
-            'education' => $regId ? $this->educations->findByRegistrationId($regId) : null,
-            'program' => $regId ? $this->programs->findByRegistrationId($regId) : null,
-            
-            'waves' => $this->waves->all(),
-            'study_programs' => $this->studyPrograms->all(),
-        ];
-
-        return $response->renderPage($data, [
-            'path' => '/pendaftaran/form',
-            'meta' => ['title' => 'Formulir Pendaftaran PMB | ' . env('APP_NAME')]
-        ]);
+        return $response->redirect('/dashboard');
     }
 
     public function saveDraft(Request $request, Response $response): Response
@@ -361,6 +309,51 @@ class RegistrationController
             $this->programs->updateById($existingProg['id'], $progData);
         } else {
             $this->programs->insert($progData);
+        }
+
+        $stmtCheckPay = $db->prepare("SELECT * FROM registration_payments WHERE registration_id = :reg_id LIMIT 1");
+        $stmtCheckPay->execute(['reg_id' => $regId]);
+        $existingPayment = $stmtCheckPay->fetch();
+        $stmtCheckPay->closeCursor();
+
+        if (!$existingPayment) {
+            $stmtFind999 = $db->prepare("SELECT id FROM registration_payments WHERE id_payment = 999 LIMIT 1");
+            $stmtFind999->execute();
+            $has999 = $stmtFind999->fetch();
+            $stmtFind999->closeCursor();
+
+            $nextIdPayment = 1;
+            if (!$has999) {
+                $stmtMax = $db->prepare("SELECT MAX(id_payment) as max_id FROM registration_payments");
+                $stmtMax->execute();
+                $maxRow = $stmtMax->fetch();
+                $stmtMax->closeCursor();
+                
+                $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
+                $nextIdPayment = $maxVal + 1;
+                if ($nextIdPayment >= 1000) {
+                    $nextIdPayment = 1;
+                }
+            }
+
+            $baseAmount = (float)($w['registration_fee_total'] ?? 0);
+            $finalAmount = $baseAmount + $nextIdPayment;
+
+            $stmtInsertPay = $db->prepare("
+                INSERT INTO registration_payments 
+                (registration_id, bank_name, account_name, amount, payment_date, file_path, status, id_payment, payment_type, created_at, updated_at) 
+                VALUES 
+                (:reg_id, '', '', :amount, :pay_date, '', 'Pending', :id_payment, 'manual', :created_at, :updated_at)
+            ");
+            $stmtInsertPay->execute([
+                'reg_id' => $regId,
+                'amount' => $finalAmount,
+                'pay_date' => date('Y-m-d'),
+                'id_payment' => $nextIdPayment,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+            $stmtInsertPay->closeCursor();
         }
 
         return $response->redirect('/dashboard?success=Pendaftaran+berhasil+dikunci.+Panitia+akan+segera+memverifikasi+berkas+Anda.');

@@ -45,7 +45,7 @@
             <th class="px-6 py-4 text-center">Aksi</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-150 text-xs text-slate-650">
+        <tbody class="divide-y divide-slate-150 text-xs text-slate-655">
           <?php if (empty($payments)): ?>
             <tr>
               <td colspan="8" class="text-center py-12">
@@ -68,25 +68,18 @@
                 <td class="px-6 py-4 font-bold text-slate-900 text-right">Rp <?= number_format($p['amount'], 0, ',', '.') ?></td>
                 <td class="px-6 py-4"><?= htmlspecialchars($p['payment_date']) ?></td>
                 <td class="px-6 py-4 text-center">
-                  <button
-                    type="button"
-                    onclick="openPreviewModal(<?= $p['id'] ?>, '<?= strtolower(pathinfo($p['file_path'], PATHINFO_EXTENSION)) ?>')"
-                    class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-indigo-650 rounded-full transition-colors cursor-pointer">
+                  <a
+                    href="<?= getBaseUrl('/payments/view') ?>?id=<?= $p['id'] ?>"
+                    target="_blank"
+                    class="inline-flex items-center px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-indigo-655 rounded-full transition-colors">
                     👁️ Lihat Bukti
-                  </button>
+                  </a>
                 </td>
                 <td class="px-6 py-4 text-center">
                   <?php if ($p['status'] === 'Pending'): ?>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Pending</span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-300 text-amber-700">Menunggu Pembayaran</span>
                   <?php elseif ($p['status'] === 'Approved'): ?>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Disetujui</span>
-                  <?php elseif ($p['status'] === 'Rejected'): ?>
-                    <div class="space-y-0.5">
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 border border-red-300 text-red-700">Ditolak</span>
-                      <?php if (!empty($p['rejection_reason'])): ?>
-                        <p class="text-[9px] text-red-650 max-w-[120px] truncate mx-auto" title="<?= htmlspecialchars($p['rejection_reason']) ?>">Alasan: <?= htmlspecialchars($p['rejection_reason']) ?></p>
-                      <?php endif; ?>
-                    </div>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-300 text-emerald-700">Lunas</span>
                   <?php endif; ?>
                 </td>
                 <td class="px-6 py-4 text-center">
@@ -99,12 +92,6 @@
                           Setujui
                         </button>
                       </form>
-                      <button
-                        type="button"
-                        onclick="openRejectModal(<?= $p['id'] ?>)"
-                        class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
-                        Tolak
-                      </button>
                     <?php else: ?>
                       <span class="text-[10px] text-slate-400 font-semibold italic">Selesai</span>
                     <?php endif; ?>
@@ -151,105 +138,3 @@
     </div>
   <?php endif; ?>
 </div>
-
-<!-- Preview Modal -->
-<div id="preview-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closePreviewModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="preview-modal-card">
-    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-      <h3 class="text-base font-bold text-slate-900">Penampil Bukti Pembayaran</h3>
-      <button type="button" onclick="closePreviewModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-2xl font-semibold">&times;</button>
-    </div>
-
-    <div class="w-full flex items-center justify-center bg-slate-50 rounded-2xl overflow-hidden min-h-[300px]" id="preview-content-panel">
-      <!-- Injected via JS -->
-    </div>
-  </div>
-</div>
-
-<!-- Rejection Reason Dialog Modal -->
-<div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRejectModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="reject-modal-card">
-    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-      <h3 class="text-sm font-bold text-slate-900">Tolak Pembayaran Pendaftaran</h3>
-      <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
-    </div>
-
-    <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" class="space-y-4 text-xs">
-      <input type="hidden" id="reject-payment-id" name="payment_id">
-      <input type="hidden" name="status" value="Rejected">
-
-      <div class="space-y-1">
-        <label for="rejection_reason" class="block font-bold text-slate-600">Alasan Penolakan</label>
-        <textarea id="rejection_reason" name="rejection_reason" rows="3" required class="block w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-red-500 bg-slate-50" placeholder="Tuliskan catatan alasan penolakan agar diketahui mahasiswa..."></textarea>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors cursor-pointer">Batal</button>
-        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-colors cursor-pointer shadow-sm">Tolak Pembayaran</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openPreviewModal(paymentId, ext) {
-    const panel = document.getElementById('preview-content-panel');
-    panel.innerHTML = '';
-
-    const viewUrl = `<?= getBaseUrl('/payments/view') ?>?id=${paymentId}`;
-
-    if (ext === 'pdf') {
-      panel.innerHTML = `<iframe src="${viewUrl}" class="w-full h-[600px] border-none rounded-2xl"></iframe>`;
-    } else {
-      panel.innerHTML = `<img src="${viewUrl}" class="max-w-full max-h-[600px] object-contain rounded-2xl shadow-sm" alt="Bukti Pembayaran" />`;
-    }
-
-    const modal = document.getElementById('preview-modal');
-    const card = document.getElementById('preview-modal-card');
-
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-      card.classList.remove('scale-95', 'opacity-0');
-      card.classList.add('scale-100', 'opacity-100');
-    }, 10);
-  }
-
-  function closePreviewModal() {
-    const modal = document.getElementById('preview-modal');
-    const card = document.getElementById('preview-modal-card');
-
-    card.classList.remove('scale-100', 'opacity-100');
-    card.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-      document.getElementById('preview-content-panel').innerHTML = '';
-    }, 200);
-  }
-
-  function openRejectModal(paymentId) {
-    document.getElementById('reject-payment-id').value = paymentId;
-
-    const modal = document.getElementById('reject-modal');
-    const card = document.getElementById('reject-modal-card');
-
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-      card.classList.remove('scale-95', 'opacity-0');
-      card.classList.add('scale-100', 'opacity-100');
-    }, 10);
-  }
-
-  function closeRejectModal() {
-    const modal = document.getElementById('reject-modal');
-    const card = document.getElementById('reject-modal-card');
-
-    card.classList.remove('scale-100', 'opacity-100');
-    card.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-      document.getElementById('rejection_reason').value = '';
-    }, 200);
-  }
-</script>

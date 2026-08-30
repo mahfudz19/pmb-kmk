@@ -71,14 +71,10 @@
                   <?= $row['payment_amount'] ? 'Rp ' . number_format($row['payment_amount'], 0, ',', '.') : '-' ?>
                 </td>
                 <td class="py-4 px-6 text-center">
-                  <?php if (!$row['re_reg_id']): ?>
-                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-slate-150 text-slate-500 uppercase tracking-wider">Belum Mengajukan</span>
+                  <?php if (!$row['re_reg_id'] || $row['status'] === 'Pending'): ?>
+                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800 uppercase tracking-wider">Menunggu Pembayaran</span>
                   <?php elseif ($row['status'] === 'Approved'): ?>
-                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Disetujui</span>
-                  <?php elseif ($row['status'] === 'Rejected'): ?>
-                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-red-100 text-red-800 uppercase tracking-wider">Ditolak</span>
-                  <?php else: ?>
-                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800 uppercase tracking-wider">Menunggu Verifikasi</span>
+                    <span class="inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-wider">Lunas</span>
                   <?php endif; ?>
                 </td>
                 <td class="py-4 px-6 text-slate-400 font-medium"><?= $row['created_at'] ? date('d-m-Y H:i', strtotime($row['created_at'])) : '-' ?></td>

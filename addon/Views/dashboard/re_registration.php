@@ -36,7 +36,10 @@
           </div>
           <div>
             <span class="text-[10px] text-slate-400 block font-medium">Biaya Pendidikan (UKT Semester 1)</span>
-            <span class="text-sm font-extrabold text-indigo-650">Rp <?= number_format($tuition_fee, 0, ',', '.') ?></span>
+            <?php
+            $displayTuition = $re_registration ? (float)$re_registration['payment_amount'] : $tuition_fee;
+            ?>
+            <span class="text-sm font-extrabold text-indigo-650">Rp <?= number_format($displayTuition, 0, ',', '.') ?></span>
           </div>
         </div>
         <?php
@@ -54,27 +57,54 @@
 
       <!-- Bank Transfer Instructions -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold text-slate-850 border-b border-slate-100 pb-4">Panduan Pembayaran</h3>
-        <p class="text-xs text-slate-500 leading-relaxed pt-1">Silakan transfer nominal UKT Semester 1 di atas ke rekening bank resmi kampus berikut:</p>
-        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
+        <h3 class="text-sm font-bold text-slate-855 border-b border-slate-100 pb-4">Panduan Pembayaran</h3>
+        <p class="text-xs text-slate-500 leading-relaxed pt-1">Silakan pilih metode pembayaran dan ikuti panduan transfer berikut:</p>
+
+        <!-- Payment Method Selection Tabs -->
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-3 hidden">
+          <button type="button" id="btn-pay-manual" onclick="setPaymentMethod('manual')" class="px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer">
+            🏦 Transfer Bank
+          </button>
+          <button type="button" id="btn-pay-va" onclick="setPaymentMethod('va')" class="px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer">
+            ⚡ Virtual Account (VA)
+          </button>
+        </div>
+
+        <!-- Manual Bank Transfer -->
+        <div id="details-manual" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">Bank</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['bank_name'] ?? 'Mandiri') ?></strong>
           </div>
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">No. Rekening</span>
-            <span class="flex items-center gap-1">
-              <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['account_number'] ?? '124-000-987-6543') ?></strong>
-            </span>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['account_number'] ?? '124-000-987-6543') ?></strong>
           </div>
           <div class="flex justify-between items-center text-xs">
             <span class="text-slate-400 font-medium">Atas Nama</span>
             <strong class="text-slate-800 font-bold"><?= htmlspecialchars($active_payment_account['account_holder'] ?? 'PMB KAMPUS MANDIRI KENCANA') ?></strong>
           </div>
         </div>
+
+        <!-- VA Payment Details -->
+        <div id="details-va" class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3 hidden">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-medium">Nomor VA</span>
+            <strong class="text-indigo-650 font-bold tracking-wider"><?= '9000' . str_pad($re_registration['id_payment'] ?? 1, 3, '0', STR_PAD_LEFT) ?></strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-medium">Nama VA</span>
+            <strong class="text-slate-800 font-bold"><?= htmlspecialchars($registration['full_name']) ?></strong>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400 font-medium">Institusi</span>
+            <strong class="text-slate-800 font-bold">Kampus Mandiri Kencana</strong>
+          </div>
+        </div>
+
         <div class="text-[11px] text-amber-600 bg-amber-50 p-3.5 rounded-xl border border-amber-100 flex gap-2">
           <span>💡</span>
-          <p>Tuliskan nama lengkap pendaftar pada berita acara transfer untuk mempercepat proses verifikasi.</p>
+          <p id="note-text">Penting: Harap transfer tepat sesuai nominal unik di atas (termasuk 3 digit terakhir) agar proses verifikasi berjalan lancar.</p>
         </div>
       </div>
     </div>
@@ -86,33 +116,21 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <h2 class="text-sm font-bold text-slate-850">Upload Dokumen & Bukti Bayar</h2>
             <?php if ($re_registration): ?>
-              <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-100 text-emerald-800' : ($re_registration['status'] === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800') ?>">
-                Status: <?= $re_registration['status'] === 'Approved' ? 'Disetujui' : ($re_registration['status'] === 'Rejected' ? 'Ditolak' : 'Menunggu Verifikasi') ?>
+              <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' ?>">
+                Status: <?= $re_registration['status'] === 'Approved' ? 'Lunas' : 'Menunggu Pembayaran' ?>
               </span>
             <?php else: ?>
-              <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">
-                Belum Diajukan
+              <span class="inline-flex px-3 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                Status: Menunggu Pembayaran
               </span>
             <?php endif; ?>
           </div>
-
-          <?php if ($re_registration && $re_registration['status'] === 'Rejected'): ?>
-            <div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-800 flex gap-2">
-              <span>⚠️</span>
-              <div>
-                <strong class="font-bold">Alasan Penolakan:</strong>
-                <p class="mt-1 leading-relaxed"><?= htmlspecialchars($re_registration['rejection_reason']) ?></p>
-              </div>
-            </div>
-          <?php endif; ?>
 
           <?php
           $isApproved = $re_registration && $re_registration['status'] === 'Approved';
           ?>
 
           <div class="space-y-4">
-
-
             <!-- Payment Receipt File -->
             <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="space-y-1">
@@ -127,10 +145,7 @@
                 <input type="file" name="payment_file" class="text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" <?= $isApproved ? 'disabled' : '' ?> />
               </div>
             </div>
-
           </div>
-
-
 
           <?php if (!$isApproved): ?>
             <div class="pt-2 flex justify-end">
@@ -162,3 +177,41 @@
     </div>
   </div>
 </div>
+
+<script>
+  function setPaymentMethod(method) {
+    const btnManual = document.getElementById('btn-pay-manual');
+    const btnVa = document.getElementById('btn-pay-va');
+    const containerManual = document.getElementById('details-manual');
+    const containerVa = document.getElementById('details-va');
+    const noteText = document.getElementById('note-text');
+
+    if (method === 'manual') {
+      btnManual.className = 'px-3 py-1.5 text-xs font-bold rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
+      btnVa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
+      
+      containerManual.classList.remove('hidden');
+      containerVa.classList.add('hidden');
+      noteText.innerText = 'Penting: Harap transfer tepat sesuai nominal unik di atas (termasuk 3 digit terakhir) agar proses verifikasi berjalan lancar.';
+    } else {
+      btnVa.className = 'px-3 py-1.5 text-xs font-bold rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
+      btnManual.className = 'px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
+      
+      containerVa.classList.remove('hidden');
+      containerManual.classList.add('hidden');
+      noteText.innerText = 'Virtual Account Anda aktif 24 jam. Pembayaran dapat dilakukan melalui ATM, Mobile Banking, or Internet Banking.';
+    }
+
+    fetch('<?= getBaseUrl('/pendaftaran/daftar-ulang/change-type') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'payment_type=' + method
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    setPaymentMethod('manual');
+  });
+</script>

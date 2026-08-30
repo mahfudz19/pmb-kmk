@@ -29,6 +29,13 @@ class DashboardController
         private ReRegistrationModel $reRegistrations
     ) {}
 
+    private function convertDateToUi(?string $dateStr): string
+    {
+        if (empty($dateStr)) return '';
+        $timestamp = strtotime($dateStr);
+        return $timestamp ? date('d/m/Y', $timestamp) : $dateStr;
+    }
+
     public function index(Request $request, Response $response): View | RedirectResponse
     {
         if (!$this->session->get('is_logged_in')) {
@@ -318,7 +325,7 @@ class DashboardController
                         }
                     }
                 } else {
-                    if (!$payment) {
+                    if (!$payment || empty($payment['file_path'])) {
                         $state = 'belum_bayar';
                     } else if ($payment['status'] === 'Pending') {
                         $state = 'verifikasi_pembayaran';
@@ -329,6 +336,28 @@ class DashboardController
             }
         } else {
             $state = 'belum_daftar';
+        }
+
+        $profileAddrCompleted = false;
+        $profileParentCompleted = false;
+        $profileEduCompleted = false;
+
+        if ($registration) {
+            $stmtAddr = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :id LIMIT 1");
+            $stmtAddr->execute(['id' => $registration['id']]);
+            $addr = $stmtAddr->fetch() ?: null;
+
+            $stmtParent = $db->prepare("SELECT * FROM registration_parents WHERE registration_id = :id LIMIT 1");
+            $stmtParent->execute(['id' => $registration['id']]);
+            $parent = $stmtParent->fetch() ?: null;
+
+            $stmtEdu = $db->prepare("SELECT * FROM registration_educations WHERE registration_id = :id LIMIT 1");
+            $stmtEdu->execute(['id' => $registration['id']]);
+            $edu = $stmtEdu->fetch() ?: null;
+
+            $profileAddrCompleted = ($addr && !empty($addr['province']) && !empty($addr['city']) && !empty($addr['district']) && !empty($addr['subdistrict']) && !empty($addr['address']));
+            $profileParentCompleted = ($parent && !empty($parent['father_name']) && !empty($parent['mother_name']));
+            $profileEduCompleted = ($edu && !empty($edu['school_name']) && !empty($edu['school_major']) && !empty($edu['graduation_year']));
         }
 
         $reReg = $registration ? $this->reRegistrations->findByRegistrationId($registration['id']) : null;
@@ -368,9 +397,30 @@ class DashboardController
             }
         }
 
+        $formSpecialNeeds = null;
+        if ($registration) {
+            $stmtSN = $db->prepare("SELECT * FROM registration_special_needs WHERE registration_id = :id LIMIT 1");
+            $stmtSN->execute(['id' => $registration['id']]);
+            $formSpecialNeeds = $stmtSN->fetch() ?: null;
+        }
+
+        $stmtSP = $db->prepare("SELECT * FROM study_programs ORDER BY name ASC");
+        $stmtSP->execute();
+        $allStudyProgramsList = $stmtSP->fetchAll() ?: [];
+
         return $response->renderPage([
             'state' => $state,
             'registration' => $registration,
+            'address' => $addr ?? null,
+            'parents' => $parent ?? null,
+            'education' => $edu ?? null,
+            'special_needs' => $formSpecialNeeds,
+            'program' => $regProgram,
+            'study_programs' => $allStudyProgramsList,
+            'selectedWave' => $wave,
+            'profile_addr_completed' => $profileAddrCompleted,
+            'profile_parent_completed' => $profileParentCompleted,
+            'profile_edu_completed' => $profileEduCompleted,
             'document_types' => $documentTypesList,
             'uploaded_docs' => $uploadedDocs,
             'payment' => $payment,
@@ -413,32 +463,30 @@ class DashboardController
         }
 
         $allRegs = $this->registrations->findAllByUserId($userId);
-        $allFinalized = true;
+        $canRegisterNewWave = true;
+        $errorMessage = '';
+
         foreach ($allRegs as $r) {
-            if ($r['status'] === 'Draft') {
-                $allFinalized = false;
+            if (!empty($r['nim'])) {
+                $canRegisterNewWave = false;
+                $errorMessage = 'Anda sudah memiliki NIM dan tidak dapat mendaftar gelombang baru.';
                 break;
             }
-            $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id AND is_published = 1 LIMIT 1");
-            $stmt->execute(['id' => $r['id']]);
-            $sel = $stmt->fetch();
-            if (!$sel || !in_array($sel['status'], ['Lulus', 'Tidak Lulus', 'Cadangan'])) {
-                $allFinalized = false;
-                break;
-            }
-            if (in_array($sel['status'], ['Lulus', 'Cadangan'])) {
-                $stmt = $db->prepare("SELECT * FROM re_registrations WHERE registration_id = :id LIMIT 1");
-                $stmt->execute(['id' => $r['id']]);
-                $reReg = $stmt->fetch();
-                if (!$reReg || !in_array($reReg['status'], ['Approved', 'Rejected'])) {
-                    $allFinalized = false;
+
+            if (!empty($r['wave_id'])) {
+                $stmt = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => $r['wave_id']]);
+                $w = $stmt->fetch();
+                if ($w && (int)$w['is_active'] === 1) {
+                    $canRegisterNewWave = false;
+                    $errorMessage = 'Gelombang pendaftaran Anda sebelumnya masih aktif.';
                     break;
                 }
             }
         }
 
-        if (!$allFinalized) {
-            return $response->redirect('/dashboard?error=' . urlencode('Pendaftaran gelombang sebelumnya belum selesai diproses atau belum diverifikasi daftar ulang.'));
+        if (!$canRegisterNewWave) {
+            return $response->redirect('/dashboard/history?error=' . urlencode($errorMessage ?: 'Anda belum dapat mendaftar gelombang baru.'));
         }
 
         $latest = $this->registrations->findByUserId($userId);
@@ -451,7 +499,7 @@ class DashboardController
             $stmt = $db->prepare("DELETE FROM registration_programs WHERE registration_id = :id");
             $stmt->execute(['id' => $latest['id']]);
 
-            return $response->redirect('/pendaftaran')->hard();
+            return $response->redirect('/dashboard')->hard();
         }
 
         $newRegId = $this->registrations->insert([
@@ -519,7 +567,7 @@ class DashboardController
             }
         }
 
-        return $response->redirect('/pendaftaran')->hard();
+        return $response->redirect('/dashboard')->hard();
     }
 
 
@@ -570,29 +618,26 @@ class DashboardController
         }
 
         $allRegs = $this->registrations->findAllByUserId($userId);
-        $allFinalized = true;
+        $canRegisterNewWave = !empty($allRegs);
+
         foreach ($allRegs as $r) {
-            if ($r['status'] === 'Draft') {
-                $allFinalized = false;
+            if (!empty($r['nim'])) {
+                $canRegisterNewWave = false;
                 break;
             }
-            $stmt = $db->prepare("SELECT * FROM selection_results WHERE registration_id = :id AND is_published = 1 LIMIT 1");
-            $stmt->execute(['id' => $r['id']]);
-            $sel = $stmt->fetch();
-            if (!$sel || !in_array($sel['status'], ['Lulus', 'Tidak Lulus', 'Cadangan'])) {
-                $allFinalized = false;
-                break;
-            }
-            if (in_array($sel['status'], ['Lulus', 'Cadangan'])) {
-                $stmt = $db->prepare("SELECT * FROM re_registrations WHERE registration_id = :id LIMIT 1");
-                $stmt->execute(['id' => $r['id']]);
-                $reReg = $stmt->fetch();
-                if (!$reReg || !in_array($reReg['status'], ['Approved', 'Rejected'])) {
-                    $allFinalized = false;
+
+            if (!empty($r['wave_id'])) {
+                $stmt = $db->prepare("SELECT * FROM waves WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => $r['wave_id']]);
+                $w = $stmt->fetch();
+                if ($w && (int)$w['is_active'] === 1) {
+                    $canRegisterNewWave = false;
                     break;
                 }
             }
         }
+
+        $allFinalized = $canRegisterNewWave;
 
         $stmt = $db->prepare("SELECT * FROM waves WHERE is_active = 1");
         $stmt->execute();

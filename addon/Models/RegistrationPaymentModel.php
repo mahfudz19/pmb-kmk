@@ -21,7 +21,9 @@ class RegistrationPaymentModel extends Model
         'status' => ['type' => 'enum', 'values' => ['Pending', 'Approved', 'Rejected'], 'nullable' => false, 'default' => 'Pending'],
         'rejection_reason' => ['type' => 'text', 'nullable' => true],
         'verified_at' => ['type' => 'datetime', 'nullable' => true],
-        'verified_by' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'nullable' => true]
+        'verified_by' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'nullable' => true],
+        'id_payment' => ['type' => 'int', 'nullable' => true],
+        'payment_type' => ['type' => 'varchar', 'length' => 20, 'nullable' => true, 'default' => 'manual']
     ];
 
     protected array $seed = [];

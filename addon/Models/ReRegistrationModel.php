@@ -22,7 +22,9 @@ class ReRegistrationModel extends Model
         'rejection_reason' => ['type' => 'text', 'nullable' => true],
         'verified_by' => ['type' => 'bigint', 'unsigned' => true, 'foreign' => 'users.id', 'nullable' => true],
         'verified_at' => ['type' => 'datetime', 'nullable' => true],
-        'dynamic_documents' => ['type' => 'text', 'nullable' => true]
+        'dynamic_documents' => ['type' => 'text', 'nullable' => true],
+        'id_payment' => ['type' => 'int', 'nullable' => true],
+        'payment_type' => ['type' => 'varchar', 'length' => 20, 'nullable' => true, 'default' => 'manual']
     ];
 
     protected array $seed = [];

@@ -70,6 +70,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
 
     // Payment Upload & View
     $router->post('/pendaftaran/pembayaran/upload', [PaymentController::class, 'uploadPayment']);
+    $router->post('/pendaftaran/pembayaran/change-type', [PaymentController::class, 'changePaymentType']);
     $router->get('/payments/view', [PaymentController::class, 'viewFile']);
 
     // PDF Selection Result Letter Download
@@ -78,6 +79,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     // Re-registration
     $router->get('/pendaftaran/daftar-ulang', [ReRegistrationController::class, 'showReRegistrationForm']);
     $router->post('/pendaftaran/daftar-ulang/submit', [ReRegistrationController::class, 'submitReRegistration']);
+    $router->post('/pendaftaran/daftar-ulang/change-type', [ReRegistrationController::class, 'changePaymentType']);
     $router->get('/re-registrations/view', [ReRegistrationController::class, 'viewFile']);
 
     // Student Exam Card & Form Downloads

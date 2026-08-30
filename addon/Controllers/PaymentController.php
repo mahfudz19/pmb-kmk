@@ -230,4 +230,32 @@ class PaymentController
         log_activity('VERIFY_PAYMENT', "Verifikasi pembayaran ID {$paymentId} diubah menjadi {$status}.");
         return $response->redirect('/admin/payments?success=Verifikasi+pembayaran+berhasil+disimpan.');
     }
+
+    public function changePaymentType(Request $request, Response $response): Response
+    {
+        $userId = $_SESSION['auth.user_id'] ?? null;
+        if (!$userId) {
+            $response->setStatusCode(401);
+            return $response->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $registration = $this->registrations->findByUserId($userId);
+        if (!$registration) {
+            $response->setStatusCode(404);
+            return $response->json(['success' => false, 'message' => 'Registration not found']);
+        }
+
+        $type = $request->input('payment_type');
+        if (!in_array($type, ['manual', 'va'], true)) {
+            $response->setStatusCode(400);
+            return $response->json(['success' => false, 'message' => 'Invalid payment type']);
+        }
+
+        $payment = $this->payments->findByRegistrationId($registration['id']);
+        if ($payment) {
+            $this->payments->updateById($payment['id'], ['payment_type' => $type]);
+        }
+
+        return $response->json(['success' => true]);
+    }
 }

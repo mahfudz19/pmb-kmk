@@ -10,22 +10,69 @@
  */
 ?>
 
-<div class="w-full py-2 space-y-10">
-  <!-- Active Announcement Alert -->
+<div class="w-full space-y-4">
   <?php if ($active_announcement && $state !== 'belum_daftar'): ?>
-    <div class="bg-indigo-50 border border-indigo-200/60 rounded-3xl p-6 md:p-8 flex gap-4 items-start shadow-sm">
-      <span class="text-3xl">📢</span>
-      <div class="space-y-1 text-xs">
-        <h4 class="font-bold text-indigo-900 text-sm"><?= htmlspecialchars($active_announcement['title']) ?></h4>
-        <p class="text-slate-600 leading-relaxed"><?= nl2br(htmlspecialchars($active_announcement['content'])) ?></p>
+    <div id="announcement-ribbon" class="bg-indigo-50/80 border border-indigo-150 rounded-xl px-4 py-1.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-2.5 min-w-0 flex-1">
+        <span class="text-base shrink-0">📢</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white uppercase tracking-wider shrink-0">Pengumuman</span>
+        <span class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($active_announcement['title']) ?></span>
+      </div>
+      <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+        <button type="button" onclick="openAnnouncementModal()" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-650 hover:text-indigo-800 transition-colors cursor-pointer">
+          Baca Selengkapnya <span class="text-sm">→</span>
+        </button>
       </div>
     </div>
+
+    <div id="announcement-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="z-index: 99999;">
+      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeAnnouncementModal()" style="z-index: 99998;"></div>
+      <div class="relative bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-100 space-y-5" style="z-index: 99999;">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">📢</span>
+            <div>
+              <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest block">Pengumuman Resmi</span>
+              <h3 class="text-sm font-extrabold text-slate-900"><?= htmlspecialchars($active_announcement['title']) ?></h3>
+            </div>
+          </div>
+          <button type="button" onclick="closeAnnouncementModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors text-lg font-bold cursor-pointer">
+            &times;
+          </button>
+        </div>
+        <div class="max-h-80 overflow-y-auto pr-2 text-xs text-slate-650 leading-relaxed space-y-2">
+          <?= nl2br(htmlspecialchars($active_announcement['content'])) ?>
+        </div>
+        <div class="pt-2 border-t border-slate-100 flex justify-end">
+          <button type="button" onclick="closeAnnouncementModal()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function openAnnouncementModal() {
+        const modal = document.getElementById('announcement-modal');
+        if (modal) {
+          if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+          }
+          modal.classList.remove('hidden');
+        }
+      }
+      function closeAnnouncementModal() {
+        const modal = document.getElementById('announcement-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+        }
+      }
+    </script>
   <?php endif; ?>
 
   <?php if ($state !== 'belum_daftar'): ?>
     <!-- Stepper Timeline -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8">
-      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 text-center">Progress Alur Pendaftaran PMB</h3>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-3 md:p-5">
 
       <div class="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-4">
         <!-- Line behind (desktop only) -->
@@ -37,11 +84,11 @@
         $step1_active = in_array($state, ['belum_daftar', 'draft']);
         $step1_editable = !in_array($state, ['lolos', 'tidak_lolos']);
         ?>
-        <?php if ($step1_editable): ?>
-          <a data-spa href="<?= getBaseUrl('/pendaftaran') ?>" class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10 hover:opacity-80 transition-opacity" title="Klik untuk mengedit data formulir">
-          <?php else: ?>
-            <div class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10">
-            <?php endif; ?>
+        <?php if ($step1_editable && $state !== 'draft'): ?>
+          <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10 hover:opacity-80 transition-opacity" title="Formulir Pendaftaran">
+        <?php else: ?>
+          <div class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10">
+        <?php endif; ?>
             <span class="flex items-center justify-center w-9 h-9 rounded-full font-bold text-sm transition-all <?= $step1_done ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200' : ($step1_active ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400') ?>">
               <?= $step1_done ? '✓' : '1' ?>
             </span>
@@ -54,7 +101,7 @@
               </h4>
               <span class="text-[10px] text-slate-400 font-medium block">Biodata & Pilihan Prodi</span>
             </div>
-            <?php if ($step1_editable): ?>
+            <?php if ($step1_editable && $state !== 'draft'): ?>
           </a>
         <?php else: ?>
       </div>
@@ -131,27 +178,12 @@
 </div>
 <?php endif; ?>
 
-<?php if ($state !== 'belum_daftar' && $state !== 'draft'): ?>
-  <div class="bg-indigo-50/40 rounded-3xl border border-indigo-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
-    <div class="flex items-start gap-4">
-      <span class="text-3xl">🖨️</span>
-      <div class="space-y-1 text-xs">
-        <h4 class="font-bold text-indigo-900 text-sm">Cetak Dokumen Pendaftaran</h4>
-        <p class="text-slate-600 leading-relaxed">Unduh atau cetak dokumen resmi pendaftaran Anda untuk keperluan administratif fisik di kampus.</p>
-      </div>
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-      <a href="<?= getBaseUrl('/pendaftaran/formulir') ?>" download class="inline-flex items-center justify-center px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm text-xs transition-colors">
-        📄 Cetak Formulir
-      </a>
-    </div>
-  </div>
-<?php endif; ?>
+
 
 <!-- State-Driven Content Card -->
-<div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-8 space-y-6">
+<div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-5 md:p-6 space-y-6">
   <?php if ($state === 'belum_daftar'): ?>
-    <div class="text-center space-y-6 py-6 max-w-2xl mx-auto">
+    <div class="text-center space-y-6 max-w-2xl mx-auto">
       <div class="text-5xl">🎓</div>
       <div class="space-y-3">
         <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang di Portal PMB</h2>
@@ -200,19 +232,7 @@
     </div>
 
   <?php elseif ($state === 'draft'): ?>
-    <div class="text-center space-y-6 py-6 max-w-xl mx-auto">
-      <div class="text-5xl">📝</div>
-      <div class="space-y-2">
-        <span class="bg-indigo-100 text-indigo-800 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">Draf Pendaftaran Aktif</span>
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Lanjutkan Pengisian Formulir</h2>
-        <p class="text-sm text-slate-500 leading-relaxed">Anda telah memilih **<?= htmlspecialchars($wave['name'] ?? 'Gelombang Pendaftaran') ?>**. Silakan selesaikan pengisian formulir pendaftaran dan kelengkapan profil Anda.</p>
-      </div>
-      <div class="pt-2 flex items-center justify-center gap-3">
-        <a data-spa href="<?= getBaseUrl('/pendaftaran') ?>" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl shadow-md text-sm font-semibold transition-all">
-          Lanjutkan Pengisian Formulir
-        </a>
-      </div>
-    </div>
+    <?php require __DIR__ . '/../pendaftaran/form_embed.php'; ?>
 
   <?php elseif ($state === 'belum_bayar'): ?>
     <div class="space-y-6">
@@ -231,46 +251,64 @@
         </div>
       </div>
 
-      <?php if ($payment && $payment['status'] === 'Rejected'): ?>
-        <div class="p-4 bg-red-50 border border-red-500 text-red-700 rounded-2xl flex flex-col gap-1">
-          <span class="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">⚠️ Pembayaran Ditolak</span>
-          <p class="text-xs">Alasan: <strong><?= htmlspecialchars($payment['rejection_reason']) ?></strong>. Silakan upload kembali bukti transfer yang benar.</p>
-        </div>
-      <?php endif; ?>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detail Rekening Tujuan</h3>
-          <div class="space-y-2.5">
-            <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
-              <span class="text-slate-500">Bank Tujuan</span>
-              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['bank_name'] ?? '-') ?></strong>
-            </div>
-            <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
-              <span class="text-slate-500">Nomor Rekening</span>
-              <strong class="text-slate-800 tracking-wider"><?= htmlspecialchars($active_payment_account['account_number'] ?? '-') ?></strong>
-            </div>
-            <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
-              <span class="text-slate-500">Atas Nama</span>
-              <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['account_holder'] ?? '-') ?></strong>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-slate-500">Jumlah Nominal</span>
-              <?php $feeAmount = (float)($wave['registration_fee_total'] ?? 0); ?>
-              <strong class="text-indigo-650 font-extrabold text-sm">Rp <?= number_format($feeAmount, 0, ',', '.') ?>,-</strong>
-            </div>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3 hidden">
+            <button type="button" id="btn-pay-manual" onclick="setPaymentMethod('manual')" class="px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer">
+              🏦 Transfer Bank Manual
+            </button>
+            <button type="button" id="btn-pay-va" onclick="setPaymentMethod('va')" class="px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer">
+              ⚡ Virtual Account (VA)
+            </button>
           </div>
 
-          <?php
-          $feeArchive = $wave['registration_fee_archive'] ?? '';
-          if (!empty($feeArchive)):
-          ?>
-            <div class="pt-2">
-              <a href="<?= getBaseUrl(htmlspecialchars($feeArchive)) ?>" download class="block text-center px-4 py-2.5 bg-white hover:bg-slate-50 text-indigo-700 border border-slate-200 shadow-sm font-bold rounded-xl text-xs transition-colors">
-                📄 Unduh Rincian Biaya (PDF)
-              </a>
+          <div id="details-manual" class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detail Rekening Tujuan</h3>
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Bank Tujuan</span>
+                <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['bank_name'] ?? '-') ?></strong>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Nomor Rekening</span>
+                <strong class="text-slate-800 tracking-wider"><?= htmlspecialchars($active_payment_account['account_number'] ?? '-') ?></strong>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Atas Nama</span>
+                <strong class="text-slate-800"><?= htmlspecialchars($active_payment_account['account_holder'] ?? '-') ?></strong>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500">Jumlah Nominal</span>
+                <?php $feeAmount = $payment ? (float)$payment['amount'] : (float)($wave['registration_fee_total'] ?? 0); ?>
+                <strong class="text-indigo-650 font-extrabold text-sm">Rp <?= number_format($feeAmount, 0, ',', '.') ?>,-</strong>
+              </div>
             </div>
-          <?php endif; ?>
+            <p class="text-[10px] text-amber-600 font-semibold leading-relaxed">Penting: Harap transfer tepat sesuai nominal unik di atas (termasuk 3 digit terakhir) agar proses verifikasi berjalan lancar.</p>
+          </div>
+
+          <div id="details-va" class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4 hidden">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detail Virtual Account</h3>
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Nomor VA</span>
+                <strong class="text-indigo-650 font-extrabold text-sm tracking-wider"><?= '8000' . str_pad($payment['id_payment'] ?? 1, 3, '0', STR_PAD_LEFT) ?></strong>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Nama VA</span>
+                <strong class="text-slate-800"><?= htmlspecialchars($registration['full_name']) ?></strong>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-200/50 pb-2">
+                <span class="text-slate-500">Institusi</span>
+                <strong class="text-slate-800">Kampus Mandiri Kencana</strong>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500">Jumlah Nominal</span>
+                <?php $feeAmount = $payment ? (float)$payment['amount'] : (float)($wave['registration_fee_total'] ?? 0); ?>
+                <strong class="text-indigo-650 font-extrabold text-sm">Rp <?= number_format($feeAmount, 0, ',', '.') ?>,-</strong>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Virtual Account Anda aktif 24 jam. Pembayaran dapat dilakukan melalui ATM, Mobile Banking, atau Internet Banking.</p>
+          </div>
         </div>
 
         <form action="<?= getBaseUrl('/pendaftaran/pembayaran/upload') ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -325,17 +363,15 @@
     </div>
 
   <?php elseif ($state === 'verifikasi_pembayaran'): ?>
-    <div class="text-center space-y-6 py-6 max-w-lg mx-auto">
-      <div class="text-5xl animate-bounce">⏳</div>
-      <div class="space-y-2">
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Bukti Pembayaran Sedang Diverifikasi</h2>
-        <p class="text-sm text-slate-500 leading-relaxed">Bukti transfer pembayaran biaya formulir Anda telah kami terima dan sedang diproses oleh Tim Keuangan kami. Proses verifikasi biasanya memakan waktu maksimal 24 jam kerja.</p>
+    <div class="max-w-xl mx-auto text-center space-y-6">
+      <div class="flex items-center justify-center mx-auto text-slate-400">
+        <i data-lucide="clock" class="w-12 h-12"></i>
       </div>
-      <div class="flex flex-col items-center gap-3">
-        <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs px-4 py-2 rounded-full font-bold">
-          <span class="animate-spin rounded-full h-3 w-3 border-2 border-indigo-700 border-t-transparent"></span>
-          Menunggu Konfirmasi Keuangan
-        </div>
+      <div class="space-y-2">
+        <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Verifikasi Pembayaran Formulir</h2>
+        <p class="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
+          Bukti pembayaran pendaftaran Anda telah kami terima. Saat ini, tim kami sedang melakukan verifikasi data transfer Anda. Harap tunggu proses konfirmasi ini.
+        </p>
       </div>
     </div>
 
@@ -542,12 +578,47 @@
         <?php endif; ?>
 
         <div class="space-y-4 pt-2">
+          <div class="max-w-sm mx-auto p-5 rounded-3xl border border-slate-200/80 bg-white text-left space-y-4 shadow-sm">
+            <h4 class="text-xs font-bold text-slate-750 border-b border-slate-100 pb-2 flex items-center gap-1.5">
+              👤 Checklist Kelengkapan Profil
+            </h4>
+            <div class="space-y-2.5 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">Alamat & Kontak</span>
+                <?php if ($profile_addr_completed): ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">✓</span>
+                <?php else: ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-800 font-extrabold text-[10px]">✗</span>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">Orang Tua / Wali</span>
+                <?php if ($profile_parent_completed): ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">✓</span>
+                <?php else: ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-800 font-extrabold text-[10px]">✗</span>
+                <?php endif; ?>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">Riwayat Pendidikan</span>
+                <?php if ($profile_edu_completed): ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">✓</span>
+                <?php else: ?>
+                  <span class="flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-800 font-extrabold text-[10px]">✗</span>
+                <?php endif; ?>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 text-center">
+              <a data-spa href="<?= getBaseUrl('/profile') ?>" class="text-[10px] text-indigo-650 hover:underline font-bold">Lengkapi Profil Saya →</a>
+            </div>
+          </div>
+
           <?php if ($re_registration): ?>
             <div class="max-w-sm mx-auto p-4 rounded-2xl border text-left flex items-start gap-3 <?= $re_registration['status'] === 'Approved' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-amber-50 border-amber-100 text-amber-800' ?>">
               <span class="text-xl"><?= $re_registration['status'] === 'Approved' ? '✅' : '⏳' ?></span>
               <div class="flex-1">
                 <h5 class="font-bold text-xs">Status Daftar Ulang: <?= $re_registration['status'] === 'Approved' ? 'Disetujui' : 'Menunggu Verifikasi' ?></h5>
-                <p class="text-[10px] <?= $re_registration['status'] === 'Approved' ? 'text-emerald-650' : 'text-amber-650' ?> mt-0.5"><?= $re_registration['status'] === 'Approved' ? 'Selamat! Anda resmi menjadi mahasiswa baru.' : 'Pembayaran Anda sedang ditinjau oleh tim akademik.' ?></p>
+                <p class="text-[10px] <?= $re_registration['status'] === 'Approved' ? 'text-emerald-650' : 'text-amber-650' ?> mt-0.5"><?= $re_registration['status'] === 'Approved' ? 'Selamat! Anda resmi menjadi mahasiswa baru.' : 'Kelengkapan data diri Anda sementara ditinjau dari sisi akademik.' ?></p>
 
                 <?php if ($re_registration['status'] === 'Approved'): ?>
                   <div class="mt-2.5 p-2 bg-emerald-150 rounded-xl border border-emerald-250 text-center">
@@ -611,4 +682,70 @@
     }
     return true;
   }
+
+  function setPaymentMethod(method) {
+    const btnManual = document.getElementById('btn-pay-manual');
+    const btnVa = document.getElementById('btn-pay-va');
+    const containerManual = document.getElementById('details-manual');
+    const containerVa = document.getElementById('details-va');
+    
+    const inputBank = document.getElementById('bank_name');
+    const inputAccount = document.getElementById('account_name');
+
+    if (!btnManual || !btnVa) return;
+
+    if (method === 'manual') {
+      btnManual.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
+      btnVa.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
+      
+      if (containerManual) containerManual.classList.remove('hidden');
+      if (containerVa) containerVa.classList.add('hidden');
+      
+      if (inputBank) {
+        if (inputBank.value === 'Virtual Account (VA)') {
+          inputBank.value = '';
+        }
+        inputBank.readOnly = false;
+        inputBank.placeholder = 'Contoh: BCA, Mandiri, BRI';
+      }
+      
+      if (inputAccount) {
+        if (inputAccount.value === <?= json_encode($registration['full_name'] ?? '') ?>) {
+          inputAccount.value = '';
+        }
+        inputAccount.readOnly = false;
+        inputAccount.placeholder = 'Nama sesuai di buku tabungan';
+      }
+    } else {
+      btnVa.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
+      btnManual.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
+      
+      if (containerVa) containerVa.classList.remove('hidden');
+      if (containerManual) containerManual.classList.add('hidden');
+      
+      if (inputBank) {
+        inputBank.value = 'Virtual Account (VA)';
+        inputBank.readOnly = true;
+      }
+      
+      if (inputAccount) {
+        inputAccount.value = <?= json_encode($registration['full_name'] ?? '') ?>;
+        inputAccount.readOnly = true;
+      }
+    }
+
+    fetch('<?= getBaseUrl('/pendaftaran/pembayaran/change-type') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'payment_type=' + method
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($state === 'belum_bayar'): ?>
+      setPaymentMethod('manual');
+    <?php endif; ?>
+  });
 </script>

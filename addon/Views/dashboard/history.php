@@ -104,7 +104,7 @@
       <div class="text-3xl animate-pulse">🚀</div>
       <div class="space-y-1">
         <h3 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider">Daftar Gelombang Lain</h3>
-        <p class="text-xs text-slate-500">Semua gelombang pendaftaran Anda sebelumnya telah selesai diproses. Anda dapat mencoba mendaftar kembali pada gelombang aktif berikut ini.</p>
+        <p class="text-xs text-slate-500">Anda dapat melakukan pendaftaran kembali pada gelombang penerimaan baru yang sedang aktif berikut ini.</p>
       </div>
       <form data-spa method="POST" action="<?= getBaseUrl('/dashboard/init-registration') ?>" onsubmit="return validateInitForm(event)" class="space-y-4 text-left bg-slate-50 p-6 rounded-2xl border border-slate-150">
         <div class="space-y-1">

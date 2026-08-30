@@ -167,16 +167,20 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
   $activeTab = $_GET['tab'] ?? 'academic-year';
 
   $showHistoryMenu = false;
+  $hasFormulirToPrint = false;
   if ($isLoggedIn && $_SESSION['auth.user_role'] === 'user') {
     $userId = $_SESSION['auth.user_id'] ?? null;
     if ($userId) {
       $container = App\Core\Foundation\Application::getInstance()->getContainer();
       $registrationsModel = $container->resolve(Addon\Models\RegistrationModel::class);
       $db = $registrationsModel->getDb();
-      $stmt = $db->prepare("SELECT id FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
+      $stmt = $db->prepare("SELECT id, status FROM registrations WHERE user_id = :user_id ORDER BY id ASC LIMIT 1");
       $stmt->execute(['user_id' => $userId]);
       $firstReg = $stmt->fetch();
       if ($firstReg) {
+        if (!in_array($firstReg['status'], ['Draft', 'belum_daftar'])) {
+          $hasFormulirToPrint = true;
+        }
         $stmt = $db->prepare("SELECT count(*) FROM selection_results WHERE registration_id = :id AND is_published = 1 AND status IN ('Lulus', 'Tidak Lulus', 'Cadangan')");
         $stmt->execute(['id' => $firstReg['id']]);
         if ($stmt->fetchColumn() > 0) {
@@ -222,7 +226,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
                 <?= substr($_SESSION['auth.user_name'] ?? 'U', 0, 1) ?>
               </div>
               <div class="hidden md:block text-left">
-                <div class="text-xs font-semibold text-slate-850 leading-tight max-w-[100px] truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></div>
+                <div class="text-xs font-semibold text-slate-855 leading-tight max-w-[100px] truncate"><?= htmlspecialchars($_SESSION['auth.user_name'] ?? '') ?></div>
                 <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5"><?= htmlspecialchars($_SESSION['auth.user_role'] ?? 'user') ?></div>
               </div>
               <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-450 hidden md:block transition-transform duration-200" id="dropdown-chevron"></i>
@@ -245,6 +249,11 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
               <?php if ($showHistoryMenu): ?>
                 <a data-spa href="<?= getBaseUrl('/dashboard/history') ?>" onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors">
                   <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> Riwayat Pendaftaran
+                </a>
+              <?php endif; ?>
+              <?php if ($hasFormulirToPrint): ?>
+                <a href="<?= getBaseUrl('/pendaftaran/formulir') ?>" download onclick="closeUserDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 font-medium transition-colors text-slate-700">
+                  <i data-lucide="printer" class="w-4 h-4 text-slate-400"></i> Cetak Formulir
                 </a>
               <?php endif; ?>
               <div class="border-t border-slate-100 my-1"></div>

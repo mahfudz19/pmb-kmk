@@ -38,7 +38,7 @@
           <tr class="border-b border-slate-150 text-[10px] font-bold text-slate-450 uppercase tracking-wider bg-slate-50/30">
             <th class="px-6 py-4">Calon Mahasiswa</th>
             <th class="px-6 py-4">Nomor NIK / NISN</th>
-            <th class="px-6 py-4 text-center">Berkas Wajib Disetujui</th>
+            <th class="px-6 py-4 text-center">Berkas Terkumpul</th>
             <th class="px-6 py-4 text-center">Status Berkas</th>
             <th class="px-6 py-4 text-center">Status Pendaftaran</th>
             <th class="px-6 py-4 text-center">Aksi</th>
@@ -70,7 +70,7 @@
                   <div>NISN: <?= htmlspecialchars((string)($c['nisn'] ?? '-')) ?></div>
                 </td>
                 <td class="px-6 py-4 text-center font-bold text-slate-700">
-                  <?= $c['approved_count'] ?> / <?= $c['required_count'] ?>
+                  <?= $c['uploaded_count'] ?> / <?= $c['required_count'] ?>
                 </td>
                 <td class="px-6 py-4 text-center">
                   <?php if ($isAllApproved): ?>
