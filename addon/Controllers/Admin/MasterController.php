@@ -89,6 +89,9 @@ class MasterController
                 $format_pattern = $request->input('format_pattern');
                 $is_active = $request->input('is_active') ? 1 : 0;
                 if (!$name || !$format_pattern) return $response->redirect('/admin/master?tab=nim-format&error=Seluruh+kolom+harus+diisi');
+                if (!str_contains($format_pattern, '{GROUP}') && !str_contains($format_pattern, '{STUDENT_GROUP}')) {
+                    return $response->redirect('/admin/master?tab=nim-format&error=Format+pola+NIM+wajib+menyertakan+placeholder+kelompok+mahasiswa+({GROUP}+atau+{STUDENT_GROUP})');
+                }
                 if ($is_active) {
                     $this->nimFormats->getDb()->query("UPDATE nim_formats SET is_active = 0");
                 }
@@ -175,6 +178,9 @@ class MasterController
                 $format_pattern = $request->input('format_pattern');
                 $is_active = $request->input('is_active') ? 1 : 0;
                 if (!$name || !$format_pattern) return $response->redirect("/admin/master?tab=nim-format&error=Seluruh+kolom+harus+diisi");
+                if (!str_contains($format_pattern, '{GROUP}') && !str_contains($format_pattern, '{STUDENT_GROUP}')) {
+                    return $response->redirect('/admin/master?tab=nim-format&error=Format+pola+NIM+wajib+menyertakan+placeholder+kelompok+mahasiswa+({GROUP}+atau+{STUDENT_GROUP})');
+                }
                 if ($is_active) {
                     $this->nimFormats->getDb()->query("UPDATE nim_formats SET is_active = 0");
                 }

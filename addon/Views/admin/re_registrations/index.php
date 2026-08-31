@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+  <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
     <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800">Daftar Antrean Daftar Ulang</h3>
       <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/re-registrations') ?>" class="flex items-center gap-2">
@@ -96,7 +96,7 @@
   </div>
 
   <?php if (($totalPages ?? 1) > 1): ?>
-    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm">
+    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
       <div class="text-xs font-semibold text-slate-500">
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> data
       </div>

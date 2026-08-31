@@ -9,14 +9,12 @@
  */
 ?>
 
-<div class="space-y-6">
+<div class="w-full py-2 space-y-6">
   <!-- Top Bar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-    <div class="space-y-1">
-      <div class="flex items-center gap-2">
-        <a data-spa href="<?= getBaseUrl('/admin/re-registrations') ?>" class="text-xs font-bold text-indigo-650 hover:text-indigo-700 flex items-center gap-1 transition-colors">
-          <span>← Kembali ke Daftar Antrean</span>
-        </a>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <a data-spa href="<?= getBaseUrl('/admin/re-registrations') ?>" class="text-xs text-indigo-600 font-bold hover:underline">← Kembali ke Antrean</a>
       </div>
       <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Detail Verifikasi Daftar Ulang</h1>
       <p class="text-xs text-slate-500">Tinjau kelengkapan dokumen dan pembayaran dari calon mahasiswa baru.</p>
@@ -26,7 +24,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Panel: Applicant & Payment info -->
     <div class="lg:col-span-1 space-y-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Informasi Pendaftar</h3>
         <div class="space-y-3 text-xs">
           <div>
@@ -48,7 +46,7 @@
         </div>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Rincian Pembayaran</h3>
         <div class="space-y-3 text-xs">
           <div>
@@ -61,7 +59,7 @@
 
     <!-- Right Panel: Review Documents & Form -->
     <div class="lg:col-span-2 space-y-6">
-      <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm space-y-6">
+      <div class="bg-white rounded-xl p-6 md:p-8 border border-slate-200/80 shadow-sm space-y-6">
         <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Berkas Persyaratan Daftar Ulang</h3>
 
         <div class="divide-y divide-slate-100">
@@ -92,7 +90,7 @@
           ?>
 
           <?php if (!$isProfileComplete): ?>
-            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs space-y-2 text-amber-800">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs space-y-2 text-amber-800">
               <div class="flex items-center gap-2 font-bold">
                 <span>⚠️</span>
                 <span>Peringatan: Profil Pendaftar Belum Lengkap!</span>
@@ -124,19 +122,44 @@
             <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest">Keputusan Verifikasi</h3>
 
             <!-- NIM Input Section -->
-            <div class="space-y-2 border-t border-slate-100 pt-4">
-              <label for="nim" class="block text-xs font-bold text-slate-700">Nomor Induk Mahasiswa (NIM) <span class="text-slate-400 font-medium">(Opsional)</span></label>
-              <div class="flex gap-2">
-                <input
-                  type="text"
-                  name="nim"
-                  id="nim"
-                  class="block flex-1 px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-800"
-                  placeholder="Masukkan NIM manual atau klik generate..."
-                  value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
-                  <?= !$isProfileComplete ? 'disabled' : '' ?> />
+            <div class="space-y-3 border-t border-slate-100 pt-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <label for="nim" class="block text-xs font-bold text-slate-700">Nomor Induk Mahasiswa (NIM) <span class="text-slate-400 font-medium">(Opsional)</span></label>
+                <span class="text-[10px] text-slate-400">Contoh format aktif: <strong class="text-slate-700 font-bold"><?= htmlspecialchars($sample_nim ?? '26013-001') ?></strong></span>
               </div>
-              <p class="text-[10px] text-slate-400">Kosongkan jika NIM belum ditentukan (di dashboard mahasiswa akan berstatus PENDING).</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                <div class="sm:col-span-5">
+                  <label for="student_group" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kelompok Mahasiswa</label>
+                  <select id="student_group" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-semibold text-slate-750" <?= !$isProfileComplete ? 'disabled' : '' ?>>
+                    <option value="3" selected>Mahasiswa Reguler</option>
+                    <option value="8">Mahasiswa Pindahan</option>
+                    <option value="9">Mahasiswa Profesi</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-4">
+                  <label for="nim" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nomor Induk (NIM)</label>
+                  <input
+                    type="text"
+                    name="nim"
+                    id="nim"
+                    class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs transition-all bg-slate-50 font-bold text-indigo-700 tracking-wider"
+                    placeholder="Contoh: <?= htmlspecialchars($sample_nim ?? '26013-001') ?>"
+                    value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
+                    <?= !$isProfileComplete ? 'disabled' : '' ?> />
+                </div>
+                <div class="sm:col-span-3 flex items-end">
+                  <button 
+                    type="button" 
+                    id="btn-generate-nim"
+                    onclick="handleGenerateNim()" 
+                    <?= !$isProfileComplete ? 'disabled' : '' ?>
+                    class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs hover:shadow-sm active:scale-95">
+                    ⚡ Generate NIM
+                  </button>
+                </div>
+              </div>
+              <p class="text-[10px] text-slate-400">Pilih kelompok mahasiswa lalu klik tombol <strong>Generate NIM</strong> untuk membuat NIM unik otomatis sesuai format aktif: <span class="font-semibold text-slate-600"><?= htmlspecialchars($active_nim_name ?? 'Format Standar KMK') ?> (<code><?= htmlspecialchars($active_nim_pattern ?? '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}') ?></code>)</span>.</p>
             </div>
 
             <div class="pt-3 flex justify-end">
@@ -153,3 +176,57 @@
     </div>
   </div>
 </div>
+
+<script>
+async function handleGenerateNim() {
+  const btn = document.getElementById('btn-generate-nim');
+  const groupSelect = document.getElementById('student_group');
+  const nimInput = document.getElementById('nim');
+  const group = groupSelect ? groupSelect.value : '3';
+  const regId = <?= (int)($registration['id'] ?? 0) ?>;
+
+  if (!regId) return;
+
+  const originalContent = btn.innerHTML;
+  btn.innerHTML = '<span class="animate-spin text-xs">⏳</span> Generating...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`<?= getBaseUrl('/admin/re-registrations/generate-nim') ?>?registration_id=${regId}&group=${group}`);
+    const data = await res.json();
+    if (data.nim) {
+      nimInput.value = data.nim;
+      nimInput.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
+      setTimeout(() => {
+        nimInput.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
+      }, 1500);
+      
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'NIM berhasil di-generate: ' + data.nim,
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }
+    } else if (data.error) {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: data.error });
+      } else {
+        alert('Gagal generate NIM: ' + data.error);
+      }
+    }
+  } catch (err) {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan sistem saat menghubungi server.' });
+    } else {
+      alert('Terjadi kesalahan sistem saat menghubungi server.');
+    }
+  } finally {
+    btn.innerHTML = originalContent;
+    btn.disabled = false;
+  }
+}
+</script>

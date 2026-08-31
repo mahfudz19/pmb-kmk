@@ -7,7 +7,7 @@
 ?>
 <div class="w-full py-2 space-y-8">
   <div class="w-full">
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
       <!-- Panel Header -->
       <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
@@ -319,7 +319,7 @@
 <!-- Add/Edit Unified Modal -->
 <div id="master-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeMasterModal()"></div>
-  <div class="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 transform scale-95 opacity-0 transition-all duration-200" id="master-modal-card">
+  <div class="relative bg-white rounded-xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 transform scale-95 opacity-0 transition-all duration-200" id="master-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-4">
       <h3 class="text-lg font-bold text-slate-900" id="modal-title">Tambah Data</h3>
       <button type="button" onclick="closeMasterModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-2xl font-semibold">&times;</button>
@@ -398,15 +398,18 @@
       <!-- Dynamic Fields: nim-format -->
       <div class="space-y-1 modal-field hidden" id="field-format-pattern">
         <label for="input-format-pattern" class="block text-sm font-semibold text-slate-700">Pola Format NIM</label>
-        <input type="text" id="input-format-pattern" name="format_pattern" placeholder="Contoh: {YEAR}{PRODI_CODE}{SEQ}" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
-        <div class="bg-indigo-50 p-3 rounded-lg text-[10px] text-indigo-750 space-y-1 mt-1 font-medium">
-          <p class="font-bold">Placeholder yang didukung:</p>
-          <ul class="list-disc pl-4 space-y-0.5">
-            <li><code>{YEAR}</code>: Tahun akademik masuk (Contoh: 2026)</li>
-            <li><code>{PRODI_CODE}</code>: Kode program studi (Contoh: IF)</li>
-            <li><code>{DATE}</code>: Tanggal generate (format dmy, Contoh: 170726)</li>
-            <li><code>{TIMESTAMP}</code>: 6 angka terakhir Unix timestamp (Contoh: <?= substr((string)time(), -6) ?>)</li>
-            <li><code>{SEQ}</code>: Sequence nomor urut mahasiswa (Contoh: 001, 002)</li>
+        <input type="text" id="input-format-pattern" name="format_pattern" placeholder="Contoh: {YEAR2}{PRODI_NUM}{GROUP}-{SEQ}" class="appearance-none block w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50">
+        <div class="bg-indigo-50 p-3 rounded-xl text-[10px] text-indigo-800 space-y-1.5 mt-1 font-medium border border-indigo-150">
+          <p class="font-bold text-indigo-900">Placeholder yang didukung (* wajib):</p>
+          <ul class="list-disc pl-4 space-y-1">
+            <li><code class="bg-white px-1 py-0.5 rounded text-indigo-700 font-bold">{GROUP}</code> / <code class="bg-white px-1 py-0.5 rounded text-indigo-700 font-bold">{STUDENT_GROUP}</code> <span class="text-red-600 font-bold">*(Wajib)</span>: Digit kelompok mahasiswa (3 = Reguler, 8 = Pindahan, 9 = Profesi)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded text-indigo-700 font-bold">{SEQ}</code> <span class="text-red-600 font-bold">*(Wajib)</span>: Sequence nomor urut mahasiswa (Contoh: 001, 002)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{YEAR2}</code>: 2 Digit tahun angkatan masuk (Contoh: 23, 26)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{YEAR}</code>: 4 Digit tahun akademik masuk (Contoh: 2026)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{PRODI_NUM}</code>: 2 Digit kode angka prodi (Contoh: 01 = S1 Farmasi, 09 = Informatika)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{PRODI_CODE}</code>: Kode teks prodi (Contoh: FAR, IF)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{DATE}</code>: Tanggal generate (format dmy)</li>
+            <li><code class="bg-white px-1 py-0.5 rounded">{TIMESTAMP}</code>: 6 angka terakhir Unix timestamp</li>
           </ul>
         </div>
       </div>
@@ -439,7 +442,7 @@
 <!-- Delete Confirmation Modal -->
 <div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4 text-center transform scale-95 opacity-0 transition-all duration-200" id="delete-modal-card">
+  <div class="relative bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4 text-center transform scale-95 opacity-0 transition-all duration-200" id="delete-modal-card">
     <div class="text-4xl">⚠️</div>
     <div class="space-y-1">
       <h3 class="text-lg font-bold text-slate-900">Konfirmasi Hapus Data</h3>
@@ -579,4 +582,24 @@
   function closeDeleteModal() {
     hideModal('delete-modal', 'delete-modal-card');
   }
+
+  document.getElementById('modal-form').addEventListener('submit', function(e) {
+    const tab = document.querySelector('#modal-form input[name="type"]').value;
+    if (tab === 'nim-format') {
+      const pattern = document.getElementById('input-format-pattern').value;
+      if (!pattern.includes('{GROUP}') && !pattern.includes('{STUDENT_GROUP}')) {
+        e.preventDefault();
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Placeholder Kurang Lengkap',
+            text: 'Format pola NIM wajib menyertakan placeholder kelompok mahasiswa: {GROUP} atau {STUDENT_GROUP}'
+          });
+        } else {
+          alert('Format pola NIM wajib menyertakan placeholder kelompok mahasiswa: {GROUP} atau {STUDENT_GROUP}');
+        }
+        return false;
+      }
+    }
+  });
 </script>

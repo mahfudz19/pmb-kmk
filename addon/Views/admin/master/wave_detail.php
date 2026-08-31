@@ -13,7 +13,7 @@
     </a>
   </div>
 
-  <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 space-y-2">
+  <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200/80 space-y-2">
     <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">⚙️ Pengaturan Gelombang & Program Studi</h2>
     <p class="text-xs text-slate-500">Konfigurasikan program studi aktif, biaya formulir, berkas syarat tambahan, serta tahapan ujian seleksi untuk gelombang: <strong><?= htmlspecialchars($wave['name']) ?></strong>.</p>
   </div>
@@ -22,7 +22,7 @@
 
     <!-- Wave General Fee Configuration Card -->
     <div class="max-w-sm md:max-w-none space-y-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-6">
+      <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-6">
         <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
           <input type="hidden" name="wave_id" value="<?= htmlspecialchars($wave['id']) ?>">
           <div>
@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden p-6 space-y-4">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-6 space-y-4">
         <div>
           <h4 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 font-sans">📝 Tahapan Ujian / Seleksi Masuk Gelombang</h4>
           <p class="text-xs text-slate-500">Tahapan ujian ini berlaku untuk seluruh pendaftar pada gelombang ini.</p>
@@ -112,7 +112,7 @@
           $isConfigured = isset($mapped_programs[$sp['id']]);
           $config = $mapped_programs[$sp['id']] ?? null;
         ?>
-          <div class="bg-white border rounded-3xl shadow-sm overflow-hidden transition-all duration-200 <?= $isConfigured ? 'border-indigo-250 ring-1 ring-indigo-50/50' : 'border-slate-200' ?>" id="prodi-card-<?= $sp['id'] ?>">
+          <div class="bg-white border rounded-xl shadow-sm overflow-hidden transition-all duration-200 <?= $isConfigured ? 'border-indigo-250 ring-1 ring-indigo-50/50' : 'border-slate-200' ?>" id="prodi-card-<?= $sp['id'] ?>">
 
             <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
               <div class="flex items-center gap-3">

@@ -65,7 +65,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">1. Biodata Pribadi</h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -137,7 +137,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">2. Alamat Rumah & Kontak</h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
@@ -246,7 +246,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">3. Riwayat Pendidikan Asal</h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
@@ -292,7 +292,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">4. Data Orang Tua / Wali</h3>
 
           <div class="space-y-3 pt-2">
@@ -443,7 +443,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
       </div>
 
       <div class="space-y-6">
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-455 uppercase tracking-widest border-b border-slate-100 pb-2">Program Studi & Jalur</h3>
 
           <div class="space-y-4 text-xs">
@@ -488,7 +488,7 @@ $wilayahList = $jsonData['wilayah'][0] ?? [];
           </div>
         </div>
 
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all cursor-pointer">
             💾 Simpan Perubahan
           </button>

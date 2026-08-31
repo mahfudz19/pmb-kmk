@@ -1,6 +1,6 @@
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
-  <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+  <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Evaluasi Berkas Calon Mahasiswa</h2>
       <p class="mt-1 text-xs text-slate-500">Tinjau biodata pendaftaran dan verifikasi kelengkapan dokumen fisik pendaftar.</p>
@@ -18,7 +18,7 @@
     <!-- Left: Applicant Details Summary (Data Pribadi s.d Prodi Pilihan) -->
     <div class="lg:col-span-1 space-y-8">
       <!-- 1. Biodata Card -->
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200/80">
         <h3 class="text-sm font-bold text-slate-800 border-b border-slate-100 p-3 flex items-center gap-2">
           <span>👤</span> Data Pribadi & Kontak
         </h3>
@@ -50,7 +50,7 @@
           <span>👨‍👩‍👦</span> Data Orang Tua / Wali
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
-          <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
+          <div class="space-y-1.5 p-4 bg-slate-50 rounded-xl">
             <h4 class="font-bold text-indigo-750">👨 Data Ayah</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama:</strong> <?= htmlspecialchars($parents['father_name'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Pendidikan:</strong> <?= htmlspecialchars($parents['father_education'] ?? '-') ?></p>
@@ -58,7 +58,7 @@
             <p class="text-slate-500"><strong class="text-slate-700">Penghasilan:</strong> <?= htmlspecialchars($parents['father_income'] ?? '-') ?></p>
           </div>
 
-          <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
+          <div class="space-y-1.5 p-4 bg-slate-50 rounded-xl">
             <h4 class="font-bold text-indigo-750">👩 Data Ibu</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama:</strong> <?= htmlspecialchars($parents['mother_name'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Pendidikan:</strong> <?= htmlspecialchars($parents['mother_education'] ?? '-') ?></p>
@@ -67,7 +67,7 @@
           </div>
 
           <?php if (!empty($parents['guardian_name'])): ?>
-            <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl md:col-span-2">
+            <div class="space-y-1.5 p-4 bg-slate-50 rounded-xl md:col-span-2">
               <h4 class="font-bold text-slate-700">👤 Data Wali</h4>
               <p class="text-slate-500"><strong class="text-slate-700">Nama:</strong> <?= htmlspecialchars($parents['guardian_name']) ?></p>
               <p class="text-slate-500"><strong class="text-slate-700">Pendidikan:</strong> <?= htmlspecialchars($parents['guardian_education']) ?></p>
@@ -82,7 +82,7 @@
           <span>🏫</span> Pendidikan & Pilihan PMB
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs p-4">
-          <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
+          <div class="space-y-1.5 p-4 bg-slate-50 rounded-xl">
             <h4 class="font-bold text-indigo-750">🎓 Pendidikan Asal</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Nama Sekolah:</strong> <?= htmlspecialchars($education['school_name'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Jurusan:</strong> <?= htmlspecialchars($education['school_major'] ?? '-') ?></p>
@@ -91,7 +91,7 @@
             <p class="text-slate-500"><strong class="text-slate-700">Nilai Rata-Rata:</strong> <?= htmlspecialchars($education['average_score'] ?? '-') ?></p>
           </div>
 
-          <div class="space-y-1.5 p-4 bg-slate-50 rounded-2xl">
+          <div class="space-y-1.5 p-4 bg-slate-50 rounded-xl">
             <h4 class="font-bold text-indigo-750">🛤️ Pilihan Program Studi</h4>
             <p class="text-slate-500"><strong class="text-slate-700">Pilihan 1:</strong> <?= htmlspecialchars($program['prodi1_name'] ?? '-') ?></p>
             <p class="text-slate-500"><strong class="text-slate-700">Pilihan 2:</strong> <?= htmlspecialchars($program['prodi2_name'] ?? 'Tidak Memilih') ?></p>
@@ -103,7 +103,7 @@
 
     <!-- Right: Document Verification Area -->
     <div class="lg:col-span-2 space-y-8">
-      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 md:p-8 space-y-6">
         <h3 class="text-sm font-bold text-slate-800 border-b border-t border-slate-100 p-3 flex items-center gap-2">
           <span>📎</span> Berkas Dokumen Persyaratan
         </h3>
@@ -128,7 +128,7 @@
                 }
                 $descStr = (!empty($descParts) ? ' (' . implode('; ', $descParts) . ')' : '');
                 ?>
-                <div class="p-4 bg-slate-50/30 rounded-2xl border border-slate-150 space-y-3">
+                <div class="p-4 bg-slate-50/30 rounded-xl border border-slate-150 space-y-3">
                   <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
                       <h4 class="text-xs font-bold text-slate-800 break-words"><?= $docDisplayName ?></h4>
@@ -198,13 +198,13 @@
 <!-- Preview Modal -->
 <div id="preview-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closePreviewModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="preview-modal-card">
+  <div class="relative bg-white rounded-xl p-6 max-w-4xl w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="preview-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-3">
       <h3 class="text-base font-bold text-slate-900">Penampil Dokumen Persyaratan</h3>
       <button type="button" onclick="closePreviewModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-2xl font-semibold">&times;</button>
     </div>
 
-    <div class="w-full flex items-center justify-center bg-slate-50 rounded-2xl overflow-hidden min-h-[300px]" id="preview-content-panel">
+    <div class="w-full flex items-center justify-center bg-slate-50 rounded-xl overflow-hidden min-h-[300px]" id="preview-content-panel">
       <!-- Injected via JS -->
     </div>
   </div>
@@ -213,7 +213,7 @@
 <!-- Rejection Reason Dialog Modal -->
 <div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRejectModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="reject-modal-card">
+  <div class="relative bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="reject-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-2">
       <h3 class="text-sm font-bold text-slate-900">Tolak Dokumen Persyaratan</h3>
       <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>
@@ -244,9 +244,9 @@
     const viewUrl = `<?= getBaseUrl('/documents/view?id=') ?>${docId}`;
 
     if (ext === 'pdf') {
-      panel.innerHTML = `<iframe src="${viewUrl}" class="w-full h-[600px] border-none rounded-2xl"></iframe>`;
+      panel.innerHTML = `<iframe src="${viewUrl}" class="w-full h-[600px] border-none rounded-xl"></iframe>`;
     } else {
-      panel.innerHTML = `<img src="${viewUrl}" class="max-w-full max-h-[600px] object-contain rounded-2xl shadow-sm" alt="Preview Dokumen" />`;
+      panel.innerHTML = `<img src="${viewUrl}" class="max-w-full max-h-[600px] object-contain rounded-xl shadow-sm" alt="Preview Dokumen" />`;
     }
 
     const modal = document.getElementById('preview-modal');

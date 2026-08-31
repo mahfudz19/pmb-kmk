@@ -365,6 +365,55 @@ class ReRegistrationController
         $profileParentCompleted = ($parent && !empty($parent['father_name']) && !empty($parent['mother_name']));
         $profileEduCompleted = ($edu && !empty($edu['school_name']) && !empty($edu['school_major']) && !empty($edu['graduation_year']));
 
+        $stmtNimFormat = $db->prepare("SELECT * FROM nim_formats WHERE is_active = 1 LIMIT 1");
+        $stmtNimFormat->execute();
+        $activeNimFormat = $stmtNimFormat->fetch() ?: null;
+        $nimPattern = $activeNimFormat ? $activeNimFormat['format_pattern'] : '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}';
+        $nimFormatName = $activeNimFormat ? $activeNimFormat['name'] : 'Format Standar KMK';
+
+        $y4 = date('Y');
+        $y2 = date('y');
+        if (!empty($waveObj['academic_year'])) {
+            $yStr = substr($waveObj['academic_year'], 0, 4);
+            if (strlen($yStr) === 4 && is_numeric($yStr)) {
+                $y4 = $yStr;
+                $y2 = substr($yStr, 2, 2);
+            }
+        }
+
+        $pCode = $program['code'] ?? '00';
+        $prodiCodeNameMap = [
+            'FAR' => '01',
+            'S1 Farmasi' => '01',
+            'D3FAR' => '02',
+            'D3 Farmasi' => '02',
+            'APT' => '03',
+            'Profesi Apoteker' => '03',
+            'D3KEB' => '04',
+            'D3 Kebidanan' => '04',
+            'AK' => '05',
+            'Akuntansi' => '05',
+            'HK' => '06',
+            'Hukum' => '06',
+            'IK' => '07',
+            'Ilmu Komunikasi' => '07',
+            'MJ' => '08',
+            'Manajemen' => '08',
+            'IF' => '09',
+            'Informatika' => '09',
+            'SI' => '10',
+            'Sistem Informasi' => '10',
+        ];
+        $pNum = $prodiCodeNameMap[$program['code'] ?? ''] 
+            ?? $prodiCodeNameMap[$program['name'] ?? ''] 
+            ?? str_pad((string)($program['id'] ?? 1), 2, '0', STR_PAD_LEFT);
+
+        $sampleNim = str_replace(
+            ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
+            [$y2, $y4, $pNum, $pCode, '3', '3', date('dmy'), '123456', '001'],
+            $nimPattern
+        );
+
         return $response->renderPage([
             'registration' => $registration,
             'selection' => $selection,
@@ -375,7 +424,11 @@ class ReRegistrationController
             'wave_name' => $waveName,
             'profile_addr_completed' => $profileAddrCompleted,
             'profile_parent_completed' => $profileParentCompleted,
-            'profile_edu_completed' => $profileEduCompleted
+            'profile_edu_completed' => $profileEduCompleted,
+            'active_nim_format' => $activeNimFormat,
+            'active_nim_pattern' => $nimPattern,
+            'active_nim_name' => $nimFormatName,
+            'sample_nim' => $sampleNim
         ], [
             'path' => '/admin/re_registrations/detail',
             'meta' => ['title' => 'Detail Verifikasi Daftar Ulang | ' . env('APP_NAME')]
@@ -485,8 +538,9 @@ class ReRegistrationController
             return $response->json(['error' => 'Selection result not found'], 404);
         }
 
+        $studentGroup = (string) $request->input('group', '3');
         $db = $this->registrations->getDb();
-        $nim = $this->generateNim($registration, $selection, $db);
+        $nim = $this->generateNim($registration, $selection, $db, $studentGroup);
 
         return $response->json(['nim' => $nim]);
     }
@@ -560,60 +614,113 @@ class ReRegistrationController
         exit;
     }
 
-    private function generateNim(array $registration, array $selection, $db): string
+    private function generateNim(array $registration, array $selection, $db, string $studentGroup = '3'): string
     {
+        if (!in_array($studentGroup, ['3', '8', '9'], true)) {
+            $studentGroup = '3';
+        }
+
         $stmt = $db->prepare("SELECT * FROM nim_formats WHERE is_active = 1 LIMIT 1");
         $stmt->execute();
         $nimFormat = $stmt->fetch();
-        $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR}{PRODI_CODE}{SEQ}';
+        $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}';
 
-        $yearStr = '2026';
-        $academicYear = '2026/2027';
+        $year4 = date('Y');
+        $year2 = date('y');
         if (!empty($registration['wave_id'])) {
             $stmt = $db->prepare("SELECT academic_year FROM waves WHERE id = :id LIMIT 1");
             $stmt->execute(['id' => $registration['wave_id']]);
             $wave = $stmt->fetch();
             if ($wave && !empty($wave['academic_year'])) {
-                $academicYear = $wave['academic_year'];
-                $yearStr = substr($wave['academic_year'], 0, 4);
+                $yStr = substr($wave['academic_year'], 0, 4);
+                if (strlen($yStr) === 4 && is_numeric($yStr)) {
+                    $year4 = $yStr;
+                    $year2 = substr($yStr, 2, 2);
+                }
             }
         }
 
-        $prodiCode = '';
+        $prodiCode = '00';
+        $prodiNum = '01';
         $passedProgramId = $selection['passed_program_id'] ?? null;
         if ($passedProgramId) {
-            $stmt = $db->prepare("SELECT code FROM study_programs WHERE id = :id LIMIT 1");
+            $stmt = $db->prepare("SELECT id, code, name FROM study_programs WHERE id = :id LIMIT 1");
             $stmt->execute(['id' => $passedProgramId]);
             $sp = $stmt->fetch();
             if ($sp) {
                 $prodiCode = $sp['code'];
+
+                $prodiCodeNameMap = [
+                    'FAR' => '01',
+                    'S1 Farmasi' => '01',
+                    'D3FAR' => '02',
+                    'D3 Farmasi' => '02',
+                    'APT' => '03',
+                    'Profesi Apoteker' => '03',
+                    'D3KEB' => '04',
+                    'D3 Kebidanan' => '04',
+                    'AK' => '05',
+                    'Akuntansi' => '05',
+                    'HK' => '06',
+                    'Hukum' => '06',
+                    'IK' => '07',
+                    'Ilmu Komunikasi' => '07',
+                    'MJ' => '08',
+                    'Manajemen' => '08',
+                    'IF' => '09',
+                    'Informatika' => '09',
+                    'SI' => '10',
+                    'Sistem Informasi' => '10',
+                ];
+
+                $prodiNum = $prodiCodeNameMap[$sp['code']] 
+                    ?? $prodiCodeNameMap[$sp['name']] 
+                    ?? str_pad((string)$sp['id'], 2, '0', STR_PAD_LEFT);
             }
         }
 
-        $stmt = $db->prepare("
-            SELECT COUNT(*) as count 
-            FROM registrations r
-            JOIN selection_results sr ON r.id = sr.registration_id
-            JOIN waves w ON r.wave_id = w.id
-            WHERE w.academic_year = :academic_year 
-              AND sr.passed_program_id = :prodi_id
-              AND r.nim IS NOT NULL
-        ");
-        $stmt->execute([
-            'academic_year' => $academicYear,
-            'prodi_id' => $passedProgramId
-        ]);
-        $count = (int) ($stmt->fetch()['count'] ?? 0);
-        $nextSeq = $count + 1;
-        $seqStr = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
-
-        $nim = str_replace(
-            ['{YEAR}', '{PRODI_CODE}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
-            [$yearStr, $prodiCode, date('dmy'), substr((string)time(), -6), $seqStr],
-            $pattern
+        $prefixTemplate = explode('{SEQ}', $pattern)[0] ?? '';
+        $prefix = str_replace(
+            ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}'],
+            [$year2, $year4, $prodiNum, $prodiCode, $studentGroup, $studentGroup, date('dmy'), ''],
+            $prefixTemplate
         );
 
-        return $nim;
+        $maxSeq = 0;
+        if (!empty($prefix)) {
+            $stmt = $db->prepare("SELECT nim FROM registrations WHERE nim LIKE :prefix AND nim IS NOT NULL");
+            $stmt->execute(['prefix' => $prefix . '%']);
+            $existingNims = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            foreach ($existingNims as $exNim) {
+                if (preg_match('/(\d+)$/', $exNim, $matches)) {
+                    $num = (int)$matches[1];
+                    if ($num > $maxSeq) {
+                        $maxSeq = $num;
+                    }
+                }
+            }
+        }
+
+        $nextSeq = $maxSeq + 1;
+        $regId = (int)($registration['id'] ?? 0);
+
+        do {
+            $seqStr = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+            $candidateNim = str_replace(
+                ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
+                [$year2, $year4, $prodiNum, $prodiCode, $studentGroup, $studentGroup, date('dmy'), substr((string)time(), -6), $seqStr],
+                $pattern
+            );
+
+            $checkStmt = $db->prepare("SELECT COUNT(*) FROM registrations WHERE nim = :nim AND id != :id");
+            $checkStmt->execute(['nim' => $candidateNim, 'id' => $regId]);
+            $exists = (int)$checkStmt->fetchColumn() > 0;
+            if (!$exists) {
+                return $candidateNim;
+            }
+            $nextSeq++;
+        } while (true);
     }
 
     public function changePaymentType(Request $request, Response $response): Response

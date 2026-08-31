@@ -48,12 +48,12 @@
     <!-- Left Column: Personal, Education, Address, Parents (2 cols span) -->
     <div class="lg:col-span-2 space-y-6">
       <!-- Biodata Pribadi -->
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Biodata Pribadi</h3>
         <div class="flex flex-col sm:flex-row gap-6">
           <?php if (!empty($registration['photo_path'])): ?>
             <div class="flex-shrink-0">
-              <img src="<?= htmlspecialchars($registration['photo_path']) ?>" class="w-24 h-32 object-cover rounded-2xl border border-slate-200 shadow-sm" alt="Foto Peserta">
+              <img src="<?= htmlspecialchars($registration['photo_path']) ?>" class="w-24 h-32 object-cover rounded-xl border border-slate-200 shadow-sm" alt="Foto Peserta">
             </div>
           <?php endif; ?>
           <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -95,7 +95,7 @@
         </div>
 
         <!-- Riwayat Pendidikan -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Riwayat Sekolah Asal</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
             <div>
@@ -118,7 +118,7 @@
         </div>
 
         <!-- Alamat Lengkap -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Alamat Tempat Tinggal</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
@@ -149,13 +149,13 @@
         </div>
 
         <!-- Data Orang Tua -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-6">
           <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Data Orang Tua / Wali</h3>
 
           <?php if (!empty($parent['father_name'])): ?>
             <div class="space-y-3">
               <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👨 Data Ayah</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <span class="text-slate-400 font-medium block">Nama Lengkap</span>
                   <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['father_name']) ?></strong>
@@ -187,7 +187,7 @@
           <?php if (!empty($parent['mother_name'])): ?>
             <div class="space-y-3">
               <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👩 Data Ibu</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <span class="text-slate-400 font-medium block">Nama Lengkap</span>
                   <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['mother_name']) ?></strong>
@@ -219,7 +219,7 @@
           <?php if (!empty($parent['guardian_name'])): ?>
             <div class="space-y-3">
               <h4 class="text-xs font-bold text-indigo-650 flex items-center gap-1">👤 Data Wali</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                 <div>
                   <span class="text-slate-400 font-medium block">Nama Lengkap</span>
                   <strong class="text-slate-800 font-bold"><?= htmlspecialchars($parent['guardian_name']) ?></strong>
@@ -249,21 +249,21 @@
       <!-- Right Column: Program Studi, Berkas, Seleksi (1 col span) -->
       <div class="lg:col-span-1 space-y-6">
         <!-- Pilihan Program Studi -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
           <h3 class="text-xs font-bold text-slate-450 uppercase tracking-widest border-b border-slate-100 pb-2">Pilihan Program Studi</h3>
           <div class="space-y-3 text-xs">
-            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
               <span class="text-[9px] font-bold text-slate-400 block uppercase">Pilihan 1 (Utama)</span>
               <strong class="text-slate-800 font-bold text-sm mt-0.5 block"><?= htmlspecialchars($programs['program1_name'] ?? '-') ?></strong>
             </div>
             <?php if ($programs && $programs['program2_name']): ?>
-              <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <span class="text-[9px] font-bold text-slate-400 block uppercase">Pilihan 2 (Cadangan)</span>
                 <strong class="text-slate-800 font-bold text-sm mt-0.5 block"><?= htmlspecialchars($programs['program2_name']) ?></strong>
               </div>
             <?php endif; ?>
             <?php if ($programs && !empty($programs['program3_name'])): ?>
-              <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <span class="text-[9px] font-bold text-slate-400 block uppercase">Pilihan 3 (Cadangan)</span>
                 <strong class="text-slate-800 font-bold text-sm mt-0.5 block"><?= htmlspecialchars($programs['program3_name']) ?></strong>
               </div>
@@ -273,7 +273,7 @@
 
 
         <!-- Hasil Seleksi Card -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-5">
           <div class="border-b border-slate-100 pb-3">
             <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi</h3>
           </div>
@@ -320,7 +320,7 @@
         </div>
 
         <!-- Jadwal & Tahapan Ujian Card -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-5">
           <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
             <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Tahapan Ujian</h3>
             <a href="<?= getBaseUrl('/admin/registrants/pdf/kartu-ujian?id=' . $registration['id']) ?>" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[10px] font-bold transition-colors">
@@ -347,7 +347,7 @@
                   ))[0] ?? null;
                   $status = $res ? $res['status'] : 'Pending';
                 ?>
-                  <div class="p-3 bg-slate-50 rounded-2xl border border-slate-150 space-y-2.5 text-xs">
+                  <div class="p-3 bg-slate-50 rounded-xl border border-slate-150 space-y-2.5 text-xs">
                     <div class="flex justify-between items-center">
                       <span class="font-bold text-slate-800">Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?></span>
                       <span class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-extrabold <?= $status === 'Lulus' ? 'bg-emerald-100 text-emerald-800' : ($status === 'Tidak Lulus' ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-600') ?>">
@@ -378,7 +378,7 @@
         </div>
 
         <!-- Dokumen Persyaratan Card -->
-        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-5">
           <div class="border-b border-slate-100 pb-3">
             <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Dokumen Persyaratan</h3>
           </div>

@@ -12,20 +12,25 @@ class NimFormatModel extends Model
 
     protected array $schema = [
         'id' => ['type' => 'id', 'primary' => true, 'auto_increment' => true],
-        'name' => ['type' => 'varchar', 'length' => 50, 'nullable' => false],
+        'name' => ['type' => 'varchar', 'length' => 100, 'nullable' => false],
         'format_pattern' => ['type' => 'varchar', 'length' => 100, 'nullable' => false],
         'is_active' => ['type' => 'boolean', 'nullable' => false, 'default' => 0]
     ];
 
     protected array $seed = [
         [
-            'name' => 'Format Standar (Tahun + Prodi + No Urut)',
-            'format_pattern' => '{YEAR}{PRODI_CODE}{SEQ}',
+            'name' => 'Format Standar KMK (23013-001)',
+            'format_pattern' => '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}',
             'is_active' => 1
         ],
         [
-            'name' => 'Format Kustom (Tahun + Tanggal + No Urut)',
-            'format_pattern' => '{YEAR}{DATE}{SEQ}',
+            'name' => 'Format Standar Alternatif (2026-IF-3-001)',
+            'format_pattern' => '{YEAR}-{PRODI_CODE}-{GROUP}-{SEQ}',
+            'is_active' => 0
+        ],
+        [
+            'name' => 'Format Tanpa Strip (26013001)',
+            'format_pattern' => '{YEAR2}{PRODI_NUM}{GROUP}{SEQ}',
             'is_active' => 0
         ]
     ];

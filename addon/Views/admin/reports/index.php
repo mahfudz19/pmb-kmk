@@ -24,25 +24,31 @@ $activeTab = $_GET['tab'] ?? 'stats';
   </div>
 
   <!-- Tab Buttons -->
-  <div class="border-b border-slate-200">
-    <nav class="flex space-x-6" aria-label="Tabs">
-      <button onclick="switchTab('tab-stats', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'stats' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        📈 Statistik Pendaftar
+  <div class="bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70 shadow-2xs overflow-x-auto">
+    <nav class="flex items-center gap-1.5 min-w-max w-full" aria-label="Tabs">
+      <button type="button" onclick="switchTab('tab-stats', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'stats' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="bar-chart-3" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Statistik Pendaftar</span>
       </button>
-      <button onclick="switchTab('tab-finance', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'finance' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        💰 Laporan Keuangan
+      <button type="button" onclick="switchTab('tab-finance', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'finance' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="wallet" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Laporan Keuangan</span>
       </button>
-      <button onclick="switchTab('tab-selection', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'selection' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        🎓 Hasil Seleksi
+      <button type="button" onclick="switchTab('tab-selection', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'selection' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="award" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Hasil Seleksi</span>
       </button>
-      <button onclick="switchTab('tab-rereg', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'rereg' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        ✅ Daftar Ulang
+      <button type="button" onclick="switchTab('tab-rereg', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'rereg' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="user-check" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Daftar Ulang</span>
       </button>
-      <button onclick="switchTab('tab-notifications', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'notifications' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        🔔 Riwayat Notifikasi
+      <button type="button" onclick="switchTab('tab-notifications', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'notifications' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="bell" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Riwayat Notifikasi</span>
       </button>
-      <button onclick="switchTab('tab-audit', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider <?= $activeTab === 'audit' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350' ?> transition-all focus:outline-none">
-        🛡️ Log Aktivitas
+      <button type="button" onclick="switchTab('tab-audit', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer <?= $activeTab === 'audit' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-white/70' ?>">
+        <i data-lucide="shield-alert" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Log Aktivitas</span>
       </button>
     </nav>
   </div>
@@ -50,25 +56,25 @@ $activeTab = $_GET['tab'] ?? 'stats';
   <!-- Tab 1: Statistik Pendaftar -->
   <div id="tab-stats" class="tab-content space-y-6 <?= $activeTab === 'stats' ? '' : 'hidden' ?>">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Total Pendaftar</span>
         <h3 class="text-3xl font-extrabold text-slate-900"><?= number_format($stats['total_registrants']) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Calon mahasiswa baru terdaftar</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Sudah Kirim Form</span>
         <h3 class="text-3xl font-extrabold text-indigo-650"><?= number_format($stats['status_counts']['Submitted'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Calon mahasiswa status Submitted</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Lolos Seleksi (Released)</span>
         <h3 class="text-3xl font-extrabold text-emerald-650"><?= number_format($stats['status_counts']['Released'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Sudah diumumkan kelulusannya</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Berkas Terverifikasi</span>
         <h3 class="text-3xl font-extrabold text-amber-600"><?= number_format($stats['status_counts']['Verified'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Calon mahasiswa status Verified</p>
@@ -76,7 +82,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="md:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="md:col-span-2 bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h4 class="text-sm font-extrabold text-slate-800">Minat Program Studi (Pilihan 1)</h4>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
@@ -104,7 +110,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
         </div>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-5">
         <h4 class="text-sm font-extrabold text-slate-800">Demografi Gender</h4>
         <div class="space-y-4 font-semibold text-slate-700 text-xs">
           <div class="space-y-1.5">
@@ -146,26 +152,26 @@ $activeTab = $_GET['tab'] ?? 'stats';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Uang Pendaftaran</span>
         <h3 class="text-3xl font-extrabold text-slate-900">Rp <?= number_format($stats['total_registration_fees'], 0, ',', '.') ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Dari pembayaran biaya formulir terverifikasi</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Uang Pangkal / UKT</span>
         <h3 class="text-3xl font-extrabold text-indigo-650">Rp <?= number_format($stats['total_re_registration_fees'], 0, ',', '.') ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Dari pembayaran biaya daftar ulang mahasiswa baru</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Total Akumulasi</span>
         <h3 class="text-3xl font-extrabold text-emerald-650">Rp <?= number_format($stats['total_registration_fees'] + $stats['total_re_registration_fees'], 0, ',', '.') ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Total dana terkumpul PMB</p>
       </div>
     </div>
 
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <h4 class="text-sm font-extrabold text-slate-800">Log 10 Transaksi Keuangan Terbaru</h4>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -223,25 +229,25 @@ $activeTab = $_GET['tab'] ?? 'stats';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Total Peserta Seleksi</span>
         <h3 class="text-3xl font-extrabold text-slate-900"><?= number_format($stats['total_exams']) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Calon mahasiswa memiliki nilai ujian</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Rata-Rata Nilai CBT</span>
         <h3 class="text-3xl font-extrabold text-indigo-650"><?= number_format($stats['avg_test_score'], 1) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Dari skala penilaian maksimal 100</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Rata-Rata Wawancara</span>
         <h3 class="text-3xl font-extrabold text-purple-650"><?= number_format($stats['avg_interview_score'], 1) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Berdasarkan tim penilai wawancara</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Kelulusan (Lulus)</span>
         <h3 class="text-3xl font-extrabold text-emerald-650"><?= number_format($stats['selection_counts']['Lulus'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Calon mahasiswa Lulus Seleksi Utama</p>
@@ -249,7 +255,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h4 class="text-sm font-extrabold text-slate-800">Status Keputusan Kelulusan</h4>
         <div class="space-y-4 font-semibold text-slate-700 text-xs">
           <div class="space-y-1">
@@ -285,7 +291,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
         </div>
       </div>
 
-      <div class="md:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="md:col-span-2 bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h4 class="text-sm font-extrabold text-slate-800">Catatan/Alasan Hasil Ujian Terbaru</h4>
         <div class="space-y-3 font-semibold text-slate-700 text-xs">
           <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100 pb-1.5">Metodologi & Pengawasan CBT</p>
@@ -308,26 +314,26 @@ $activeTab = $_GET['tab'] ?? 'stats';
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Menunggu Verifikasi</span>
         <h3 class="text-3xl font-extrabold text-amber-600"><?= number_format($stats['rereg_counts']['Pending'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Mahasiswa baru menunggu persetujuan berkas</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Daftar Ulang Disetujui</span>
         <h3 class="text-3xl font-extrabold text-emerald-650"><?= number_format($stats['rereg_counts']['Approved'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Resmi berstatus mahasiswa baru</p>
       </div>
 
-      <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-2">
+      <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-2">
         <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider block">Daftar Ulang Ditolak</span>
         <h3 class="text-3xl font-extrabold text-red-650"><?= number_format($stats['rereg_counts']['Rejected'] ?? 0) ?></h3>
         <p class="text-[10px] text-slate-400 font-medium">Pembayaran atau berkas tidak valid</p>
       </div>
     </div>
 
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <h4 class="text-sm font-extrabold text-slate-800">Daftar Mahasiswa Baru Lunas & Disetujui</h4>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
@@ -377,7 +383,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
       <h3 class="text-md font-extrabold text-slate-800">Riwayat Pengiriman Notifikasi</h3>
     </div>
 
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <h4 class="text-sm font-extrabold text-slate-800">50 Riwayat Pengiriman Notifikasi Sistem & Email</h4>
       <div class="overflow-x-auto">
         <table data-paginate="10" class="w-full text-left text-xs border-collapse">
@@ -429,7 +435,7 @@ $activeTab = $_GET['tab'] ?? 'stats';
 
   <!-- Tab 6: Log Aktivitas -->
   <div id="tab-audit" class="tab-content space-y-6 <?= $activeTab === 'audit' ? '' : 'hidden' ?>">
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Audit Log Aktivitas Sistem</h3>
       </div>
@@ -477,18 +483,23 @@ $activeTab = $_GET['tab'] ?? 'stats';
 <script>
   function switchTab(tabId, btnEl) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(tabId).classList.remove('hidden');
+    const target = document.getElementById(tabId);
+    if (target) target.classList.remove('hidden');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.classList.remove('border-indigo-600', 'text-indigo-600');
-      btn.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
+      btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm', 'shadow-indigo-600/20');
+      btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-white/70');
     });
 
-    btnEl.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
-    btnEl.classList.add('border-indigo-600', 'text-indigo-600');
+    btnEl.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-white/70');
+    btnEl.classList.add('bg-indigo-600', 'text-white', 'shadow-sm', 'shadow-indigo-600/20');
 
     const tabName = tabId.replace('tab-', '');
     const tabInput = document.getElementById('filter-tab');
     if (tabInput) tabInput.value = tabName;
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
   }
 </script>

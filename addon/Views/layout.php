@@ -49,6 +49,56 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
       font-family: 'Inter', sans-serif;
     }
 
+    .sidebar-link-active {
+      background-color: #4f46e5 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .sidebar-link-active:hover {
+      background-color: #4338ca !important;
+      color: #ffffff !important;
+    }
+
+    .sidebar-link-active * {
+      color: #ffffff !important;
+    }
+
+    .sidebar-link-active .sidebar-icon-box {
+      background-color: rgba(67, 56, 202, 0.8) !important;
+      color: #ffffff !important;
+    }
+
+    .sidebar-link-active:hover .sidebar-icon-box {
+      background-color: rgba(55, 48, 163, 0.9) !important;
+      color: #ffffff !important;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+      transition: background 0.2s ease-in-out;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
     .accordion-content {
       max-height: 0;
       overflow: hidden;
@@ -208,10 +258,10 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
         </a>
         <?php if ($isLoggedIn && !$hasSidebar): ?>
           <nav class="topbar-nav text-xs font-bold text-slate-600">
-            <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="hover:text-indigo-650 transition-colors <?= $isDashboard ? 'text-indigo-650 font-extrabold' : '' ?>">Dashboard</a>
-            <a data-spa href="<?= getBaseUrl('/profile') ?>" class="hover:text-indigo-650 transition-colors <?= $isProfile ? 'text-indigo-650 font-extrabold' : '' ?>">Profil Saya</a>
+            <a data-spa data-topbar-link="dashboard" href="<?= getBaseUrl('/dashboard') ?>" class="hover:text-indigo-600 transition-colors <?= $isDashboard ? 'text-indigo-600 font-extrabold' : '' ?>">Dashboard</a>
+            <a data-spa data-topbar-link="profile" href="<?= getBaseUrl('/profile') ?>" class="hover:text-indigo-600 transition-colors <?= $isProfile ? 'text-indigo-600 font-extrabold' : '' ?>">Profil Saya</a>
             <?php if ($showHistoryMenu): ?>
-              <a data-spa href="<?= getBaseUrl('/dashboard/history') ?>" class="hover:text-indigo-650 transition-colors <?= $isHistory ? 'text-indigo-650 font-extrabold' : '' ?>">Riwayat Pendaftaran</a>
+              <a data-spa data-topbar-link="history" href="<?= getBaseUrl('/dashboard/history') ?>" class="hover:text-indigo-600 transition-colors <?= $isHistory ? 'text-indigo-600 font-extrabold' : '' ?>">Riwayat Pendaftaran</a>
             <?php endif; ?>
           </nav>
         <?php endif; ?>
@@ -289,119 +339,156 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
   <div class="flex-grow flex flex-row <?= $isAuthPage ? '' : 'pt-14' ?> <?= $hasSidebar ? 'has-sidebar' : 'is-guest' ?>" id="admin-layout-wrapper">
     <!-- Sidebar -->
     <?php if ($hasSidebar): ?>
-      <aside id="sidebar-container" class="fixed top-14 left-0 bottom-0 z-30 w-64 bg-white border-r border-slate-200/80 flex flex-col py-6 px-4 space-y-6 overflow-y-auto transition-all duration-300 transform -translate-x-full md:translate-x-0">
+      <aside id="sidebar-container" class="fixed top-14 left-0 bottom-0 z-30 w-64 bg-white border-r border-slate-200/80 flex flex-col py-5 px-3 space-y-6 overflow-y-auto transition-all duration-300 transform -translate-x-full md:translate-x-0">
+        
         <!-- Main Links Group -->
-        <div class="space-y-1.5">
-          <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block pl-3 mb-1 sidebar-collapsed-hide">Menu Utama</span>
-          <a data-spa data-sidebar-link="dashboard" href="<?= getBaseUrl('/dashboard') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-            <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
-            <span class="sidebar-collapsed-label">Dashboard</span>
+        <div class="space-y-0 pt-4">
+          <div class="px-3 pb-1.5 flex items-center justify-between sidebar-collapsed-hide">
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Menu Utama</span>
+          </div>
+          <a data-spa data-sidebar-link="dashboard" href="<?= getBaseUrl('/dashboard') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+            <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            </span>
+            <span class="sidebar-collapsed-label truncate">Dashboard</span>
           </a>
-          <a data-spa data-sidebar-link="profile" href="<?= getBaseUrl('/profile') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-            <i data-lucide="user" class="w-4 h-4 flex-shrink-0"></i>
-            <span class="sidebar-collapsed-label">Profil Saya</span>
+          <a data-spa data-sidebar-link="profile" href="<?= getBaseUrl('/profile') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+            <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </span>
+            <span class="sidebar-collapsed-label truncate">Profil Saya</span>
           </a>
         </div>
+
         <!-- Administration Group -->
         <?php if (has_any_permission(['manage_users', 'verify_payment', 'verify_document', 'manage_selection', 'manage_settings'])): ?>
-          <div class="space-y-1.5 border-t border-slate-100 pt-5">
-            <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block pl-3 mb-1 sidebar-collapsed-hide">Administrasi</span>
+          <div class="space-y-1 border-t border-slate-100 pt-4">
+            <div class="px-3 pb-1 flex items-center justify-between sidebar-collapsed-hide">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Pendaftaran & Seleksi</span>
+            </div>
 
             <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection'])): ?>
-              <a data-spa data-sidebar-link="registrants" href="<?= getBaseUrl('/admin/registrants') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="users" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Manajemen Pendaftar</span>
+              <a data-spa data-sidebar-link="registrants" href="<?= getBaseUrl('/admin/registrants') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Manajemen Pendaftar</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('verify_payment')): ?>
-              <a data-spa data-sidebar-link="payments" href="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="credit-card" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Verifikasi Pembayaran</span>
+              <a data-spa data-sidebar-link="payments" href="<?= getBaseUrl('/admin/payments') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="credit-card" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Verifikasi Pembayaran</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('verify_document')): ?>
-              <a data-spa data-sidebar-link="verifications" href="<?= getBaseUrl('/admin/verifications') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="folder-open" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Verifikasi Berkas</span>
+              <a data-spa data-sidebar-link="verifications" href="<?= getBaseUrl('/admin/verifications') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="folder-open" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Verifikasi Berkas</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('manage_selection')): ?>
-              <a data-spa data-sidebar-link="selection" href="<?= getBaseUrl('/admin/selection') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="award" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Seleksi & Kelulusan</span>
+              <a data-spa data-sidebar-link="selection" href="<?= getBaseUrl('/admin/selection') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Seleksi & Kelulusan</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('verify_payment')): ?>
-              <a data-spa data-sidebar-link="re-registrations" href="<?= getBaseUrl('/admin/re-registrations') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="check-square" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Verifikasi Daftar Ulang</span>
+              <a data-spa data-sidebar-link="re-registrations" href="<?= getBaseUrl('/admin/re-registrations') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="check-square" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Verifikasi Daftar Ulang</span>
               </a>
             <?php endif; ?>
+          </div>
+
+          <div class="space-y-1 border-t border-slate-100 pt-4">
+            <div class="px-3 pb-1 flex items-center justify-between sidebar-collapsed-hide">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Pengaturan & Laporan</span>
+            </div>
 
             <?php if (has_any_permission(['verify_payment', 'verify_document', 'manage_selection', 'manage_users'])): ?>
-              <a data-spa data-sidebar-link="reports" href="<?= getBaseUrl('/admin/reports') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Laporan & Statistik</span>
+              <a data-spa data-sidebar-link="reports" href="<?= getBaseUrl('/admin/reports') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Laporan & Statistik</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('manage_selection')): ?>
-              <a data-spa data-sidebar-link="announcements" href="<?= getBaseUrl('/admin/announcements') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="megaphone" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Kelola Pengumuman</span>
+              <a data-spa data-sidebar-link="announcements" href="<?= getBaseUrl('/admin/announcements') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="megaphone" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Kelola Pengumuman</span>
               </a>
             <?php endif; ?>
 
             <?php if (has_permission('manage_users')): ?>
-              <a data-spa data-sidebar-link="users" href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="key-round" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Hak Akses Pengguna</span>
+              <a data-spa data-sidebar-link="users" href="<?= getBaseUrl('/admin/users') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="key-round" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Hak Akses Pengguna</span>
               </a>
             <?php endif; ?>
 
             <!-- Accordion master settings links -->
             <?php if (has_permission('manage_settings')): ?>
-              <a data-spa data-sidebar-link="settings" href="<?= getBaseUrl('/admin/settings') ?>" class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
-                <i data-lucide="sliders" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-collapsed-label">Pengaturan Sistem</span>
+              <a data-spa data-sidebar-link="settings" href="<?= getBaseUrl('/admin/settings') ?>" class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 sidebar-collapsed-center text-slate-600">
+                <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                  <i data-lucide="sliders" class="w-4 h-4"></i>
+                </span>
+                <span class="sidebar-collapsed-label truncate">Pengaturan Sistem</span>
               </a>
               <div class="space-y-0.5">
-                <button type="button" onclick="toggleAccordion()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 text-slate-600 focus:outline-none cursor-pointer sidebar-collapsed-center" id="btn-accordion-master">
+                <button type="button" onclick="toggleAccordion()" class="w-full group flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all hover:bg-slate-50 text-slate-600 focus:outline-none cursor-pointer sidebar-collapsed-center" id="btn-accordion-master">
                   <div class="flex items-center gap-3">
-                    <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
-                    <span class="sidebar-collapsed-label">Kelola Data Master</span>
+                    <span class="sidebar-icon-box w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100/80 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                      <i data-lucide="database" class="w-4 h-4"></i>
+                    </span>
+                    <span class="sidebar-collapsed-label truncate">Kelola Data Master</span>
                   </div>
                   <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 sidebar-collapsed-hide" id="accordion-chevron"></i>
                 </button>
 
-                <div id="accordion-master-sublinks" class="accordion-content pl-4 border-l border-slate-100 ml-5 mt-1 space-y-0.5 sidebar-collapsed-hide">
-                  <a data-spa data-sidebar-sublink="wave" href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="waves" class="w-3.5 h-3.5"></i> Gelombang
+                <div id="accordion-master-sublinks" class="accordion-content pl-3 border-l-2 border-indigo-100 ml-6 mt-1 space-y-1 sidebar-collapsed-hide">
+                  <a data-spa data-sidebar-sublink="wave" href="<?= getBaseUrl('/admin/master?tab=wave') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-indigo-50/50 text-slate-600">
+                    <i data-lucide="waves" class="w-3.5 h-3.5 text-slate-400"></i> Gelombang
                   </a>
-                  <a data-spa data-sidebar-sublink="faculty" href="<?= getBaseUrl('/admin/master?tab=faculty') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="building" class="w-3.5 h-3.5"></i> Fakultas
+                  <a data-spa data-sidebar-sublink="faculty" href="<?= getBaseUrl('/admin/master?tab=faculty') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-indigo-50/50 text-slate-600">
+                    <i data-lucide="building" class="w-3.5 h-3.5 text-slate-400"></i> Fakultas
                   </a>
-                  <a data-spa data-sidebar-sublink="study-program" href="<?= getBaseUrl('/admin/master?tab=study-program') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Program Studi
+                  <a data-spa data-sidebar-sublink="study-program" href="<?= getBaseUrl('/admin/master?tab=study-program') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-indigo-50/50 text-slate-600">
+                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-slate-400"></i> Program Studi
                   </a>
-                  <a data-spa data-sidebar-sublink="document-type" href="<?= getBaseUrl('/admin/master?tab=document-type') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Jenis Dokumen
+                  <a data-spa data-sidebar-sublink="document-type" href="<?= getBaseUrl('/admin/master?tab=document-type') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-indigo-50/50 text-slate-600">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400"></i> Jenis Dokumen
                   </a>
-                  <a data-spa data-sidebar-sublink="payment-account" href="<?= getBaseUrl('/admin/master?tab=payment-account') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Rekening Penerimaan
+                  <a data-spa data-sidebar-sublink="payment-account" href="<?= getBaseUrl('/admin/master?tab=payment-account') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-600">
+                    <i data-lucide="credit-card" class="w-3.5 h-3.5 text-slate-400"></i> Rekening Penerimaan
                   </a>
-                  <a data-spa data-sidebar-sublink="nim-format" href="<?= getBaseUrl('/admin/master?tab=nim-format') ?>" class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all hover:bg-slate-50 text-slate-500">
-                    <i data-lucide="binary" class="w-3.5 h-3.5"></i> Format NIM
+                  <a data-spa data-sidebar-sublink="nim-format" href="<?= getBaseUrl('/admin/master?tab=nim-format') ?>" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all hover:bg-indigo-50/50 text-slate-600">
+                    <i data-lucide="binary" class="w-3.5 h-3.5 text-slate-400"></i> Format NIM
                   </a>
                 </div>
               </div>
             <?php endif; ?>
           </div>
         <?php endif; ?>
+
       </aside>
     <?php endif; ?>
 
@@ -628,10 +715,10 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
         if (type === 'settings' && path.includes('/admin/settings')) isActive = true;
 
         if (isActive) {
-          link.classList.add('bg-indigo-50', 'text-indigo-600');
+          link.classList.add('sidebar-link-active');
           link.classList.remove('text-slate-600', 'hover:bg-slate-50');
         } else {
-          link.classList.remove('bg-indigo-50', 'text-indigo-600');
+          link.classList.remove('sidebar-link-active');
           link.classList.add('text-slate-600', 'hover:bg-slate-50');
         }
       });
@@ -639,12 +726,33 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
       const subLinks = document.querySelectorAll('[data-sidebar-sublink]');
       subLinks.forEach(link => {
         const tabType = link.getAttribute('data-sidebar-sublink');
+        const dotIcon = link.querySelector('i');
         if (isMasterPage && tabType === activeTab) {
-          link.classList.add('text-indigo-600', 'bg-indigo-50/50');
-          link.classList.remove('text-slate-500', 'hover:bg-slate-50');
+          link.classList.add('text-indigo-700', 'bg-indigo-50', 'font-bold', 'shadow-2xs');
+          link.classList.remove('text-slate-600', 'hover:bg-indigo-50/50');
+          if (dotIcon) dotIcon.classList.add('text-indigo-600');
         } else {
-          link.classList.remove('text-indigo-600', 'bg-indigo-50/50');
-          link.classList.add('text-slate-500', 'hover:bg-slate-50');
+          link.classList.remove('text-indigo-700', 'bg-indigo-50', 'font-bold', 'shadow-2xs');
+          link.classList.add('text-slate-600', 'hover:bg-indigo-50/50');
+          if (dotIcon) dotIcon.classList.remove('text-indigo-600');
+        }
+      });
+
+      const topbarLinks = document.querySelectorAll('[data-topbar-link]');
+      topbarLinks.forEach(link => {
+        const type = link.getAttribute('data-topbar-link');
+        let isActive = false;
+
+        if (type === 'dashboard' && path.endsWith('/dashboard')) isActive = true;
+        if (type === 'profile' && path.endsWith('/profile')) isActive = true;
+        if (type === 'history' && path.endsWith('/dashboard/history')) isActive = true;
+
+        if (isActive) {
+          link.classList.add('text-indigo-600', 'font-extrabold');
+          link.classList.remove('text-slate-600');
+        } else {
+          link.classList.remove('text-indigo-600', 'font-extrabold');
+          link.classList.add('text-slate-600');
         }
       });
     }

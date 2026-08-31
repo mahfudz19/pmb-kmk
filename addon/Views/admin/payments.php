@@ -9,7 +9,7 @@
 ?>
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
-  <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+  <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Verifikasi Pembayaran PMB</h2>
       <p class="mt-1 text-xs text-slate-500">Kelola dan verifikasi transaksi bukti pembayaran biaya formulir calon mahasiswa baru.</p>
@@ -17,7 +17,7 @@
   </div>
 
   <!-- Payments Table -->
-  <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Daftar Transaksi Masuk</h3>
       <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-2">
@@ -106,7 +106,7 @@
   </div>
 
   <?php if (($totalPages ?? 1) > 1): ?>
-    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm">
+    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
       <div class="text-xs font-semibold text-slate-500">
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> transaksi
       </div>

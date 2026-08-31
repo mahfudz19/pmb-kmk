@@ -24,7 +24,7 @@ if (!function_exists('time_ago')) {
 
 <div class="w-full py-2 space-y-8">
   <!-- Top header -->
-  <div class="flex justify-between items-center bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80">
+  <div class="flex justify-between items-center bg-white rounded-xl p-6 shadow-sm border border-slate-200/80">
     <div>
       <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard Administrator</h2>
       <p class="mt-1 text-sm text-slate-500">Pantau aktivitas pendaftaran, kelola verifikasi berkas, dan periksa statistik real-time.</p>
@@ -35,39 +35,39 @@ if (!function_exists('time_ago')) {
   <!-- Stats Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
     <!-- Stat 1 -->
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
       <div class="space-y-1">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Pendaftar</span>
         <strong class="text-3xl font-extrabold text-slate-900"><?= htmlspecialchars($stats['total_applicants']) ?></strong>
       </div>
-      <span class="text-3xl bg-indigo-50 p-3 rounded-2xl text-indigo-650">👥</span>
+      <span class="text-3xl bg-indigo-50 p-3 rounded-xl text-indigo-650">👥</span>
     </div>
 
     <!-- Stat 2 -->
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
       <div class="space-y-1">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Pembayaran Lunas</span>
         <strong class="text-3xl font-extrabold text-slate-900"><?= htmlspecialchars($stats['total_payments']) ?></strong>
       </div>
-      <span class="text-3xl bg-emerald-50 p-3 rounded-2xl text-emerald-650">💳</span>
+      <span class="text-3xl bg-emerald-50 p-3 rounded-xl text-emerald-650">💳</span>
     </div>
 
     <!-- Stat 3 -->
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
       <div class="space-y-1">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Verifikasi</span>
         <strong class="text-3xl font-extrabold text-slate-900"><?= htmlspecialchars($stats['total_verifications']) ?></strong>
       </div>
-      <span class="text-3xl bg-amber-50 p-3 rounded-2xl text-amber-650">📁</span>
+      <span class="text-3xl bg-amber-50 p-3 rounded-xl text-amber-650">📁</span>
     </div>
 
     <!-- Stat 4 -->
-    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
+    <div class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm flex items-center justify-between">
       <div class="space-y-1">
         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Lolos Seleksi</span>
         <strong class="text-3xl font-extrabold text-slate-900"><?= htmlspecialchars($stats['total_accepted']) ?></strong>
       </div>
-      <span class="text-3xl bg-violet-50 p-3 rounded-2xl text-violet-650">🎓</span>
+      <span class="text-3xl bg-violet-50 p-3 rounded-xl text-violet-650">🎓</span>
     </div>
   </div>
 
@@ -76,7 +76,7 @@ if (!function_exists('time_ago')) {
     <!-- Chart Column (Left) -->
     <div class="lg:col-span-2 space-y-8">
       <!-- Chart 1: Tren Pendaftaran -->
-      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200/80 space-y-4">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Tren Pendaftaran Mingguan</h3>
         <div class="h-64 relative">
           <canvas id="registrationTrendChart"></canvas>
@@ -84,7 +84,7 @@ if (!function_exists('time_ago')) {
       </div>
 
       <!-- Chart 2: Pilihan Prodi -->
-      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200/80 space-y-4">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Peminat Program Studi</h3>
         <div class="h-64 relative">
           <canvas id="programChoiceChart"></canvas>
@@ -95,26 +95,26 @@ if (!function_exists('time_ago')) {
     <!-- Quick Actions & Log Column (Right) -->
     <div class="space-y-8">
       <!-- Quick Actions -->
-      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200/80 space-y-4">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Aksi Cepat Admin</h3>
         <div class="grid grid-cols-1 gap-3">
           <?php if (has_permission('manage_users')): ?>
-            <a data-spa href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/users') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>🔑</span> Kelola Hak Akses Pengguna
             </a>
           <?php endif; ?>
           <?php if (has_permission('verify_payment')): ?>
-            <a data-spa href="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>💳</span> Verifikasi Bukti Transfer
             </a>
           <?php endif; ?>
           <?php if (has_permission('verify_document')): ?>
-            <a data-spa href="<?= getBaseUrl('/admin/verifications') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/verifications') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>📂</span> Verifikasi Berkas Akademik
             </a>
           <?php endif; ?>
           <?php if (has_permission('manage_settings')): ?>
-            <a data-spa href="<?= getBaseUrl('/admin/master') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
+            <a data-spa href="<?= getBaseUrl('/admin/master') ?>" class="flex items-center gap-3 p-3 border border-slate-150/60 rounded-xl hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-all font-semibold text-slate-700 text-xs">
               <span>⚙️</span> Kelola Data Master
             </a>
           <?php endif; ?>
@@ -122,7 +122,7 @@ if (!function_exists('time_ago')) {
       </div>
 
       <!-- Recent Log Activity -->
-      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200/80 space-y-4">
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200/80 space-y-4">
         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">Aktivitas Terbaru</h3>
         <div class="space-y-4">
           <?php if (empty($recent_activities)): ?>

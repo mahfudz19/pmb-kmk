@@ -18,12 +18,20 @@ class FacultyModel extends Model
 
     protected array $seed = [
         [
-            'code' => 'FIK',
-            'name' => 'Fakultas Ilmu Komputer'
+            'code' => 'FFIK',
+            'name' => 'Fakultas Farmasi dan Ilmu Kesehatan'
         ],
         [
             'code' => 'FEB',
             'name' => 'Fakultas Ekonomi dan Bisnis'
+        ],
+        [
+            'code' => 'FIK',
+            'name' => 'Fakultas Ilmu Komputer'
+        ],
+        [
+            'code' => 'FHIS',
+            'name' => 'Fakultas Hukum dan Ilmu Sosial'
         ]
     ];
 }

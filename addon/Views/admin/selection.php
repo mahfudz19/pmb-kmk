@@ -13,7 +13,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
 ?>
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
-  <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+  <div class="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Manajemen Seleksi & Kelulusan</h2>
       <p class="mt-1 text-xs text-slate-500">Kelola kuota penerimaan program studi, input nilai ujian dan wawancara, serta tentukan keputusan kelulusan akhir.</p>
@@ -21,7 +21,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
   </div>
 
   <!-- Tab 1: Penilaian & Kelulusan -->
-  <div id="tab-content-scoring" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+  <div id="tab-content-scoring" class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
       <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Hasil Seleksi Calon Mahasiswa</h3>
       <div class="flex flex-wrap items-center gap-4">
@@ -140,7 +140,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
   </div>
 
   <?php if (($totalPages ?? 1) > 1): ?>
-    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm">
+    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
       <div class="text-xs font-semibold text-slate-500">
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> calon mahasiswa
       </div>
@@ -176,7 +176,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
 <!-- Scoring & Status Modal -->
 <div id="scoring-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeScoringModal()"></div>
-  <div class="relative bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="scoring-modal-card">
+  <div class="relative bg-white rounded-xl p-6 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 transform scale-95 opacity-0 transition-all duration-200" id="scoring-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-2">
       <h3 class="text-sm font-bold text-slate-900" id="scoring-modal-title">Penilaian Calon Mahasiswa</h3>
       <button type="button" onclick="closeScoringModal()" class="text-slate-400 hover:text-slate-655 focus:outline-none text-xl font-semibold">&times;</button>

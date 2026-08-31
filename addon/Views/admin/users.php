@@ -6,7 +6,7 @@
 ?>
 <div class="w-full py-2">
 
-  <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
       <div>
         <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen Pengguna</h2>
@@ -71,7 +71,7 @@
 <!-- Edit Permissions Modal -->
 <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeEditModal()"></div>
-  <div class="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 transform scale-95 opacity-0 transition-all duration-200" id="edit-modal-card">
+  <div class="relative bg-white rounded-xl p-8 max-w-md w-full shadow-2xl border border-slate-100 space-y-6 transform scale-95 opacity-0 transition-all duration-200" id="edit-modal-card">
     <div class="flex justify-between items-center border-b border-slate-100 pb-4">
       <h3 class="text-xl font-bold text-slate-900">Ubah Hak Akses</h3>
       <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 focus:outline-none text-2xl font-semibold">&times;</button>
@@ -104,7 +104,7 @@
 
       <div class="space-y-3" id="permissions-section">
         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Izin Fitur (*Permissions*)</label>
-        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+        <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3">
           <div class="flex items-start gap-3">
             <input type="checkbox" name="permissions[]" value="view_dashboard" id="p-view_dashboard" class="mt-1 h-4 w-4 rounded text-indigo-600 border-slate-350 focus:ring-indigo-500">
             <label for="p-view_dashboard" class="text-xs font-semibold text-slate-700 cursor-pointer">

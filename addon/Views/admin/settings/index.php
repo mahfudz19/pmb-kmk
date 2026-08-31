@@ -14,22 +14,26 @@
     </div>
   </div>
 
-  <div class="border-b border-slate-200">
-    <nav class="flex space-x-6" aria-label="Tabs">
-      <button onclick="switchTab('tab-general', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-indigo-600 text-indigo-600 transition-all focus:outline-none">
-        🏢 Identitas Kampus
+  <!-- Tab Buttons -->
+  <div class="bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70 shadow-2xs overflow-x-auto">
+    <nav class="flex items-center gap-1.5 min-w-max w-full" aria-label="Tabs">
+      <button type="button" onclick="switchTab('tab-general', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer bg-indigo-600 text-white shadow-sm shadow-indigo-600/20">
+        <i data-lucide="landmark" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Identitas Kampus</span>
       </button>
-      <button onclick="switchTab('tab-format', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
-        🔢 Format No. Pendaftaran
+      <button type="button" onclick="switchTab('tab-format', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/70">
+        <i data-lucide="binary" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Format No. Pendaftaran</span>
       </button>
-      <button onclick="switchTab('tab-smtp', this)" class="tab-btn py-3 px-1 border-b-2 font-bold text-xs uppercase tracking-wider border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-350 transition-all focus:outline-none">
-        ✉️ Pengaturan SMTP
+      <button type="button" onclick="switchTab('tab-smtp', this)" class="tab-btn flex-1 min-w-max flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all focus:outline-none cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/70">
+        <i data-lucide="mail" class="w-4 h-4 flex-shrink-0"></i>
+        <span>Pengaturan SMTP</span>
       </button>
     </nav>
   </div>
 
   <div id="tab-general" class="tab-content space-y-6">
-    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Informasi Umum Institusi</h3>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -61,7 +65,7 @@
         <div class="space-y-1.5 col-span-2">
           <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Logo Kampus</label>
           <div class="flex items-center gap-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-            <div class="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center p-2 shadow-sm">
+            <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center p-2 shadow-sm">
               <img src="<?= htmlspecialchars($settings['campus_logo'] ?? '/logo_app/mazu-logo.svg') ?>" alt="Logo Kampus" class="max-w-full max-h-full object-contain">
             </div>
             <div class="space-y-1">
@@ -88,10 +92,10 @@
 
 
   <div id="tab-format" class="tab-content space-y-6 hidden">
-    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Format Custom Nomor Pendaftaran</h3>
       
-      <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-850 space-y-2">
+      <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 text-xs text-indigo-850 space-y-2">
         <p class="font-bold">Panduan Placeholder Format Custom:</p>
         <ul class="list-disc pl-5 space-y-1 font-medium text-indigo-700">
           <li><code>{YEAR}</code>: Diganti secara otomatis dengan tahun saat pendaftar membuat akun (misal: <code><?= date('Y') ?></code>).</li>
@@ -127,7 +131,7 @@
   </div>
 
   <div id="tab-smtp" class="tab-content space-y-6 hidden">
-    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+    <form action="<?= getBaseUrl('/admin/settings/general') ?>" method="POST" class="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-6">
       <h3 class="text-sm font-extrabold text-slate-800 border-b border-slate-100 pb-3">Konfigurasi SMTP Mail Server</h3>
       
       <input type="hidden" name="campus_name" value="<?= htmlspecialchars($settings['campus_name'] ?? '') ?>">
@@ -190,14 +194,19 @@
 <script>
 function switchTab(tabId, btnEl) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.getElementById(tabId).classList.remove('hidden');
+  const target = document.getElementById(tabId);
+  if (target) target.classList.remove('hidden');
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('border-indigo-600', 'text-indigo-600');
-    btn.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
+    btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm', 'shadow-indigo-600/20');
+    btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-white/70');
   });
 
-  btnEl.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-350');
-  btnEl.classList.add('border-indigo-600', 'text-indigo-600');
+  btnEl.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-white/70');
+  btnEl.classList.add('bg-indigo-600', 'text-white', 'shadow-sm', 'shadow-indigo-600/20');
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 </script>

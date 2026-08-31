@@ -35,7 +35,7 @@
   </div>
 
   <!-- Search & Filter Card -->
-  <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
+  <div class="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
     <form action="<?= getBaseUrl('/admin/registrants') ?>" method="GET" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;">
       <!-- Search Input -->
       <div style="flex: 2; min-width: 220px;">
@@ -104,7 +104,7 @@
   </div>
 
   <!-- Table Card -->
-  <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+  <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
@@ -173,8 +173,8 @@
     </div>
   </div>
 
-  <?php if (($totalPages ?? 1) > 1): ?>
-    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm">
+  <?php if ($totalPages > 1): ?>
+    <div class="mt-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
       <div class="text-xs font-semibold text-slate-500">
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> pendaftar
       </div>
