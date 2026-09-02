@@ -311,49 +311,52 @@ class RegistrationController
             $this->programs->insert($progData);
         }
 
-        $stmtCheckPay = $db->prepare("SELECT * FROM registration_payments WHERE registration_id = :reg_id LIMIT 1");
-        $stmtCheckPay->execute(['reg_id' => $regId]);
-        $existingPayment = $stmtCheckPay->fetch();
-        $stmtCheckPay->closeCursor();
+        $baseAmount = (float)($w['registration_fee_total'] ?? 0);
 
-        if (!$existingPayment) {
-            $stmtFind999 = $db->prepare("SELECT id FROM registration_payments WHERE id_payment = 999 LIMIT 1");
-            $stmtFind999->execute();
-            $has999 = $stmtFind999->fetch();
-            $stmtFind999->closeCursor();
+        if ($baseAmount > 0) {
+            $stmtCheckPay = $db->prepare("SELECT * FROM registration_payments WHERE registration_id = :reg_id LIMIT 1");
+            $stmtCheckPay->execute(['reg_id' => $regId]);
+            $existingPayment = $stmtCheckPay->fetch();
+            $stmtCheckPay->closeCursor();
 
-            $nextIdPayment = 1;
-            if (!$has999) {
-                $stmtMax = $db->prepare("SELECT MAX(id_payment) as max_id FROM registration_payments");
-                $stmtMax->execute();
-                $maxRow = $stmtMax->fetch();
-                $stmtMax->closeCursor();
-                
-                $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
-                $nextIdPayment = $maxVal + 1;
-                if ($nextIdPayment >= 1000) {
-                    $nextIdPayment = 1;
+            if (!$existingPayment) {
+                $stmtFind999 = $db->prepare("SELECT id FROM registration_payments WHERE id_payment = 999 LIMIT 1");
+                $stmtFind999->execute();
+                $has999 = $stmtFind999->fetch();
+                $stmtFind999->closeCursor();
+
+                $nextIdPayment = 1;
+                if (!$has999) {
+                    $stmtMax = $db->prepare("SELECT MAX(id_payment) as max_id FROM registration_payments");
+                    $stmtMax->execute();
+                    $maxRow = $stmtMax->fetch();
+                    $stmtMax->closeCursor();
+
+                    $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
+                    $nextIdPayment = $maxVal + 1;
+                    if ($nextIdPayment >= 1000) {
+                        $nextIdPayment = 1;
+                    }
                 }
+
+                $finalAmount = $baseAmount + $nextIdPayment;
+
+                $stmtInsertPay = $db->prepare("
+                    INSERT INTO registration_payments 
+                    (registration_id, bank_name, account_name, amount, payment_date, file_path, status, id_payment, payment_type, created_at, updated_at) 
+                    VALUES 
+                    (:reg_id, '', '', :amount, :pay_date, '', 'Pending', :id_payment, 'manual', :created_at, :updated_at)
+                ");
+                $stmtInsertPay->execute([
+                    'reg_id' => $regId,
+                    'amount' => $finalAmount,
+                    'pay_date' => date('Y-m-d'),
+                    'id_payment' => $nextIdPayment,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+                $stmtInsertPay->closeCursor();
             }
-
-            $baseAmount = (float)($w['registration_fee_total'] ?? 0);
-            $finalAmount = $baseAmount + $nextIdPayment;
-
-            $stmtInsertPay = $db->prepare("
-                INSERT INTO registration_payments 
-                (registration_id, bank_name, account_name, amount, payment_date, file_path, status, id_payment, payment_type, created_at, updated_at) 
-                VALUES 
-                (:reg_id, '', '', :amount, :pay_date, '', 'Pending', :id_payment, 'manual', :created_at, :updated_at)
-            ");
-            $stmtInsertPay->execute([
-                'reg_id' => $regId,
-                'amount' => $finalAmount,
-                'pay_date' => date('Y-m-d'),
-                'id_payment' => $nextIdPayment,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-            $stmtInsertPay->closeCursor();
         }
 
         return $response->redirect('/dashboard?success=Pendaftaran+berhasil+dikunci.+Panitia+akan+segera+memverifikasi+berkas+Anda.');

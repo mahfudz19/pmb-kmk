@@ -6,7 +6,21 @@
  * @var string $program_name
  * @var float $expected_tuition
  * @var array|null $re_registration
+ * @var string|null $wave_name
+ * @var bool $profile_addr_completed
+ * @var bool $profile_parent_completed
+ * @var bool $profile_edu_completed
+ * @var array $nim_groups
+ * @var string $sample_nim
+ * @var string $active_nim_name
+ * @var string $active_nim_pattern
  */
+
+$profile_addr_completed = $profile_addr_completed ?? true;
+$profile_parent_completed = $profile_parent_completed ?? true;
+$profile_edu_completed = $profile_edu_completed ?? true;
+$nim_groups = $nim_groups ?? [];
+$isProfileComplete = ($profile_addr_completed && $profile_parent_completed && $profile_edu_completed);
 ?>
 
 <div class="w-full py-2 space-y-6">
@@ -85,9 +99,6 @@
 
         <?php if ($re_registration): ?>
           <!-- Decision / Verification Form -->
-          <?php 
-          $isProfileComplete = ($profile_addr_completed && $profile_parent_completed && $profile_edu_completed);
-          ?>
 
           <?php if (!$isProfileComplete): ?>
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs space-y-2 text-amber-800">
@@ -132,9 +143,11 @@
                 <div class="sm:col-span-5">
                   <label for="student_group" class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kelompok Mahasiswa</label>
                   <select id="student_group" class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs bg-slate-50 font-semibold text-slate-750" <?= !$isProfileComplete ? 'disabled' : '' ?>>
-                    <option value="3" selected>Mahasiswa Reguler</option>
-                    <option value="8">Mahasiswa Pindahan</option>
-                    <option value="9">Mahasiswa Profesi</option>
+                    <?php if (!empty($nim_groups)): ?>
+                      <?php foreach ($nim_groups as $g): ?>
+                        <option value="<?= htmlspecialchars($g['key']) ?>"><?= htmlspecialchars($g['name']) ?> (<?= htmlspecialchars($g['key']) ?>)</option>
+                      <?php endforeach; ?>
+                    <?php endif; ?>
                   </select>
                 </div>
                 <div class="sm:col-span-4">
@@ -144,28 +157,28 @@
                     name="nim"
                     id="nim"
                     class="block w-full px-3 py-2.5 border border-slate-200 rounded-xl shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs transition-all bg-slate-50 font-bold text-indigo-700 tracking-wider"
-                    placeholder="Contoh: <?= htmlspecialchars($sample_nim ?? '26013-001') ?>"
+                    placeholder="Contoh: <?= htmlspecialchars($sample_nim ?? '260113001') ?>"
                     value="<?= htmlspecialchars($registration['nim'] ?? '') ?>"
                     <?= !$isProfileComplete ? 'disabled' : '' ?> />
                 </div>
                 <div class="sm:col-span-3 flex items-end">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     id="btn-generate-nim"
-                    onclick="handleGenerateNim()" 
+                    onclick="handleGenerateNim()"
                     <?= !$isProfileComplete ? 'disabled' : '' ?>
                     class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs hover:shadow-sm active:scale-95">
                     ⚡ Generate NIM
                   </button>
                 </div>
               </div>
-              <p class="text-[10px] text-slate-400">Pilih kelompok mahasiswa lalu klik tombol <strong>Generate NIM</strong> untuk membuat NIM unik otomatis sesuai format aktif: <span class="font-semibold text-slate-600"><?= htmlspecialchars($active_nim_name ?? 'Format Standar KMK') ?> (<code><?= htmlspecialchars($active_nim_pattern ?? '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}') ?></code>)</span>.</p>
+              <p class="text-[10px] text-slate-400">Pilih kelompok mahasiswa lalu klik tombol <strong>Generate NIM</strong> untuk membuat NIM unik otomatis sesuai format aktif: <span class="font-semibold text-slate-600"><?= htmlspecialchars($active_nim_name ?? 'Format Standar KMK') ?> (<code><?= htmlspecialchars($active_nim_pattern ?? '{YEAR}{PRODI_NUM}{GROUP}{SEQ}') ?></code>)</span>.</p>
             </div>
 
             <div class="pt-3 flex justify-end">
-              <button 
-                type="submit" 
-                <?= !$isProfileComplete ? 'disabled' : '' ?> 
+              <button
+                type="submit"
+                <?= !$isProfileComplete ? 'disabled' : '' ?>
                 class="inline-flex items-center justify-center px-6 py-2.5 border border-slate-250 rounded-full shadow-sm text-xs font-bold transition-all <?= $isProfileComplete ? 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 cursor-pointer' : 'bg-slate-100 text-slate-400 cursor-not-allowed' ?>">
                 💾 Setujui & Simpan Verifikasi
               </button>
@@ -178,55 +191,63 @@
 </div>
 
 <script>
-async function handleGenerateNim() {
-  const btn = document.getElementById('btn-generate-nim');
-  const groupSelect = document.getElementById('student_group');
-  const nimInput = document.getElementById('nim');
-  const group = groupSelect ? groupSelect.value : '3';
-  const regId = <?= (int)($registration['id'] ?? 0) ?>;
+  async function handleGenerateNim() {
+    const btn = document.getElementById('btn-generate-nim');
+    const groupSelect = document.getElementById('student_group');
+    const nimInput = document.getElementById('nim');
+    const group = groupSelect ? groupSelect.value : '3';
+    const regId = <?= (int)($registration['id'] ?? 0) ?>;
 
-  if (!regId) return;
+    if (!regId) return;
 
-  const originalContent = btn.innerHTML;
-  btn.innerHTML = '<span class="animate-spin text-xs">⏳</span> Generating...';
-  btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="animate-spin text-xs">⏳</span> Generating...';
+    btn.disabled = true;
 
-  try {
-    const res = await fetch(`<?= getBaseUrl('/admin/re-registrations/generate-nim') ?>?registration_id=${regId}&group=${group}`);
-    const data = await res.json();
-    if (data.nim) {
-      nimInput.value = data.nim;
-      nimInput.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
-      setTimeout(() => {
-        nimInput.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
-      }, 1500);
-      
+    try {
+      const res = await fetch(`<?= getBaseUrl('/admin/re-registrations/generate-nim') ?>?registration_id=${regId}&group=${group}`);
+      const data = await res.json();
+      if (data.nim) {
+        nimInput.value = data.nim;
+        nimInput.classList.add('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
+        setTimeout(() => {
+          nimInput.classList.remove('ring-2', 'ring-emerald-400', 'bg-emerald-50/50');
+        }, 1500);
+
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'NIM berhasil di-generate: ' + data.nim,
+            showConfirmButton: false,
+            timer: 3000
+          });
+        }
+      } else if (data.error) {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: data.error
+          });
+        } else {
+          alert('Gagal generate NIM: ' + data.error);
+        }
+      }
+    } catch (err) {
       if (typeof Swal !== 'undefined') {
         Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: 'NIM berhasil di-generate: ' + data.nim,
-          showConfirmButton: false,
-          timer: 3000
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan sistem saat menghubungi server.'
         });
-      }
-    } else if (data.error) {
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({ icon: 'error', title: 'Gagal', text: data.error });
       } else {
-        alert('Gagal generate NIM: ' + data.error);
+        alert('Terjadi kesalahan sistem saat menghubungi server.');
       }
+    } finally {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
     }
-  } catch (err) {
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan sistem saat menghubungi server.' });
-    } else {
-      alert('Terjadi kesalahan sistem saat menghubungi server.');
-    }
-  } finally {
-    btn.innerHTML = originalContent;
-    btn.disabled = false;
   }
-}
 </script>

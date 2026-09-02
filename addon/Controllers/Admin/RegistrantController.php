@@ -152,12 +152,34 @@ class RegistrantController
     {
         if ($redirect = $this->checkAccess($response)) return $redirect;
 
+        $db = $this->registrations->getDb();
+        $stmtWaves = $db->prepare("SELECT * FROM waves ORDER BY id ASC");
+        $stmtWaves->execute();
+        $wavesList = $stmtWaves->fetchAll() ?: [];
+        $stmtWaves->closeCursor();
+
+        $rawWaveId = $request->input('wave_id');
+        if ($rawWaveId === null || $rawWaveId === '') {
+            $waveId = !empty($wavesList) ? (string)$wavesList[0]['id'] : null;
+        } else if ($rawWaveId === 'all') {
+            $waveId = null;
+        } else {
+            $waveId = (string)$rawWaveId;
+        }
+
+        $filters = [
+            'search' => $request->input('search'),
+            'program_id' => $request->input('program_id'),
+            'status' => $request->input('status'),
+            'wave_id' => $waveId
+        ];
+
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $totalCount = $this->getFilteredRegistrantsCount($request);
+        $totalCount = $this->getFilteredRegistrantsCountWithFilters($filters);
         $totalPages = (int) ceil($totalCount / $limit);
         if ($totalPages < 1) $totalPages = 1;
         if ($page > $totalPages) {
@@ -165,16 +187,12 @@ class RegistrantController
             $offset = ($page - 1) * $limit;
         }
 
-        $registrants = $this->getFilteredRegistrants($request, $limit, $offset);
+        $registrants = $this->getFilteredRegistrantsWithFilters($filters, $limit, $offset);
 
-        $db = $this->registrations->getDb();
         $stmt = $db->prepare("SELECT * FROM study_programs ORDER BY name ASC");
         $stmt->execute();
-        $programsList = $stmt->fetchAll();
-
-        $stmtWaves = $db->prepare("SELECT * FROM waves ORDER BY id DESC");
-        $stmtWaves->execute();
-        $wavesList = $stmtWaves->fetchAll();
+        $programsList = $stmt->fetchAll() ?: [];
+        $stmt->closeCursor();
 
         return $response->renderPage([
             'registrants' => $registrants,
@@ -184,16 +202,116 @@ class RegistrantController
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
             'limit' => $limit,
-            'filters' => [
-                'search' => $request->input('search'),
-                'program_id' => $request->input('program_id'),
-                'status' => $request->input('status'),
-                'wave_id' => $request->input('wave_id')
-            ]
+            'filters' => $filters
         ], [
             'path' => '/admin/registrants/index',
             'meta' => ['title' => 'Manajemen Pendaftar | ' . env('APP_NAME')]
         ]);
+    }
+
+    private function getFilteredRegistrantsWithFilters(array $filters, int $limit = -1, int $offset = 0): array
+    {
+        $db = $this->registrations->getDb();
+        $search = $filters['search'] ?? null;
+        $programId = $filters['program_id'] ?? null;
+        $status = $filters['status'] ?? null;
+        $waveId = $filters['wave_id'] ?? null;
+
+        $query = "
+            SELECT r.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name, w.name as wave_name
+            FROM registrations r 
+            LEFT JOIN registration_programs rp ON r.id = rp.registration_id 
+            LEFT JOIN study_programs sp1 ON rp.program1_id = sp1.id 
+            LEFT JOIN study_programs sp2 ON rp.program2_id = sp2.id
+            LEFT JOIN study_programs sp3 ON rp.program3_id = sp3.id
+            LEFT JOIN waves w ON r.wave_id = w.id
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if (!empty($search)) {
+            $query .= " AND (r.full_name LIKE :search1 OR r.email LIKE :search2 OR r.nik LIKE :search3 OR r.nisn LIKE :search4)";
+            $searchValue = '%' . $search . '%';
+            $params['search1'] = $searchValue;
+            $params['search2'] = $searchValue;
+            $params['search3'] = $searchValue;
+            $params['search4'] = $searchValue;
+        }
+
+        if (!empty($programId)) {
+            $query .= " AND (rp.program1_id = :program_id1 OR rp.program2_id = :program_id2 OR rp.program3_id = :program_id3)";
+            $progVal = (int) $programId;
+            $params['program_id1'] = $progVal;
+            $params['program_id2'] = $progVal;
+            $params['program_id3'] = $progVal;
+        }
+
+        if (!empty($status)) {
+            $query .= " AND r.status = :status";
+            $params['status'] = $status;
+        }
+
+        if (!empty($waveId)) {
+            $query .= " AND r.wave_id = :wave_id";
+            $params['wave_id'] = (int) $waveId;
+        }
+
+        $query .= " ORDER BY r.created_at DESC";
+        if ($limit > 0) {
+            $query .= " LIMIT " . $limit . " OFFSET " . $offset;
+        }
+
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    private function getFilteredRegistrantsCountWithFilters(array $filters): int
+    {
+        $db = $this->registrations->getDb();
+        $search = $filters['search'] ?? null;
+        $programId = $filters['program_id'] ?? null;
+        $status = $filters['status'] ?? null;
+        $waveId = $filters['wave_id'] ?? null;
+
+        $query = "
+            SELECT COUNT(DISTINCT r.id) as count
+            FROM registrations r 
+            LEFT JOIN registration_programs rp ON r.id = rp.registration_id 
+            WHERE 1=1
+        ";
+        $params = [];
+
+        if (!empty($search)) {
+            $query .= " AND (r.full_name LIKE :search1 OR r.email LIKE :search2 OR r.nik LIKE :search3 OR r.nisn LIKE :search4)";
+            $searchValue = '%' . $search . '%';
+            $params['search1'] = $searchValue;
+            $params['search2'] = $searchValue;
+            $params['search3'] = $searchValue;
+            $params['search4'] = $searchValue;
+        }
+
+        if (!empty($programId)) {
+            $query .= " AND (rp.program1_id = :program_id1 OR rp.program2_id = :program_id2 OR rp.program3_id = :program_id3)";
+            $progVal = (int) $programId;
+            $params['program_id1'] = $progVal;
+            $params['program_id2'] = $progVal;
+            $params['program_id3'] = $progVal;
+        }
+
+        if (!empty($status)) {
+            $query .= " AND r.status = :status";
+            $params['status'] = $status;
+        }
+
+        if (!empty($waveId)) {
+            $query .= " AND r.wave_id = :wave_id";
+            $params['wave_id'] = (int) $waveId;
+        }
+
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        return (int) ($stmt->fetch()['count'] ?? 0);
     }
 
     public function showDetail(Request $request, Response $response): View | RedirectResponse
@@ -219,7 +337,7 @@ class RegistrantController
         if (!$registration) {
             return $response->redirect('/admin/registrants?error=Pendaftar+tidak+ditemukan');
         }
-        
+
         $stmt = $db->prepare("
             SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name 
             FROM registration_programs rp
@@ -602,22 +720,61 @@ class RegistrantController
         $dompdf = new Dompdf($options);
 
         ob_start();
-        ?>
+?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <title>Laporan Pendaftar PMB</title>
             <style>
-                body { font-family: sans-serif; font-size: 11px; color: #333; }
-                .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-                .header h2 { margin: 0; font-size: 16px; }
-                .header p { margin: 4px 0 0 0; font-size: 11px; color: #666; }
-                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; font-weight: bold; }
-                .status-badge { font-weight: bold; }
+                body {
+                    font-family: sans-serif;
+                    font-size: 11px;
+                    color: #333;
+                }
+
+                .header {
+                    text-align: center;
+                    margin-bottom: 20px;
+                    border-bottom: 2px solid #333;
+                    padding-bottom: 10px;
+                }
+
+                .header h2 {
+                    margin: 0;
+                    font-size: 16px;
+                }
+
+                .header p {
+                    margin: 4px 0 0 0;
+                    font-size: 11px;
+                    color: #666;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                }
+
+                th,
+                td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+
+                th {
+                    background-color: #f2f2f2;
+                    font-weight: bold;
+                }
+
+                .status-badge {
+                    font-weight: bold;
+                }
             </style>
         </head>
+
         <body>
             <div class="header">
                 <h2>DAFTAR CALON MAHASISWA BARU</h2>
@@ -642,7 +799,8 @@ class RegistrantController
                             <td colspan="7" style="text-align: center;">Tidak ada data pendaftar.</td>
                         </tr>
                     <?php else: ?>
-                        <?php $no = 1; foreach ($registrants as $r): ?>
+                        <?php $no = 1;
+                        foreach ($registrants as $r): ?>
                             <tr>
                                 <td style="text-align: center;"><?= $no++ ?></td>
                                 <td><strong><?= htmlspecialchars($r['full_name']) ?></strong></td>
@@ -657,8 +815,9 @@ class RegistrantController
                 </tbody>
             </table>
         </body>
+
         </html>
-        <?php
+    <?php
         $html = ob_get_clean();
 
         $dompdf->loadHtml($html);
@@ -709,7 +868,7 @@ class RegistrantController
     {
         $db = $this->registrations->getDb();
         $regId = $registration['id'];
-        
+
         $stmt = $db->prepare("
             SELECT rp.*, sp1.name as program1_name, sp2.name as program2_name, sp3.name as program3_name
             FROM registration_programs rp
@@ -755,31 +914,131 @@ class RegistrantController
         $dompdf = new Dompdf($options);
 
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <title>Kartu Ujian PMB</title>
             <style>
-                body { font-family: sans-serif; font-size: 11px; color: #333; }
-                .card-border { border: 2px dashed #4f46e5; padding: 20px; border-radius: 10px; width: 480px; margin: 0 auto; background-color: #fafafa; }
-                .header { text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-bottom: 15px; }
-                .header h3 { margin: 0; font-size: 14px; color: #1e1b4b; }
-                .header p { margin: 3px 0 0 0; font-size: 10px; color: #4f46e5; font-weight: bold; }
-                .title { text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; color: #333; }
-                .photo-box { width: 90px; height: 120px; border: 1px solid #ccc; text-align: center; line-height: 120px; font-size: 9px; color: #999; float: left; background-color: #fff; margin-right: 20px; overflow: hidden; }
-                .info-table { float: left; width: 330px; font-size: 11px; border-collapse: collapse; }
-                .info-table td { padding: 4px 0; vertical-align: top; }
-                .info-table .label { width: 110px; color: #666; }
-                .info-table .colon { width: 10px; }
-                .clearfix { clear: both; }
-                .schedule-box { background-color: #e0e7ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 10px; color: #3730a3; }
-                .schedule-box strong { display: block; margin-bottom: 5px; font-size: 11px; }
-                .footer { margin-top: 25px; font-size: 10px; }
-                .footer-left { float: left; width: 200px; text-align: center; }
-                .footer-right { float: right; width: 200px; text-align: center; }
+                body {
+                    font-family: sans-serif;
+                    font-size: 11px;
+                    color: #333;
+                }
+
+                .card-border {
+                    border: 2px dashed #4f46e5;
+                    padding: 20px;
+                    border-radius: 10px;
+                    width: 480px;
+                    margin: 0 auto;
+                    background-color: #fafafa;
+                }
+
+                .header {
+                    text-align: center;
+                    border-bottom: 2px solid #4f46e5;
+                    padding-bottom: 10px;
+                    margin-bottom: 15px;
+                }
+
+                .header h3 {
+                    margin: 0;
+                    font-size: 14px;
+                    color: #1e1b4b;
+                }
+
+                .header p {
+                    margin: 3px 0 0 0;
+                    font-size: 10px;
+                    color: #4f46e5;
+                    font-weight: bold;
+                }
+
+                .title {
+                    text-align: center;
+                    font-size: 12px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                    text-transform: uppercase;
+                    color: #333;
+                }
+
+                .photo-box {
+                    width: 90px;
+                    height: 120px;
+                    border: 1px solid #ccc;
+                    text-align: center;
+                    line-height: 120px;
+                    font-size: 9px;
+                    color: #999;
+                    float: left;
+                    background-color: #fff;
+                    margin-right: 20px;
+                    overflow: hidden;
+                }
+
+                .info-table {
+                    float: left;
+                    width: 330px;
+                    font-size: 11px;
+                    border-collapse: collapse;
+                }
+
+                .info-table td {
+                    padding: 4px 0;
+                    vertical-align: top;
+                }
+
+                .info-table .label {
+                    width: 110px;
+                    color: #666;
+                }
+
+                .info-table .colon {
+                    width: 10px;
+                }
+
+                .clearfix {
+                    clear: both;
+                }
+
+                .schedule-box {
+                    background-color: #e0e7ff;
+                    border: 1px solid #c7d2fe;
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin-top: 15px;
+                    font-size: 10px;
+                    color: #3730a3;
+                }
+
+                .schedule-box strong {
+                    display: block;
+                    margin-bottom: 5px;
+                    font-size: 11px;
+                }
+
+                .footer {
+                    margin-top: 25px;
+                    font-size: 10px;
+                }
+
+                .footer-left {
+                    float: left;
+                    width: 200px;
+                    text-align: center;
+                }
+
+                .footer-right {
+                    float: right;
+                    width: 200px;
+                    text-align: center;
+                }
             </style>
         </head>
+
         <body>
             <div class="card-border">
                 <div class="header">
@@ -787,7 +1046,7 @@ class RegistrantController
                     <p>PANITIA PENERIMAAN MAHASISWA BARU (PMB) <?= date('Y') ?></p>
                 </div>
                 <div class="title">KARTU PESERTA UJIAN SELEKSI</div>
-                
+
                 <div class="photo-box" style="<?= $photoSrc ? 'line-height: normal;' : '' ?>">
                     <?php if ($photoSrc): ?>
                         <img src="<?= $photoSrc ?>" style="width: 90px; height: 120px; object-fit: cover; display: block;">
@@ -795,7 +1054,7 @@ class RegistrantController
                         Foto 3x4
                     <?php endif; ?>
                 </div>
-                
+
                 <table class="info-table">
                     <tr>
                         <td class="label">No. Registrasi</td>
@@ -826,12 +1085,12 @@ class RegistrantController
                         Metode Ujian: Computer Based Test (CBT) secara Online / Mandiri<br>
                         Ruangan: Virtual Room CBT (dapat diakses melalui dashboard)<br>
                         Tanggal Pelaksanaan: Sesuai petunjuk pada menu Ujian Seleksi
-                    <?php else: 
+                        <?php else:
                         foreach ($stages as $stg): ?>
                             Tahap <?= $stg['stage_number'] ?>: <?= htmlspecialchars($stg['description'] ?: 'Ujian Masuk') ?><br>
                             Tanggal: <?= htmlspecialchars($stg['date']) ?> (<?= htmlspecialchars($stg['time']) ?>)<br>
                             Tempat: <?= htmlspecialchars($stg['place']) ?> (<?= strtoupper($stg['type']) ?>)<br><br>
-                        <?php endforeach; 
+                    <?php endforeach;
                     endif; ?>
                 </div>
 
@@ -852,8 +1111,9 @@ class RegistrantController
                 </div>
             </div>
         </body>
+
         </html>
-        <?php
+    <?php
         $html = ob_get_clean();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
@@ -913,32 +1173,95 @@ class RegistrantController
         $dompdf = new Dompdf($options);
 
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <title>Formulir Pendaftaran PMB</title>
             <style>
-                body { font-family: sans-serif; font-size: 11px; color: #333; line-height: 1.4; }
-                .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 10px; margin-bottom: 20px; }
-                .header h2 { margin: 0; font-size: 16px; color: #1e1b4b; }
-                .header h3 { margin: 5px 0 0 0; font-size: 12px; color: #666; }
-                .title { text-align: center; font-size: 13px; font-weight: bold; margin-bottom: 20px; text-decoration: underline; }
-                .section-title { font-weight: bold; font-size: 11px; background-color: #f2f2f2; padding: 4px 8px; margin-top: 15px; margin-bottom: 10px; text-transform: uppercase; border-left: 3px solid #4f46e5; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-                td { padding: 4px 8px; vertical-align: top; }
-                td.label { width: 150px; color: #555; }
-                td.colon { width: 10px; }
-                .footer-table { margin-top: 40px; }
-                .footer-table td { text-align: center; width: 50%; }
+                body {
+                    font-family: sans-serif;
+                    font-size: 11px;
+                    color: #333;
+                    line-height: 1.4;
+                }
+
+                .header {
+                    text-align: center;
+                    border-bottom: 3px double #333;
+                    padding-bottom: 10px;
+                    margin-bottom: 20px;
+                }
+
+                .header h2 {
+                    margin: 0;
+                    font-size: 16px;
+                    color: #1e1b4b;
+                }
+
+                .header h3 {
+                    margin: 5px 0 0 0;
+                    font-size: 12px;
+                    color: #666;
+                }
+
+                .title {
+                    text-align: center;
+                    font-size: 13px;
+                    font-weight: bold;
+                    margin-bottom: 20px;
+                    text-decoration: underline;
+                }
+
+                .section-title {
+                    font-weight: bold;
+                    font-size: 11px;
+                    background-color: #f2f2f2;
+                    padding: 4px 8px;
+                    margin-top: 15px;
+                    margin-bottom: 10px;
+                    text-transform: uppercase;
+                    border-left: 3px solid #4f46e5;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 10px;
+                }
+
+                td {
+                    padding: 4px 8px;
+                    vertical-align: top;
+                }
+
+                td.label {
+                    width: 150px;
+                    color: #555;
+                }
+
+                td.colon {
+                    width: 10px;
+                }
+
+                .footer-table {
+                    margin-top: 40px;
+                }
+
+                .footer-table td {
+                    text-align: center;
+                    width: 50%;
+                }
             </style>
         </head>
+
         <body>
             <div class="header">
                 <h2><?= strtoupper(htmlspecialchars(get_setting('campus_name', 'KAMPUS MANDIRI KENCANA'))) ?></h2>
                 <h3>PANITIA PENERIMAAN MAHASISWA BARU (PMB) TAHUN AKADEMIK <?= date('Y') ?>/<?= date('Y') + 1 ?></h3>
             </div>
-            
+
             <?php if ($photoSrc): ?>
                 <div style="float: right; width: 90px; height: 120px; border: 1px solid #ccc; overflow: hidden; margin-left: 20px; margin-bottom: 20px; text-align: center; background: #fff;">
                     <img src="<?= $photoSrc ?>" style="width: 90px; height: 120px; object-fit: cover; display: block;">
@@ -1115,8 +1438,9 @@ class RegistrantController
                 </tr>
             </table>
         </body>
+
         </html>
-        <?php
+<?php
         $html = ob_get_clean();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');

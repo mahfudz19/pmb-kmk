@@ -23,17 +23,17 @@ $router->group(['middleware' => ['csrf', 'guest']], function () use ($router) {
     // Login
     $router->get('/login', [AuthController::class, 'showLogin']);
     $router->post('/login', [AuthController::class, 'login']);
-    
+
     // Register
     $router->get('/register', [AuthController::class, 'showRegister']);
     $router->post('/register', [AuthController::class, 'register']);
-    
+
     // OTP Verification
     $router->get('/verify-otp', [AuthController::class, 'showVerifyOtp']);
     $router->post('/verify-otp', [AuthController::class, 'verifyOtp']);
     $router->get('/resend-otp', [AuthController::class, 'resendOtp']);
     $router->get('/otp-sent', [AuthController::class, 'showOtpSent']);
-    
+
     // Password reset
     $router->get('/password/forgot', [AuthController::class, 'showForgotPassword']);
     $router->post('/password/forgot', [AuthController::class, 'sendResetLink']);
@@ -48,7 +48,7 @@ $router->group(['middleware' => ['csrf', 'auth']], function () use ($router) {
     $router->post('/dashboard/simulate-state', [DashboardController::class, 'simulateState']);
     $router->post('/dashboard/init-registration', [DashboardController::class, 'initRegistration']);
     $router->get('/dashboard/history', [DashboardController::class, 'showHistory']);
-    
+
     // Logout
     $router->post('/logout', [AuthController::class, 'logout']);
 
@@ -150,8 +150,10 @@ $router->group(['middleware' => ['auth', 'permission:manage_settings']], functio
     $router->post('/admin/master/create', [MasterController::class, 'create']);
     $router->post('/admin/master/update', [MasterController::class, 'update']);
     $router->post('/admin/master/delete', [MasterController::class, 'delete']);
+    $router->post('/admin/master/nim-settings/update', [MasterController::class, 'updateNimSettings']);
     $router->get('/admin/master/wave-detail', [MasterController::class, 'waveDetail']);
     $router->post('/admin/master/wave-detail/save', [MasterController::class, 'saveWaveDetail']);
+    $router->post('/admin/master/wave-detail/save-prodi', [MasterController::class, 'saveSingleProdiDetail']);
     $router->post('/admin/master/registration-fee/save', [MasterController::class, 'saveRegistrationFee']);
 
     // System Settings

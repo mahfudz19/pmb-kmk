@@ -19,19 +19,9 @@ class NimFormatModel extends Model
 
     protected array $seed = [
         [
-            'name' => 'Format Standar KMK (23013-001)',
-            'format_pattern' => '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}',
+            'name' => 'Format Standar KMK',
+            'format_pattern' => '{YEAR}{PRODI_NUM}{GROUP}{SEQ}',
             'is_active' => 1
-        ],
-        [
-            'name' => 'Format Standar Alternatif (2026-IF-3-001)',
-            'format_pattern' => '{YEAR}-{PRODI_CODE}-{GROUP}-{SEQ}',
-            'is_active' => 0
-        ],
-        [
-            'name' => 'Format Tanpa Strip (26013001)',
-            'format_pattern' => '{YEAR2}{PRODI_NUM}{GROUP}{SEQ}',
-            'is_active' => 0
         ]
     ];
 

@@ -12,6 +12,7 @@ use Addon\Models\ReRegistrationModel;
 use Addon\Models\RegistrationModel;
 use Addon\Models\SelectionResultModel;
 use Addon\Models\WaveStudyProgramModel;
+use Addon\Models\NimSettingModel;
 
 class ReRegistrationController
 {
@@ -20,7 +21,8 @@ class ReRegistrationController
         private ReRegistrationModel $reRegistrations,
         private RegistrationModel $registrations,
         private SelectionResultModel $selectionResults,
-        private WaveStudyProgramModel $waveStudyPrograms
+        private WaveStudyProgramModel $waveStudyPrograms,
+        private NimSettingModel $nimSettings
     ) {}
 
     private function getTuitionFee(int $programId): float
@@ -86,7 +88,7 @@ class ReRegistrationController
                 $stmtMax->execute();
                 $maxRow = $stmtMax->fetch();
                 $stmtMax->closeCursor();
-                
+
                 $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
                 $nextIdPayment = $maxVal + 1;
                 if ($nextIdPayment >= 1000) {
@@ -174,7 +176,7 @@ class ReRegistrationController
 
                 $filename = $field . '_' . $registration['id'] . '_' . uniqid() . '.' . $ext;
                 $targetPath = $storageDir . '/' . $filename;
-                
+
                 $moved = php_sapi_name() === 'cli' ? copy($file['tmp_name'], $targetPath) : move_uploaded_file($file['tmp_name'], $targetPath);
                 if ($moved) {
                     $data[$field . '_path'] = 'storage/app/re_registrations/' . $filename;
@@ -209,7 +211,7 @@ class ReRegistrationController
                 $stmtMax->execute();
                 $maxRow = $stmtMax->fetch();
                 $stmtMax->closeCursor();
-                
+
                 $maxVal = $maxRow ? (int)$maxRow['max_id'] : 0;
                 $nextIdPayment = $maxVal + 1;
                 if ($nextIdPayment >= 1000) {
@@ -239,15 +241,26 @@ class ReRegistrationController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
-        $waveId = $request->input('wave_id');
-        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+        $db = $this->reRegistrations->getDb();
+
+        $stmtWaves = $db->prepare("SELECT * FROM waves ORDER BY id ASC");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
+        $stmtWaves->closeCursor();
+
+        $rawWaveId = $request->input('wave_id');
+        if ($rawWaveId === null || $rawWaveId === '') {
+            $waveIdFilter = !empty($waves) ? (int)$waves[0]['id'] : null;
+        } else if ($rawWaveId === 'all') {
+            $waveIdFilter = null;
+        } else {
+            $waveIdFilter = (int)$rawWaveId;
+        }
 
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
-
-        $db = $this->reRegistrations->getDb();
 
         $params = [];
         $whereSql = " WHERE sr.status = 'Lulus' AND sr.is_published = 1 ";
@@ -264,6 +277,7 @@ class ReRegistrationController
         ");
         $stmtCount->execute($params);
         $totalCount = (int) ($stmtCount->fetch()['count'] ?? 0);
+        $stmtCount->closeCursor();
 
         $totalPages = (int) ceil($totalCount / $limit);
         if ($totalPages < 1) $totalPages = 1;
@@ -284,11 +298,8 @@ class ReRegistrationController
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
         $stmt->execute($params);
-        $list = $stmt->fetchAll();
-
-        $stmtWaves = $db->prepare("SELECT * FROM waves");
-        $stmtWaves->execute();
-        $waves = $stmtWaves->fetchAll() ?: [];
+        $list = $stmt->fetchAll() ?: [];
+        $stmt->closeCursor();
 
         return $response->renderPage([
             'list' => $list,
@@ -381,36 +392,29 @@ class ReRegistrationController
             }
         }
 
+        $nimSetting = $this->nimSettings->getSettings();
         $pCode = $program['code'] ?? '00';
-        $prodiCodeNameMap = [
-            'FAR' => '01',
-            'S1 Farmasi' => '01',
-            'D3FAR' => '02',
-            'D3 Farmasi' => '02',
-            'APT' => '03',
-            'Profesi Apoteker' => '03',
-            'D3KEB' => '04',
-            'D3 Kebidanan' => '04',
-            'AK' => '05',
-            'Akuntansi' => '05',
-            'HK' => '06',
-            'Hukum' => '06',
-            'IK' => '07',
-            'Ilmu Komunikasi' => '07',
-            'MJ' => '08',
-            'Manajemen' => '08',
-            'IF' => '09',
-            'Informatika' => '09',
-            'SI' => '10',
-            'Sistem Informasi' => '10',
-        ];
-        $pNum = $prodiCodeNameMap[$program['code'] ?? ''] 
-            ?? $prodiCodeNameMap[$program['name'] ?? ''] 
-            ?? str_pad((string)($program['id'] ?? 1), 2, '0', STR_PAD_LEFT);
+        $pNum = !empty($program['num_code']) ? $program['num_code'] : str_pad((string)($program['id'] ?? 1), 2, '0', STR_PAD_LEFT);
+
+        $yearDigits = (int)($nimSetting['year_digits'] ?? 2);
+        $yConfigured = ($yearDigits === 4) ? $y4 : $y2;
+        $seqDigits = (int)($nimSetting['seq_digits'] ?? 3);
+        $sampleSeq = str_pad('1', $seqDigits, '0', STR_PAD_LEFT);
+        $firstGroup = $nimSetting['groups'][0]['key'] ?? '1';
+
+        $dateFormatPattern = $nimSetting['date_format'] ?? 'DDMMYYYY';
+        $formattedDate = match ($dateFormatPattern) {
+            'YYYYMMDD' => date('Ymd'),
+            'DDMMYY' => date('dmy'),
+            'YYMMDD' => date('ymd'),
+            'DDMM' => date('dm'),
+            'MMDD' => date('md'),
+            default => date('dmY')
+        };
 
         $sampleNim = str_replace(
             ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
-            [$y2, $y4, $pNum, $pCode, '3', '3', date('dmy'), '123456', '001'],
+            [$y2, $yConfigured, $pNum, $pCode, $firstGroup, $firstGroup, $formattedDate, '123456', $sampleSeq],
             $nimPattern
         );
 
@@ -428,7 +432,8 @@ class ReRegistrationController
             'active_nim_format' => $activeNimFormat,
             'active_nim_pattern' => $nimPattern,
             'active_nim_name' => $nimFormatName,
-            'sample_nim' => $sampleNim
+            'sample_nim' => $sampleNim,
+            'nim_groups' => $nimSetting['groups'] ?? []
         ], [
             'path' => '/admin/re_registrations/detail',
             'meta' => ['title' => 'Detail Verifikasi Daftar Ulang | ' . env('APP_NAME')]
@@ -614,16 +619,13 @@ class ReRegistrationController
         exit;
     }
 
-    private function generateNim(array $registration, array $selection, $db, string $studentGroup = '3'): string
+    private function generateNim(array $registration, array $selection, $db, string $studentGroup = '1'): string
     {
-        if (!in_array($studentGroup, ['3', '8', '9'], true)) {
-            $studentGroup = '3';
-        }
-
+        $nimSetting = $this->nimSettings->getSettings();
         $stmt = $db->prepare("SELECT * FROM nim_formats WHERE is_active = 1 LIMIT 1");
         $stmt->execute();
         $nimFormat = $stmt->fetch();
-        $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR2}{PRODI_NUM}{GROUP}-{SEQ}';
+        $pattern = $nimFormat ? $nimFormat['format_pattern'] : '{YEAR}{PRODI_NUM}{GROUP}{SEQ}';
 
         $year4 = date('Y');
         $year2 = date('y');
@@ -640,49 +642,38 @@ class ReRegistrationController
             }
         }
 
+        $yearDigits = (int)($nimSetting['year_digits'] ?? 2);
+        $yearValue = ($yearDigits === 4) ? $year4 : $year2;
+
         $prodiCode = '00';
         $prodiNum = '01';
         $passedProgramId = $selection['passed_program_id'] ?? null;
         if ($passedProgramId) {
-            $stmt = $db->prepare("SELECT id, code, name FROM study_programs WHERE id = :id LIMIT 1");
+            $stmt = $db->prepare("SELECT id, code, num_code, name FROM study_programs WHERE id = :id LIMIT 1");
             $stmt->execute(['id' => $passedProgramId]);
             $sp = $stmt->fetch();
             if ($sp) {
                 $prodiCode = $sp['code'];
-
-                $prodiCodeNameMap = [
-                    'FAR' => '01',
-                    'S1 Farmasi' => '01',
-                    'D3FAR' => '02',
-                    'D3 Farmasi' => '02',
-                    'APT' => '03',
-                    'Profesi Apoteker' => '03',
-                    'D3KEB' => '04',
-                    'D3 Kebidanan' => '04',
-                    'AK' => '05',
-                    'Akuntansi' => '05',
-                    'HK' => '06',
-                    'Hukum' => '06',
-                    'IK' => '07',
-                    'Ilmu Komunikasi' => '07',
-                    'MJ' => '08',
-                    'Manajemen' => '08',
-                    'IF' => '09',
-                    'Informatika' => '09',
-                    'SI' => '10',
-                    'Sistem Informasi' => '10',
-                ];
-
-                $prodiNum = $prodiCodeNameMap[$sp['code']] 
-                    ?? $prodiCodeNameMap[$sp['name']] 
-                    ?? str_pad((string)$sp['id'], 2, '0', STR_PAD_LEFT);
+                $prodiNum = !empty($sp['num_code']) ? $sp['num_code'] : str_pad((string)$sp['id'], 2, '0', STR_PAD_LEFT);
             }
         }
+
+        $dateFormatPattern = $nimSetting['date_format'] ?? 'DDMMYYYY';
+        $formattedDate = match ($dateFormatPattern) {
+            'YYYYMMDD' => date('Ymd'),
+            'DDMMYY' => date('dmy'),
+            'YYMMDD' => date('ymd'),
+            'DDMM' => date('dm'),
+            'MMDD' => date('md'),
+            default => date('dmY')
+        };
+
+        $seqDigits = (int)($nimSetting['seq_digits'] ?? 3);
 
         $prefixTemplate = explode('{SEQ}', $pattern)[0] ?? '';
         $prefix = str_replace(
             ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}'],
-            [$year2, $year4, $prodiNum, $prodiCode, $studentGroup, $studentGroup, date('dmy'), ''],
+            [$year2, $yearValue, $prodiNum, $prodiCode, $studentGroup, $studentGroup, $formattedDate, ''],
             $prefixTemplate
         );
 
@@ -706,10 +697,10 @@ class ReRegistrationController
         $regId = (int)($registration['id'] ?? 0);
 
         do {
-            $seqStr = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+            $seqStr = str_pad((string) $nextSeq, $seqDigits, '0', STR_PAD_LEFT);
             $candidateNim = str_replace(
                 ['{YEAR2}', '{YEAR}', '{PRODI_NUM}', '{PRODI_CODE}', '{GROUP}', '{STUDENT_GROUP}', '{DATE}', '{TIMESTAMP}', '{SEQ}'],
-                [$year2, $year4, $prodiNum, $prodiCode, $studentGroup, $studentGroup, date('dmy'), substr((string)time(), -6), $seqStr],
+                [$year2, $yearValue, $prodiNum, $prodiCode, $studentGroup, $studentGroup, $formattedDate, substr((string)time(), -6), $seqStr],
                 $pattern
             );
 

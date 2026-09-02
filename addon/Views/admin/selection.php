@@ -2,6 +2,9 @@
 
 /**
  * @var array $programs
+ * @var array $waves
+ * @var int|null $selectedWaveId
+ * @var array $candidates
  * @var int $totalCount
  * @var int $currentPage
  * @var int $limit
@@ -9,6 +12,8 @@
  * @var array<mixed, mixed> $waves_map
  * @var array<mixed, array<mixed, mixed>> $exam_results_map
  */
+$waves = $waves ?? [];
+$selectedWaveId = $selectedWaveId ?? null;
 $activeTab = $_GET['tab'] ?? 'scoring';
 ?>
 <div class="w-full py-2 space-y-8">
@@ -28,19 +33,21 @@ $activeTab = $_GET['tab'] ?? 'scoring';
         <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/selection') ?>" class="flex items-center gap-2">
           <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
           <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
-            <option value="">Semua Gelombang</option>
+            <option value="all" <?= $selectedWaveId === null ? 'selected' : '' ?>>Semua Gelombang</option>
             <?php foreach ($waves as $w): ?>
-              <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
+              <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?><?= !empty($w['is_active']) ? ' (Aktif)' : '' ?></option>
             <?php endforeach; ?>
           </select>
         </form>
         <div class="flex gap-2">
-          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Publish Semua', 'Apakah Anda yakin ingin menerbitkan semua hasil kelulusan?')">
+          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Publish Gelombang Ini', 'Apakah Anda yakin ingin menerbitkan hasil kelulusan untuk gelombang yang dipilih/aktif?')">
             <input type="hidden" name="is_published" value="1">
+            <input type="hidden" name="wave_id" value="<?= htmlspecialchars((string)($selectedWaveId ?? '')) ?>">
             <button type="submit" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">📢 Publish Semua</button>
           </form>
-          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Unpublish Semua', 'Apakah Anda yakin ingin menarik kembali semua pengumuman kelulusan?')">
+          <form action="<?= getBaseUrl('/admin/selection/publish-all') ?>" method="POST" onsubmit="return confirmAction(event, 'Unpublish Gelombang Ini', 'Apakah Anda yakin ingin menarik kembali pengumuman kelulusan untuk gelombang yang dipilih/aktif?')">
             <input type="hidden" name="is_published" value="0">
+            <input type="hidden" name="wave_id" value="<?= htmlspecialchars((string)($selectedWaveId ?? '')) ?>">
             <button type="submit" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-xl cursor-pointer shadow-sm">🔒 Unpublish Semua</button>
           </form>
         </div>
@@ -125,6 +132,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
                     <form action="<?= getBaseUrl('/admin/selection/publish') ?>" method="POST" class="inline">
                       <input type="hidden" name="registration_id" value="<?= $c['id'] ?>">
                       <input type="hidden" name="is_published" value="<?= (int)$c['is_published'] === 1 ? '0' : '1' ?>">
+                      <input type="hidden" name="wave_id" value="<?= htmlspecialchars((string)($selectedWaveId ?? '')) ?>">
                       <button type="submit" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-[10px] font-bold text-slate-750 rounded-full cursor-pointer transition-colors">
                         <?= (int)$c['is_published'] === 1 ? '🔒 Tarik' : '📢 Publish' ?>
                       </button>
@@ -145,8 +153,11 @@ $activeTab = $_GET['tab'] ?? 'scoring';
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> calon mahasiswa
       </div>
       <div class="flex items-center gap-1.5">
+        <?php
+        $waveParam = $selectedWaveId !== null ? '&wave_id=' . $selectedWaveId : '';
+        ?>
         <?php if ($currentPage > 1): ?>
-          <a data-spa href="?page=<?= $currentPage - 1 ?>&tab=candidates" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
+          <a data-spa href="?page=<?= $currentPage - 1 ?>&tab=candidates<?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Sebelumnya</span>
         <?php endif; ?>
@@ -159,12 +170,12 @@ $activeTab = $_GET['tab'] ?? 'scoring';
           <?php if ($i == $currentPage): ?>
             <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 border border-indigo-600 shadow-sm"><?= $i ?></span>
           <?php else: ?>
-            <a data-spa href="?page=<?= $i ?>&tab=candidates" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
+            <a data-spa href="?page=<?= $i ?>&tab=candidates<?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
           <?php endif; ?>
         <?php endfor; ?>
 
         <?php if ($currentPage < $totalPages): ?>
-          <a data-spa href="?page=<?= $currentPage + 1 ?>&tab=candidates" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
+          <a data-spa href="?page=<?= $currentPage + 1 ?>&tab=candidates<?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Selanjutnya</span>
         <?php endif; ?>
@@ -184,6 +195,7 @@ $activeTab = $_GET['tab'] ?? 'scoring';
 
     <form action="<?= getBaseUrl('/admin/selection/save') ?>" method="POST" class="space-y-4 text-xs">
       <input type="hidden" id="score-registration-id" name="registration_id">
+      <input type="hidden" name="wave_id" value="<?= htmlspecialchars((string)($selectedWaveId ?? '')) ?>">
 
       <!-- Penilaian Tahapan Ujian -->
       <div class="space-y-2">

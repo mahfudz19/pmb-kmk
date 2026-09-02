@@ -5,7 +5,13 @@
  * @var int $currentPage
  * @var int $limit
  * @var int $totalPages
+ * @var array $waves
+ * @var int|null $selectedWaveId
+ * @var array $payments
  */
+$waves = $waves ?? [];
+$selectedWaveId = $selectedWaveId ?? null;
+$payments = $payments ?? [];
 ?>
 <div class="w-full py-2 space-y-8">
   <!-- Page Header -->
@@ -23,7 +29,7 @@
       <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/payments') ?>" class="flex items-center gap-2">
         <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
         <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
-          <option value="">Semua Gelombang</option>
+          <option value="all" <?= $selectedWaveId === null ? 'selected' : '' ?>>Semua Gelombang</option>
           <?php foreach ($waves as $w): ?>
             <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
           <?php endforeach; ?>
@@ -88,6 +94,7 @@
                       <form action="<?= getBaseUrl('/admin/payments/verify') ?>" method="POST" onsubmit="return confirmAction(event, 'Setujui Pembayaran', 'Apakah Anda yakin ingin menyetujui bukti pembayaran ini?')">
                         <input type="hidden" name="payment_id" value="<?= $p['id'] ?>">
                         <input type="hidden" name="status" value="Approved">
+                        <input type="hidden" name="wave_id" value="<?= htmlspecialchars((string)($selectedWaveId ?? '')) ?>">
                         <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white rounded-full transition-colors cursor-pointer shadow-sm">
                           Setujui
                         </button>
@@ -111,8 +118,11 @@
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> transaksi
       </div>
       <div class="flex items-center gap-1.5">
+        <?php
+        $waveParam = $selectedWaveId !== null ? '&wave_id=' . $selectedWaveId : '';
+        ?>
         <?php if ($currentPage > 1): ?>
-          <a data-spa href="?page=<?= $currentPage - 1 ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
+          <a data-spa href="?page=<?= $currentPage - 1 ?><?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Sebelumnya</span>
         <?php endif; ?>
@@ -125,12 +135,12 @@
           <?php if ($i == $currentPage): ?>
             <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 border border-indigo-600 shadow-sm"><?= $i ?></span>
           <?php else: ?>
-            <a data-spa href="?page=<?= $i ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
+            <a data-spa href="?page=<?= $i ?><?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200"><?= $i ?></a>
           <?php endif; ?>
         <?php endfor; ?>
 
         <?php if ($currentPage < $totalPages): ?>
-          <a data-spa href="?page=<?= $currentPage + 1 ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
+          <a data-spa href="?page=<?= $currentPage + 1 ?><?= $waveParam ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
         <?php else: ?>
           <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 bg-slate-50 border border-slate-100 cursor-not-allowed">Selanjutnya</span>
         <?php endif; ?>

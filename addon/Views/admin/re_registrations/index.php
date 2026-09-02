@@ -2,11 +2,15 @@
 
 /**
  * @var array $list
+ * @var array $waves
+ * @var int|null $selectedWaveId
  * @var int $totalCount
  * @var int $currentPage
  * @var int $limit
  * @var int $totalPages
  */
+$waves = $waves ?? [];
+$selectedWaveId = $selectedWaveId ?? null;
 ?>
 
 <div class="space-y-6">
@@ -24,7 +28,7 @@
       <form id="filter-form" method="GET" action="<?= getBaseUrl('/admin/re-registrations') ?>" class="flex items-center gap-2">
         <label for="wave_id" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Gelombang:</label>
         <select id="wave_id" name="wave_id" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-semibold bg-white cursor-pointer">
-          <option value="">Semua Gelombang</option>
+          <option value="all" <?= $selectedWaveId === null ? 'selected' : '' ?>>Semua Gelombang</option>
           <?php foreach ($waves as $w): ?>
             <option value="<?= $w['id'] ?>" <?= $selectedWaveId == $w['id'] ? 'selected' : '' ?>><?= htmlspecialchars($w['name']) ?></option>
           <?php endforeach; ?>

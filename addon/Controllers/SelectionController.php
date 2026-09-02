@@ -27,15 +27,27 @@ class SelectionController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
+        $db = $this->registrations->getDb();
+
+        $stmtWaves = $db->prepare("SELECT id, exam_stages, name, is_active FROM waves ORDER BY id ASC");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
+        $stmtWaves->closeCursor();
+
         $waveId = $request->input('wave_id');
-        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+        if ($waveId === null || $waveId === '') {
+            // Default filter ke gelombang pertama jika ada
+            $waveIdFilter = !empty($waves) ? (int)$waves[0]['id'] : null;
+        } else if ($waveId === 'all') {
+            $waveIdFilter = null;
+        } else {
+            $waveIdFilter = (int)$waveId;
+        }
 
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
-
-        $db = $this->registrations->getDb();
 
         $params = [];
         $whereSql = " WHERE r.status != 'Draft' ";
@@ -85,11 +97,6 @@ class SelectionController
         $stmt->closeCursor();
 
         $programs = $this->studyPrograms->all();
-
-        $stmtWaves = $db->prepare("SELECT id, exam_stages, name FROM waves");
-        $stmtWaves->execute();
-        $waves = $stmtWaves->fetchAll() ?: [];
-        $stmtWaves->closeCursor();
 
         $wavesMap = [];
         foreach ($waves as $w) {
@@ -193,7 +200,10 @@ class SelectionController
             }
         }
 
-        return $response->redirect('/admin/selection?success=Data+penilaian+dan+kelulusan+berhasil+disimpan');
+        $targetWaveId = $request->input('wave_id');
+        $waveParam = ($targetWaveId !== null && $targetWaveId !== '') ? '&wave_id=' . urlencode((string)$targetWaveId) : '';
+
+        return $response->redirect('/admin/selection?success=Data+penilaian+dan+kelulusan+berhasil+disimpan' . $waveParam);
     }
 
     public function saveExamStages(Request $request, Response $response): RedirectResponse
@@ -241,7 +251,10 @@ class SelectionController
             }
         }
 
-        return $response->redirect('/admin/selection?success=Penilaian+tahapan+ujian+berhasil+disimpan');
+        $targetWaveId = $request->input('wave_id');
+        $waveParam = ($targetWaveId !== null && $targetWaveId !== '') ? '&wave_id=' . urlencode((string)$targetWaveId) : '';
+
+        return $response->redirect('/admin/selection?success=Penilaian+tahapan+ujian+berhasil+disimpan' . $waveParam);
     }
 
     public function publishStatus(Request $request, Response $response): RedirectResponse
@@ -252,9 +265,11 @@ class SelectionController
 
         $regId = (int) $request->input('registration_id');
         $isPublished = (int) $request->input('is_published');
+        $targetWaveId = $request->input('wave_id');
+        $waveParam = ($targetWaveId !== null && $targetWaveId !== '') ? '&wave_id=' . urlencode((string)$targetWaveId) : '';
 
         if (!$regId) {
-            return $response->redirect('/admin/selection?error=Pendaftar+tidak+valid');
+            return $response->redirect('/admin/selection?error=Pendaftar+tidak+valid' . $waveParam);
         }
 
         $existing = $this->selectionResults->findByRegistrationId($regId);
@@ -290,7 +305,7 @@ class SelectionController
         }
 
         $msg = $isPublished === 1 ? 'diterbitkan' : 'ditarik';
-        return $response->redirect('/admin/selection?success=Status+kelulusan+berhasil+' . $msg);
+        return $response->redirect('/admin/selection?success=Status+kelulusan+berhasil+' . $msg . $waveParam);
     }
 
     public function publishAll(Request $request, Response $response): RedirectResponse
@@ -300,18 +315,59 @@ class SelectionController
         }
 
         $isPublished = (int) $request->input('is_published');
+        $targetWaveId = $request->input('wave_id');
 
         $db = $this->selectionResults->getDb();
-        $stmt = $db->prepare("UPDATE selection_results SET is_published = :is_pub");
-        $stmt->execute(['is_pub' => $isPublished]);
+
+        if ($targetWaveId !== null && $targetWaveId !== '' && $targetWaveId !== 'all') {
+            $waveId = (int)$targetWaveId;
+        } else {
+            // Ambil gelombang yang sedang aktif (is_active = 1) atau gelombang pertama jika tidak ada yang aktif
+            $stmtWave = $db->prepare("SELECT id FROM waves WHERE is_active = 1 ORDER BY id ASC LIMIT 1");
+            $stmtWave->execute();
+            $activeWave = $stmtWave->fetch();
+            $stmtWave->closeCursor();
+
+            if ($activeWave) {
+                $waveId = (int)$activeWave['id'];
+            } else {
+                $stmtFirst = $db->prepare("SELECT id FROM waves ORDER BY id ASC LIMIT 1");
+                $stmtFirst->execute();
+                $firstWave = $stmtFirst->fetch();
+                $stmtFirst->closeCursor();
+                $waveId = $firstWave ? (int)$firstWave['id'] : null;
+            }
+        }
+
+        if ($waveId) {
+            $stmt = $db->prepare("
+                UPDATE selection_results sr
+                JOIN registrations r ON sr.registration_id = r.id
+                SET sr.is_published = :is_pub
+                WHERE r.wave_id = :wave_id
+            ");
+            $stmt->execute([
+                'is_pub' => $isPublished,
+                'wave_id' => $waveId
+            ]);
+        } else {
+            $stmt = $db->prepare("UPDATE selection_results SET is_published = :is_pub");
+            $stmt->execute(['is_pub' => $isPublished]);
+        }
 
         if ($isPublished === 1) {
-            $stmtRegs = $db->prepare("
-                SELECT id FROM registrations 
-                WHERE status != 'Draft' 
-                AND id NOT IN (SELECT registration_id FROM selection_results)
-            ");
-            $stmtRegs->execute();
+            $regSql = "
+                SELECT r.id FROM registrations r
+                WHERE r.status != 'Draft' 
+                AND r.id NOT IN (SELECT registration_id FROM selection_results)
+            ";
+            $regParams = [];
+            if ($waveId) {
+                $regSql .= " AND r.wave_id = :wave_id ";
+                $regParams['wave_id'] = $waveId;
+            }
+            $stmtRegs = $db->prepare($regSql);
+            $stmtRegs->execute($regParams);
             $unscored = $stmtRegs->fetchAll();
             foreach ($unscored as $u) {
                 $this->selectionResults->insert([
@@ -321,13 +377,19 @@ class SelectionController
                 ]);
             }
 
-            $stmtAnnounce = $db->prepare("
+            $announceSql = "
                 SELECT sr.*, r.full_name, r.email, r.user_id 
                 FROM selection_results sr
                 JOIN registrations r ON sr.registration_id = r.id
                 WHERE sr.status != 'Pending'
-            ");
-            $stmtAnnounce->execute();
+            ";
+            $announceParams = [];
+            if ($waveId) {
+                $announceSql .= " AND r.wave_id = :wave_id ";
+                $announceParams['wave_id'] = $waveId;
+            }
+            $stmtAnnounce = $db->prepare($announceSql);
+            $stmtAnnounce->execute($announceParams);
             $results = $stmtAnnounce->fetchAll();
             foreach ($results as $res) {
                 $userId = $res['user_id'];
@@ -346,6 +408,10 @@ class SelectionController
         }
 
         $msg = $isPublished === 1 ? 'diterbitkan' : 'ditarik';
-        return $response->redirect('/admin/selection?success=Semua+pengumuman+seleksi+berhasil+' . $msg);
+        $redirectUrl = '/admin/selection?success=Pengumuman+seleksi+gelombang+aktif+berhasil+' . $msg;
+        if ($waveId) {
+            $redirectUrl .= '&wave_id=' . $waveId;
+        }
+        return $response->redirect($redirectUrl);
     }
 }

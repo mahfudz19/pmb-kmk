@@ -57,10 +57,11 @@ class RegistrationPaymentModel extends Model
             JOIN registrations r ON rp.registration_id = r.id
             JOIN users u ON r.user_id = u.id
             LEFT JOIN waves w ON r.wave_id = w.id
+            WHERE rp.file_path IS NOT NULL AND rp.file_path != ''
         ";
         $params = [];
         if ($waveId !== null) {
-            $sql .= " WHERE r.wave_id = :wave_id ";
+            $sql .= " AND r.wave_id = :wave_id ";
             $params['wave_id'] = $waveId;
         }
         $sql .= "
@@ -79,10 +80,11 @@ class RegistrationPaymentModel extends Model
             FROM {$this->table} rp
             JOIN registrations r ON rp.registration_id = r.id
             JOIN users u ON r.user_id = u.id
+            WHERE rp.file_path IS NOT NULL AND rp.file_path != ''
         ";
         $params = [];
         if ($waveId !== null) {
-            $sql .= " WHERE r.wave_id = :wave_id ";
+            $sql .= " AND r.wave_id = :wave_id ";
             $params['wave_id'] = $waveId;
         }
         $stmt = $this->db->prepare($sql);

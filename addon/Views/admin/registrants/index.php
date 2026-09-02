@@ -57,8 +57,8 @@
           name="wave_id"
           id="wave_id"
           onchange="this.form.submit()"
-          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700">
-          <option value="">Semua Gelombang</option>
+          class="block w-full px-4 py-2.5 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs transition-all bg-slate-50 font-semibold text-slate-700 cursor-pointer">
+          <option value="all" <?= ($filters['wave_id'] ?? null) === null ? 'selected' : '' ?>>Semua Gelombang</option>
           <?php foreach ($waves as $w): ?>
             <option value="<?= $w['id'] ?>" <?= (string)($filters['wave_id'] ?? '') === (string)$w['id'] ? 'selected' : '' ?>>
               <?= htmlspecialchars($w['name']) ?>
@@ -179,9 +179,9 @@
         Menampilkan <?= min($totalCount, ($currentPage - 1) * $limit + 1) ?> s/d <?= min($totalCount, $currentPage * $limit) ?> dari <?= $totalCount ?> pendaftar
       </div>
       <div class="flex items-center gap-1.5">
-        <?php 
+        <?php
         $paginationParams = http_build_query(array_merge($filters, ['page' => $currentPage - 1]));
-        if ($currentPage > 1): 
+        if ($currentPage > 1):
         ?>
           <a data-spa href="?<?= $paginationParams ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Sebelumnya</a>
         <?php else: ?>
@@ -201,9 +201,9 @@
           <?php endif; ?>
         <?php endfor; ?>
 
-        <?php 
+        <?php
         $nextPaginationParams = http_build_query(array_merge($filters, ['page' => $currentPage + 1]));
-        if ($currentPage < $totalPages): 
+        if ($currentPage < $totalPages):
         ?>
           <a data-spa href="?<?= $nextPaginationParams ?>" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200">Selanjutnya</a>
         <?php else: ?>

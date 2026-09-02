@@ -157,8 +157,16 @@ class PaymentController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
-        $waveId = $request->input('wave_id');
-        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+        $waves = $this->waves->all();
+        $rawWaveId = $request->input('wave_id');
+
+        if ($rawWaveId === null || $rawWaveId === '') {
+            $waveIdFilter = !empty($waves) ? (int)$waves[0]['id'] : null;
+        } else if ($rawWaveId === 'all') {
+            $waveIdFilter = null;
+        } else {
+            $waveIdFilter = (int)$rawWaveId;
+        }
 
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
@@ -177,7 +185,7 @@ class PaymentController
 
         return $response->renderPage([
             'payments' => $paymentsList,
-            'waves' => $this->waves->all(),
+            'waves' => $waves,
             'selectedWaveId' => $waveIdFilter,
             'currentPage' => $page,
             'totalPages' => $totalPages,
@@ -228,7 +236,10 @@ class PaymentController
         }
 
         log_activity('VERIFY_PAYMENT', "Verifikasi pembayaran ID {$paymentId} diubah menjadi {$status}.");
-        return $response->redirect('/admin/payments?success=Verifikasi+pembayaran+berhasil+disimpan.');
+        $targetWaveId = $request->input('wave_id');
+        $waveParam = ($targetWaveId !== null && $targetWaveId !== '') ? '&wave_id=' . urlencode((string)$targetWaveId) : '';
+
+        return $response->redirect('/admin/payments?success=Verifikasi+pembayaran+berhasil+disimpan.' . $waveParam);
     }
 
     public function changePaymentType(Request $request, Response $response): Response

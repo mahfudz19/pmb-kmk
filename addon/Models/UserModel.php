@@ -73,6 +73,18 @@ class UserModel extends Model
             'google_id' => null,
             'avatar_url' => null,
             'permissions' => '["view_dashboard"]'
+        ],
+        [
+            'email' => 'user4@gmail.com',
+            'password' => '$2y$10$91sFeGndTytQMWGwJalwY.Zl27oAM/RLGtolhxk1mWUy9reXRH.Yi',
+            'name' => 'User 4',
+            'avatar' => null,
+            'is_active' => 1,
+            'last_login_at' => null,
+            'role' => 'user',
+            'google_id' => null,
+            'avatar_url' => null,
+            'permissions' => '["view_dashboard"]'
         ]
     ];
 

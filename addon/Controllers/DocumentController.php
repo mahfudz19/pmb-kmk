@@ -70,7 +70,7 @@ class DocumentController
                     $prodiId = (int)$wsp['study_program_id'];
                     $prodiName = $prodiNamesMap[$prodiId] ?? '';
                     $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
-                    
+
                     foreach ($reqDocs as $rd) {
                         if (isset($rd['document_type_id'])) {
                             $dtId = (int)$rd['document_type_id'];
@@ -159,7 +159,7 @@ class DocumentController
         }
 
         $existingDoc = $this->documents->findByRegAndType($registration['id'], $documentTypeId);
-        
+
         $docData = [
             'registration_id' => $registration['id'],
             'document_type_id' => $documentTypeId,
@@ -244,16 +244,27 @@ class DocumentController
             return $response->redirect('/dashboard?error=Anda+tidak+memiliki+hak+akses+ke+halaman+ini.');
         }
 
-        $waveId = $request->input('wave_id');
-        $waveIdFilter = ($waveId !== '' && $waveId !== null) ? (int)$waveId : null;
+        $db = $this->registrations->getDb();
+
+        $stmtWaves = $db->prepare("SELECT * FROM waves ORDER BY id ASC");
+        $stmtWaves->execute();
+        $waves = $stmtWaves->fetchAll() ?: [];
+        $stmtWaves->closeCursor();
+
+        $rawWaveId = $request->input('wave_id');
+        if ($rawWaveId === null || $rawWaveId === '') {
+            $waveIdFilter = !empty($waves) ? (int)$waves[0]['id'] : null;
+        } else if ($rawWaveId === 'all') {
+            $waveIdFilter = null;
+        } else {
+            $waveIdFilter = (int)$rawWaveId;
+        }
 
         $page = (int) ($request->input('page') ?: 1);
         if ($page < 1) $page = 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $db = $this->registrations->getDb();
-        
         $params = [];
         $whereSql = " WHERE r.status != 'Draft' ";
         if ($waveIdFilter !== null) {
@@ -269,6 +280,7 @@ class DocumentController
         ");
         $stmtCount->execute($params);
         $totalCount = (int) ($stmtCount->fetch()['count'] ?? 0);
+        $stmtCount->closeCursor();
 
         $totalPages = (int) ceil($totalCount / $limit);
         if ($totalPages < 1) $totalPages = 1;
@@ -287,7 +299,8 @@ class DocumentController
             LIMIT " . $limit . " OFFSET " . $offset . "
         ");
         $stmt->execute($params);
-        $candidates = $stmt->fetchAll();
+        $candidates = $stmt->fetchAll() ?: [];
+        $stmt->closeCursor();
 
         foreach ($candidates as &$c) {
             $stmt = $db->prepare("SELECT * FROM registration_programs WHERE registration_id = :id LIMIT 1");
@@ -380,7 +393,7 @@ class DocumentController
 
         // Fetch related models
         $db = $this->registrations->getDb();
-        
+
         $stmt = $db->prepare("SELECT * FROM registration_addresses WHERE registration_id = :id LIMIT 1");
         $stmt->execute(['id' => $regId]);
         $address = $stmt->fetch() ?: null;
@@ -437,7 +450,7 @@ class DocumentController
                     $prodiId = (int)$wsp['study_program_id'];
                     $prodiName = $prodiNamesMap[$prodiId] ?? '';
                     $reqDocs = json_decode($wsp['required_documents'] ?? '[]', true) ?: [];
-                    
+
                     foreach ($reqDocs as $rd) {
                         if (isset($rd['document_type_id'])) {
                             $dtId = (int)$rd['document_type_id'];
