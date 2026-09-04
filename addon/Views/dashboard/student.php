@@ -1,9 +1,12 @@
 <?php
 
 /**
+ * @var null|array $registration
  * @var null|array $re_registration
  * @var null|array $payment
  * @var null|array $active_announcement
+ * @var bool $profile_edu_completed
+ * @var bool $profile_parent_completed
  * @var mixed $exam_results
  * @var mixed $active_waves
  * @var mixed $state
@@ -61,6 +64,7 @@
           modal.classList.remove('hidden');
         }
       }
+
       function closeAnnouncementModal() {
         const modal = document.getElementById('announcement-modal');
         if (modal) {
@@ -86,9 +90,9 @@
         ?>
         <?php if ($step1_editable && $state !== 'draft'): ?>
           <a data-spa href="<?= getBaseUrl('/dashboard') ?>" class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10 hover:opacity-80 transition-opacity" title="Formulir Pendaftaran">
-        <?php else: ?>
-          <div class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10">
-        <?php endif; ?>
+          <?php else: ?>
+            <div class="flex md:flex-col items-center gap-4 md:gap-2 flex-1 w-full text-left md:text-center z-10">
+            <?php endif; ?>
             <span class="flex items-center justify-center w-9 h-9 rounded-full font-bold text-sm transition-all <?= $step1_done ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200' : ($step1_active ? 'bg-indigo-600 text-white ring-4 ring-indigo-100' : 'bg-slate-100 text-slate-400') ?>">
               <?= $step1_done ? '✓' : '1' ?>
             </span>
@@ -688,7 +692,7 @@
     const btnVa = document.getElementById('btn-pay-va');
     const containerManual = document.getElementById('details-manual');
     const containerVa = document.getElementById('details-va');
-    
+
     const inputBank = document.getElementById('bank_name');
     const inputAccount = document.getElementById('account_name');
 
@@ -697,10 +701,10 @@
     if (method === 'manual') {
       btnManual.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
       btnVa.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
-      
+
       if (containerManual) containerManual.classList.remove('hidden');
       if (containerVa) containerVa.classList.add('hidden');
-      
+
       if (inputBank) {
         if (inputBank.value === 'Virtual Account (VA)') {
           inputBank.value = '';
@@ -708,7 +712,7 @@
         inputBank.readOnly = false;
         inputBank.placeholder = 'Contoh: BCA, Mandiri, BRI';
       }
-      
+
       if (inputAccount) {
         if (inputAccount.value === <?= json_encode($registration['full_name'] ?? '') ?>) {
           inputAccount.value = '';
@@ -719,15 +723,15 @@
     } else {
       btnVa.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm cursor-pointer';
       btnManual.className = 'px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-655 hover:bg-slate-50 cursor-pointer';
-      
+
       if (containerVa) containerVa.classList.remove('hidden');
       if (containerManual) containerManual.classList.add('hidden');
-      
+
       if (inputBank) {
         inputBank.value = 'Virtual Account (VA)';
         inputBank.readOnly = true;
       }
-      
+
       if (inputAccount) {
         inputAccount.value = <?= json_encode($registration['full_name'] ?? '') ?>;
         inputAccount.readOnly = true;

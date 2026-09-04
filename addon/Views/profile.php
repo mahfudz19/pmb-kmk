@@ -46,11 +46,11 @@ $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) ||
           <button type="button" onclick="switchTab('ortu')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-ortu">
             <span>👨‍👩‍👧‍👦</span> Orang Tua / Wali
           </button>
-          <button type="button" onclick="switchTab('kebutuhan')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-kebutuhan">
-            <span>♿</span> Kebutuhan Khusus
-          </button>
           <button type="button" onclick="switchTab('pendidikan')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-pendidikan">
             <span>🎓</span> Riwayat Pendidikan
+          </button>
+          <button type="button" onclick="switchTab('kebutuhan')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-kebutuhan">
+            <span>♿</span> Kebutuhan Khusus
           </button>
         <?php endif; ?>
         <button type="button" onclick="switchTab('password')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 <?= $isAdmin ? 'bg-indigo-50 text-indigo-750 shadow-sm' : 'bg-white text-slate-650 hover:bg-slate-50' ?>" id="tab-btn-password">
