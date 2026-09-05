@@ -268,7 +268,7 @@ class AuthController
             'password' => $this->hashPassword($password),
             'name' => $name,
             'avatar' => null,
-            'is_active' => 0, // Not active until OTP verified
+            'is_active' => 1, // Not active until OTP verified
         ];
 
         // Add role to user data
@@ -284,18 +284,21 @@ class AuthController
             }
 
             // Send OTP to user's email
-            $otpCode = OtpGenerator::generate();
-            $this->emailVerifications->createOtp($userId, $email, $otpCode, 15);
+            // $otpCode = OtpGenerator::generate();
+            // $this->emailVerifications->createOtp($userId, $email, $otpCode, 15);
 
             // Send email with OTP
             // $this->emailService->sendOtpVerification($email, $name, $otpCode, 15);
 
             // Store user ID in session for OTP verification
-            $this->session->set('auth.pending_user_id', $userId);
-            $this->session->set('auth.pending_user_email', $email);
+            // $this->session->set('auth.pending_user_id', $userId);
+            // $this->session->set('auth.pending_user_email', $email);
 
             // Redirect to OTP sent page
-            return $response->redirect('/otp-sent?email=' . urlencode($email));
+            // return $response->redirect('/otp-sent?email=' . urlencode($email));
+
+            $this->loginSession($newUser);
+            return $response->redirect('/dashboard')->hard();
         } catch (\Exception $e) {
             return $response->redirect('/register?error=' . urlencode($e->getMessage()));
         }
