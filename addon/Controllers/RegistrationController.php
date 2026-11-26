@@ -185,21 +185,60 @@ class RegistrationController
             }
 
             $photoPath = $registration['photo_path'] ?? null;
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $file = $_FILES['photo'];
+
+                if ($file['error'] !== UPLOAD_ERR_OK) {
+                    $errorMessages = [
+                        UPLOAD_ERR_INI_SIZE   => 'Ukuran foto melebihi batas maksimal konfigurasi server.',
+                        UPLOAD_ERR_FORM_SIZE  => 'Ukuran foto melebihi batas maksimal form.',
+                        UPLOAD_ERR_PARTIAL    => 'Foto hanya terunggah sebagian, silakan coba lagi.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Server kehilangan folder sementara (tmp).',
+                        UPLOAD_ERR_CANT_WRITE => 'Server gagal menulis file ke disk.',
+                    ];
+                    $msg = $errorMessages[$file['error']] ?? 'Terjadi kesalahan saat mengunggah foto (Kode: ' . $file['error'] . ')';
+                    
+                    $response->setStatusCode(400);
+                    return $response->json(['success' => false, 'message' => $msg]);
+                }
+
                 $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
                     $response->setStatusCode(400);
                     return $response->json(['success' => false, 'message' => 'Format foto harus berupa JPG, JPEG, atau PNG']);
                 }
-                $uploadDir = MAZU_PUBLIC_PATH . 'uploads/photos/';
+
+                $uploadDir = rtrim(MAZU_PUBLIC_PATH, '/\\') . '/uploads/photos/';
                 if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
+                    // Gunakan 0755 (lebih aman daripada 0777)
+                    if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                        $response->setStatusCode(500);
+                        return $response->json([
+                            'success' => false, 
+                            'message' => 'Gagal membuat direktori penyimpanan foto di server.'
+                        ]);
+                    }
                 }
+
+                if (!is_writable($uploadDir)) {
+                    $response->setStatusCode(500);
+                    return $response->json([
+                        'success' => false, 
+                        'message' => 'Direktori penyimpanan foto tidak memiliki izin tulis (permission denied).'
+                    ]);
+                }
+
                 $filename = 'photo_' . $regId . '_' . uniqid() . '.' . $ext;
-                if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
-                    $photoPath = '/uploads/photos/' . $filename;
+                if (!move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+                    $response->setStatusCode(500);
+                    return $response->json([
+                        'success' => false, 
+                        'message' => 'Gagal memindahkan file foto ke direktori tujuan.'
+                    ]);
                 }
+
+                $photoPath = '/uploads/photos/' . $filename;
             }
 
             if (!$photoPath) {

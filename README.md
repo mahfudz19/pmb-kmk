@@ -169,6 +169,17 @@ uuidv4()    // Generate UUID
 ### Production Setup
 
 ```bash
+# Pastikan direktori tujuan tersedia
+mkdir -p public/uploads/photos public/uploads/fees
+mkdir -p storage/app/documents storage/app/payments storage/app/re_registrations storage/cache storage/logs
+
+# Ubah kepemilikan folder ke user PHP-FPM / Web Server (sesuaikan 'generasi' dengan user PHP server)
+sudo chown -R generasi:generasi public/uploads storage
+
+# Atur permission direktori (755) dan file (644)
+sudo find public/uploads storage -type d -exec chmod 755 {} \;
+sudo find public/uploads storage -type f -exec chmod 644 {} \;
+
 # Install production dependencies
 composer install --no-dev --optimize-autoloader
 
