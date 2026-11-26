@@ -358,8 +358,8 @@
         <div class="space-y-3 pt-2">
           <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rincian Brosur & Rincian Biaya</h3>
           <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
-            <object data="<?= htmlspecialchars($feeArchive) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
-              <iframe src="<?= htmlspecialchars($feeArchive) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
+            <object data="<?= getBaseUrl(htmlspecialchars($feeArchive)) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
+              <iframe src="<?= getBaseUrl(htmlspecialchars($feeArchive)) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
             </object>
           </div>
         </div>

@@ -48,7 +48,7 @@
         if (!empty($archivePath) && !empty($fullArchivePath) && file_exists($fullArchivePath)):
         ?>
           <div class="pt-2 border-t border-slate-100">
-            <a href="<?= htmlspecialchars($archivePath) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
+            <a href="<?= getBaseUrl(htmlspecialchars($archivePath)) ?>" download class="block text-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 font-bold rounded-xl text-xs transition-colors">
               📄 Unduh Brosur / Panduan UKT (PDF)
             </a>
           </div>
@@ -167,8 +167,8 @@
           <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-3">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Brosur & Panduan UKT (PDF)</h3>
             <div class="w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm bg-slate-50">
-              <object data="<?= htmlspecialchars($archivePath) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
-                <iframe src="<?= htmlspecialchars($archivePath) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
+              <object data="<?= getBaseUrl(htmlspecialchars($archivePath)) ?>#toolbar=1" type="application/pdf" class="w-full h-[600px] border-none" style="display:block;">
+                <iframe src="<?= getBaseUrl(htmlspecialchars($archivePath)) ?>#toolbar=1" class="w-full h-[600px] border-none" style="display:block;"></iframe>
               </object>
             </div>
           </div>
