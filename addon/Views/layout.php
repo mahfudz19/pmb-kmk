@@ -21,6 +21,14 @@ if ($userId) {
   }
 }
 $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
+$currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+$isAuthPage = str_contains($currentPath, '/login') ||
+  str_contains($currentPath, '/register') ||
+  str_contains($currentPath, '/verify-otp') ||
+  str_contains($currentPath, '/otp-sent') ||
+  str_contains($currentPath, '/resend-otp') ||
+  str_contains($currentPath, '/password/forgot') ||
+  str_contains($currentPath, '/password/reset');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -189,7 +197,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
   </style>
 </head>
 
-<body class="bg-[#f8fafc] text-slate-900 font-sans antialiased min-h-screen flex flex-col">
+<body class="<?= $isAuthPage ? 'bg-[#0b0f24] text-white' : 'bg-[#f8fafc] text-slate-900' ?> font-sans antialiased min-h-screen flex flex-col">
   <!-- Global Loading Progress Bar -->
   <div id="global-progress-bar" class="progress-bar-container">
     <div id="global-progress-bar-inner" class="progress-bar-fill"></div>
@@ -493,7 +501,7 @@ $hasSidebar = $userId && ($_SESSION['auth.user_role'] ?? 'user') !== 'user';
     <?php endif; ?>
 
     <!-- Main Content Panel -->
-    <main id="app-content" data-layout="layout.php" class="flex-grow flex flex-col transition-all duration-300 <?= $isAuthPage ? 'min-h-screen justify-center items-center p-6 w-full' : ($hasSidebar ? 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] ml-0 md:ml-64' : 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] max-w-7xl mx-auto w-full') ?>">
+    <main id="app-content" data-layout="layout.php" class="flex-grow flex flex-col transition-all duration-300 <?= $isAuthPage ? 'min-h-screen justify-center items-center p-0 md:p-6 w-full bg-[#0b0f24]' : ($hasSidebar ? 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] ml-0 md:ml-64' : 'p-5 md:p-8 min-h-[calc(100vh-3.5rem)] max-w-7xl mx-auto w-full') ?>">
       <?= $children; ?>
     </main>
   </div>

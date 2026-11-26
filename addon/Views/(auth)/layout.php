@@ -1,37 +1,51 @@
 <?php
-/**
- * @var \App\Core\View\PageMeta $meta
- * @var string $children
- */
 ?>
-<div class="min-h-screen flex items-center justify-center p-0 md:p-6 w-full">
-  <div class="w-full max-w-5xl bg-white md:rounded-3xl md:shadow-xl md:border md:border-slate-200/50 flex flex-col md:flex-row overflow-hidden min-h-screen md:min-h-[620px] transition-all duration-300">
-    <!-- Left Column: Visual Illustration (Desktop/Tablet only) -->
-    <div class="hidden md:flex md:w-1/2 bg-slate-900 text-white p-10 lg:p-12 flex-col justify-between relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(30, 27, 75, 0.4), rgba(15, 23, 42, 0.85)), url('<?= getBaseUrl('/logo_app/campus-hero.png') ?>');">
-      <!-- Gradient overlay decoration -->
-      <div class="absolute inset-0 bg-indigo-600/15 mix-blend-overlay"></div>
-      
-      <!-- Top Brand area -->
-      <div class="z-10 flex items-center gap-2.5">
-        <img src="<?= getBaseUrl('/logo_app/mazu-logo.svg') ?>" alt="Logo" class="h-7 w-auto filter brightness-0 invert" />
+<div class="min-h-screen md:min-h-0 flex items-center justify-center w-full">
+  <div class="w-full max-w-[1060px] bg-[#181c36] md:rounded-3xl md:shadow-[0_24px_70px_rgba(0,0,0,0.65)] md:border md:border-white/10 flex flex-col md:flex-row overflow-hidden min-h-screen md:min-h-[640px] transition-all duration-300">
+    <div class="hidden md:flex md:w-1/2 bg-[#0d1333] text-white p-10 lg:p-12 flex-col justify-between relative overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(180deg, rgba(11, 16, 42, 0.72) 0%, rgba(13, 19, 51, 0.55) 48%, rgba(9, 13, 35, 0.90) 100%), url('<?= getBaseUrl('/logo_app/auth-hero.jpg') ?>');">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(67,104,245,0.22),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.18),transparent_50%)] pointer-events-none"></div>
+
+      <div class="relative z-10 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#4368f5] flex items-center justify-center shadow-lg shadow-[#4368f5]/30 flex-shrink-0">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-extrabold tracking-tight text-white">Gen-U</span>
+          <span class="h-5 w-px bg-white/25"></span>
+          <span class="text-sm font-medium text-slate-300 tracking-wide">PMB KMK</span>
+        </div>
       </div>
 
-      <!-- Bottom Title & Description -->
-      <div class="z-10 space-y-4">
-        <span class="inline-flex px-3 py-1 rounded-full text-[9px] font-bold bg-indigo-500/30 text-indigo-150 uppercase tracking-widest">Portal Pendaftaran</span>
-        <h2 class="text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight">Mulai Perjalanan Akademik Anda Bersama Kampus Mandiri Kencana</h2>
-        <p class="text-xs lg:text-sm text-slate-300 leading-relaxed font-medium">Sistem Informasi Penerimaan Mahasiswa Baru (PMB) online terintegrasi, transparan, dan efisien.</p>
+      <div class="relative z-10 my-auto py-8 space-y-5">
+        <span class="inline-flex items-center px-3.5 py-1 rounded-full text-[11px] font-bold tracking-[0.12em] uppercase bg-amber-500/15 text-[#f5a623] border border-amber-400/30">
+          Simulasi PMB
+        </span>
+        <h2 class="text-3xl lg:text-[34px] font-extrabold tracking-tight text-white leading-[1.18]">
+          Mulai Perjalanan Akademik Anda Bersama <span class="text-[#f59e0b]">Gen-U</span>
+        </h2>
+        <p class="text-sm text-slate-300/90 leading-relaxed max-w-md">
+          Rasakan alur Penerimaan Mahasiswa Baru (PMB) online yang terintegrasi, transparan, dan efisien, langsung dari dasbor Gen-U.
+        </p>
       </div>
 
-      <!-- Tiny copyright/version in visual side -->
-      <div class="z-10 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-        &copy; <?= date('Y') ?> KMK. All rights reserved.
+      <div class="relative z-10 text-[11px] text-slate-400/80 font-semibold uppercase tracking-[0.14em]">
+        &copy; <?= date('Y') ?> KMK &middot; DIDUKUNG GEN-U
       </div>
     </div>
 
-    <!-- Right Column: Authentication Form -->
-    <div class="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-10 lg:p-12 min-h-screen md:min-h-0 bg-white">
-      <div class="w-full max-w-sm space-y-6 animate-fade-in" data-layout="<?= $layoutId ?? '(auth)/layout.php' ?>">
+    <div class="w-full md:w-1/2 flex flex-col items-center justify-center p-6 sm:p-10 lg:p-12 min-h-screen md:min-h-0 bg-[#181c36] md:border-l md:border-white/[0.06]">
+      <div class="flex md:hidden items-center gap-3 mb-8 w-full max-w-[380px]">
+        <div class="w-9 h-9 rounded-xl bg-[#4368f5] flex items-center justify-center shadow-lg shadow-[#4368f5]/30 flex-shrink-0">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-extrabold tracking-tight text-white">Gen-U</span>
+          <span class="h-4 w-px bg-white/20"></span>
+          <span class="text-xs font-medium text-slate-300 tracking-wide">PMB KMK</span>
+        </div>
+      </div>
+
+      <div class="w-full max-w-[380px] space-y-6 animate-fade-in" data-layout="<?= $layoutId ?? '(auth)/layout.php' ?>">
         <?= $children; ?>
       </div>
     </div>
