@@ -75,19 +75,8 @@ $isAdmin = ($user['role'] ?? 'user') === 'admin' || in_array('*', $userPerms) ||
             </span>
             <i data-lucide="chevron-right" class="tab-chevron w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500"></i>
           </button>
-          <button type="button" onclick="switchTab('kebutuhan')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer flex items-center justify-between group bg-white text-slate-600 hover:bg-slate-50 border border-transparent" id="tab-btn-kebutuhan">
-            <span class="flex items-center gap-2.5">
-              <i data-lucide="accessibility" class="tab-icon w-4 h-4 text-slate-400 group-hover:text-slate-600 shrink-0"></i>
-              Kebutuhan Khusus
-            </span>
-            <i data-lucide="chevron-right" class="tab-chevron w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500"></i>
-          </button>
-          <button type="button" onclick="switchTab('pendidikan')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer flex items-center justify-between group bg-white text-slate-600 hover:bg-slate-50 border border-transparent" id="tab-btn-pendidikan">
-            <span class="flex items-center gap-2.5">
-              <i data-lucide="graduation-cap" class="tab-icon w-4 h-4 text-slate-400 group-hover:text-slate-600 shrink-0"></i>
-              Riwayat Pendidikan
-            </span>
-            <i data-lucide="chevron-right" class="tab-chevron w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500"></i>
+          <button type="button" onclick="switchTab('pendidikan')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-pendidikan">
+            <span>🎓</span> Riwayat Pendidikan
           </button>
           <button type="button" onclick="switchTab('kebutuhan')" class="w-full text-left px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-3 bg-white text-slate-650 hover:bg-slate-50" id="tab-btn-kebutuhan">
             <span>♿</span> Kebutuhan Khusus
